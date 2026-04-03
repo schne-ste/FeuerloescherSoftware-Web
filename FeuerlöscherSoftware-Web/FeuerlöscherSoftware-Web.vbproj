@@ -51,10 +51,10 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>FeuerlöscherSoftware_Web.Printservice</StartupObject>
+    <StartupObject>FeuerlöscherSoftware_Web.Druckservice</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Printservice\Images\FeuerlöscherSchild.ico</ApplicationIcon>
+    <ApplicationIcon>Images\FeuerlöscherSchild.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
@@ -63,22 +63,22 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Printservice\Brother QL Serie\Feuerloescher1.lbx">
+    <None Include="Brother QL Serie\Feuerloescher1.lbx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Printservice\Brother QL Serie\Feuerloescher2.lbx">
+    <None Include="Brother QL Serie\Feuerloescher2.lbx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Printservice\Brother QL Serie\Feuerloescher3.lbx">
+    <None Include="Brother QL Serie\Feuerloescher3.lbx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Printservice\Brother QL Serie\Feuerloescher.lbx">
+    <None Include="Brother QL Serie\Feuerloescher.lbx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Printservice\Brother QL Serie\Feuerloescher5.lbx">
+    <None Include="Brother QL Serie\Feuerloescher5.lbx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Printservice\config.ini">
+    <None Include="config.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -87,15 +87,15 @@
     <Folder Include="Webservice\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Printservice\EscPosPrinter.vb" />
-    <Compile Include="Printservice\Ini.vb" />
-    <Compile Include="Printservice\Printservice.Designer.vb">
-      <DependentUpon>Printservice.vb</DependentUpon>
+    <Compile Include="Druckservice.Designer.vb">
+      <DependentUpon>Druckservice.vb</DependentUpon>
     </Compile>
-    <Compile Include="Printservice\Printservice.vb">
+    <Compile Include="Druckservice.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Printservice\RawPrinter.vb" />
+    <Compile Include="EscPosPrinter.vb" />
+    <Compile Include="Ini.vb" />
+    <Compile Include="RawPrinter.vb" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Interop.bpac, Version=1.3.0.0, Culture=neutral, processorArchitecture=x86">
@@ -111,30 +111,30 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Printservice\Printservice.resx">
-      <DependentUpon>Printservice.vb</DependentUpon>
+    <EmbeddedResource Include="Druckservice.resx">
+      <DependentUpon>Druckservice.vb</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Printservice\Brother QL Serie\bpac.exe">
+    <Content Include="Brother QL Serie\bpac.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Printservice\Brother QL Serie\Interop.bpac.dll">
+    <Content Include="Brother QL Serie\Interop.bpac.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Printservice\Brother QL Serie\QL-800 Treiber.exe">
+    <Content Include="Brother QL Serie\QL-800 Treiber.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Printservice\Brother QL Serie\Treiber.exe">
+    <Content Include="Brother QL Serie\Treiber.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Printservice\Images\FeuerlöscherSchild.ico">
+    <Content Include="Images\FeuerlöscherSchild.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Printservice\Images\FF Wallern_500px.bmp">
+    <Content Include="Images\FF Wallern_500px.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Printservice\Images\Logo.png">
+    <Content Include="Images\Logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
