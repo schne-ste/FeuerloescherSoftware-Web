@@ -1,0 +1,64 @@
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\config.ini
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\bpac.exe
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Interop.bpac.dll
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\QL-800 Treiber.exe
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Treiber.exe
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Images\FeuerlöscherSchild.ico
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Images\FF Wallern_500px.bmp
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher.lbx
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher1.lbx
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher2.lbx
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher3.lbx
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher5.lbx
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Druckservice.exe.config
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Druckservice.exe
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Druckservice.pdb
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Druckservice.xml
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.vbproj.AssemblyReference.cache
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.Druckservice.resources
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.Resources.resources
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.vbproj.GenerateResource.cache
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.vbproj.CoreCompileInputs.cache
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckser.5A128DCA.Up2Date
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.exe
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.xml
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.pdb
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.exe.config
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\bin\Debug\de\Druckservice.resources.dll
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\Druckservice.Druckservice.de.resources
+C:\Users\Stefan\source\repos\Druckservice\Druckservice\obj\Debug\de\Druckservice.resources.dll
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\config.ini
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\bpac.exe
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Interop.bpac.dll
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\QL-800 Treiber.exe
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Treiber.exe
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FeuerlöscherSchild.ico
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern_500px.bmp
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher.lbx
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher1.lbx
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher2.lbx
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher3.lbx
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher5.lbx
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Druckservice.exe.config
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Druckservice.exe
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Druckservice.pdb
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Druckservice.xml
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\de\Druckservice.resources.dll
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.vbproj.AssemblyReference.cache
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.exe.config
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.Druckservice.resources
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.Resources.resources
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.Druckservice.de.resources
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.vbproj.GenerateResource.cache
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.vbproj.CoreCompileInputs.cache
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\de\Druckservice.resources.dll
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckser.5A128DCA.Up2Date
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.exe
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.xml
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.pdb
