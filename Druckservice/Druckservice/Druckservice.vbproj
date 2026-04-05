@@ -113,6 +113,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Druckservice.de.resx">
       <DependentUpon>Druckservice.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Druckservice.resx">
       <DependentUpon>Druckservice.vb</DependentUpon>

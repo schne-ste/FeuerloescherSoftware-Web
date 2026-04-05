@@ -37,6 +37,46 @@ while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
 }
 
 // =====================
+// NÄCHSTE RECHNUNGSNUMMER BERECHNEN
+// =====================
+$lastNr = $db->querySingle("
+    SELECT rechnungsnummer FROM rechnungen
+    WHERE rechnungsnummer LIKE '".RECHNUNGS_PREFIX."%' 
+    ORDER BY id DESC LIMIT 1
+");
+if ($lastNr) {
+    $number = intval(str_replace(RECHNUNGS_PREFIX, '', $lastNr)) + 1;
+} else {
+    $number = 1;
+}
+$nextRechnungsnummer = RECHNUNGS_PREFIX . str_pad($number, 4, '0', STR_PAD_LEFT);
+
+// =====================
+// AJAX: Daten neu laden
+// =====================
+if (isset($_GET['action']) && $_GET['action'] === 'reload_data' && isset($_GET['id'])) {
+    $id = (int)$_GET['id'];
+    $row = $db->query("SELECT * FROM rechnungen WHERE id = $id")->fetchArray(SQLITE3_ASSOC);
+    header('Content-Type: application/json');
+    echo json_encode($row);
+    exit;
+}
+
+// =====================
+// RECHNUNG NACHDRUCKEN
+// =====================
+if (isset($_POST['reprint_rechnung']) && !empty($_POST['edit_id'])) {
+    $id = (int)$_POST['edit_id'];
+    $stmt = $db->prepare("UPDATE rechnungen SET rechnung_gedruckt = 0, zeitstempel_gedruckt = NULL WHERE id = :id");
+    $stmt->bindValue(':id', $id);
+    $stmt->execute();
+    $successMessage = "&#128424; Rechnung zurückgesetzt – jetzt erneut drucken möglich!";
+    
+    // Eintrag für Bearbeitung neu laden
+    $editEntry = $db->query("SELECT * FROM rechnungen WHERE id = $id")->fetchArray(SQLITE3_ASSOC);
+}
+
+// =====================
 // SUCHE
 // =====================
 if (isset($_POST['suche'])) {
@@ -82,8 +122,14 @@ if (isset($_POST['save_rechnung'])) {
     $typ = $_POST['typ'] ?? '';
     $preis = $preise[$typ] ?? 0;
 
-    if (!empty($_POST['edit_id'])) {
+    // Automatische Rechnungsnummer
+    if (empty($_POST['edit_id'])) {
+        $rechnungsnummer = $nextRechnungsnummer;
+    } else {
+        $rechnungsnummer = $_POST['rechnungsnummer'];
+    }
 
+    if (!empty($_POST['edit_id'])) {
         // UPDATE
         $stmt = $db->prepare("
             UPDATE rechnungen SET
@@ -99,13 +145,9 @@ if (isset($_POST['save_rechnung'])) {
                 zeitstempel_gedruckt = NULL
             WHERE id = :id
         ");
-
         $stmt->bindValue(':id', (int)$_POST['edit_id']);
-
         $successMessage = "&#9989; Rechnung aktualisiert (Druckstatus zurückgesetzt)!";
-
     } else {
-
         // INSERT
         $stmt = $db->prepare("
             INSERT INTO rechnungen (
@@ -117,9 +159,7 @@ if (isset($_POST['save_rechnung'])) {
                 :anzahl, :preis, :zeit, :rnr
             )
         ");
-
         $stmt->bindValue(':zeit', date('Y-m-d H:i:s'));
-
         $successMessage = "&#9989; Rechnung gespeichert!";
     }
 
@@ -130,9 +170,66 @@ if (isset($_POST['save_rechnung'])) {
     $stmt->bindValue(':ort', $_POST['ort']);
     $stmt->bindValue(':anzahl', (int)$_POST['anzahl']);
     $stmt->bindValue(':preis', $preis);
-    $stmt->bindValue(':rnr', $_POST['rechnungsnummer']);
-
+    $stmt->bindValue(':rnr', $rechnungsnummer);
     $stmt->execute();
+
+    // =====================
+    // TCPDF PDF GENERIEREN
+    // =====================
+    require_once('tcpdf/tcpdf.php');
+
+    class MYPDF extends TCPDF {
+        public function Footer() {
+            // Position 15 mm vom unteren Rand
+            $this->SetY(-15);
+            $this->SetFont('helvetica', 'I', 8);
+
+            // Firmeninfos aus config.php (Konstanten)
+            $firma = FIRMA_NAME . " | " . FIRMA_ADRESSE . " | " . FIRMA_PLZORT . " | " . FIRMA_WEB;
+
+            // Text zentriert ausgeben
+            $this->Cell(0, 8, 'Danke für Ihren Besuch!', 0, 1, 'C');
+            $this->Cell(0, 10, $firma, 0, false, 'C', 0, '', 0, false, 'T', 'M');
+        }
+    }
+
+    $pdf = new MYPDF();
+    $pdf->SetCreator(PDF_CREATOR);
+    $pdf->SetAuthor('Stefan Schneebauer - FF Wallern');
+    $pdf->SetTitle('Rechnung '.$rechnungsnummer);
+    $pdf->SetMargins(15, 20, 15);
+    $pdf->AddPage();
+
+    // Logo
+    $logoPath = __DIR__ . '/images/Logo.png';
+    if (file_exists($logoPath)) {
+        $seitenBreite = $pdf->getPageWidth();
+        $rechteMargin = $pdf->getMargins()['right'];
+        $xPos = $seitenBreite - $rechteMargin - $bildBreite;
+        $pdf->Image($logoPath, $xPos, 15, $bildBreite);
+    }
+
+    $pdf->SetFont('helvetica', '', 12);
+    $html = "
+    <h2>Rechnung</h2>
+    <p><strong>Rechnungsnummer:</strong> {$rechnungsnummer}</p>
+    <p><strong>Datum:</strong> ".date('d.m.Y')."</p>
+    <hr>
+    <p><strong>Anrede:</strong> {$_POST['anrede']}</p>
+    <p><strong>Name:</strong> {$_POST['name']}</p>
+    <p><strong>Adresse:</strong> {$_POST['adresse']}, {$_POST['plz']} {$_POST['ort']}</p>
+    <hr>
+    <p><strong>Anzahl Löscher:</strong> {$_POST['anzahl']}</p>
+    <p><strong>Preis pro Löscher:</strong> {$preis} €</p>
+    <p><strong>Gesamt:</strong> ".((int)$_POST['anzahl'] * $preis)." €</p>
+    ";
+    $pdf->writeHTML($html, true, false, true, false, '');
+
+    $folder = __DIR__ . '/_Rechnungen';
+    if (!is_dir($folder)) mkdir($folder, 0777, true);
+
+    $filename = $folder.'/Rechnung_'.preg_replace('/[^a-zA-Z0-9_-]/', '', $rechnungsnummer).'.pdf';
+    $pdf->Output($filename, 'F');
 }
 
 // =====================
@@ -156,20 +253,16 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <title>&#128293; Feuerlöscher Software</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <span class="navbar-brand">
-            &#128293; Feuerlöscher Software - &#129534; Rechnungen
-        </span>
-
-        <div class="d-flex gap-2">
-            <a href="index.php" class="btn btn-outline-light btn-sm">Zurück</a>
-            <a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>
-        </div>
+<div class="container-fluid">
+    <span class="navbar-brand">&#128293; Feuerlöscher Software - &#129534; Rechnungen</span>
+    <div class="d-flex gap-2">
+        <a href="index.php" class="btn btn-outline-light btn-sm">Zurück</a>
+        <a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>
     </div>
+</div>
 </nav>
 
 <div class="container mt-5">
@@ -182,7 +275,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <form method="post" class="card p-3 mb-4">
     <label class="form-label">&#128269; Name oder Rechnungsnummer</label>
     <div class="d-flex gap-2">
-        <input type="text" name="suchfeld" class="form-control">
+        <input type="text" name="suchfeld" class="form-control" autocomplete="off">
         <button name="suche" class="btn btn-primary">Suchen</button>
     </div>
 </form>
@@ -218,11 +311,11 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
 <div class="mb-3">
     <label class="form-label">&#128100; Name</label>
-    <input list="namenListe" name="name" class="form-control"
+    <input list="namenListe" name="name" class="form-control" autocomplete="off"
         value="<?= htmlspecialchars($editEntry['name'] ?? '') ?>" required>
     <datalist id="namenListe">
         <?php foreach ($namen as $n): ?>
-        <option value="<?= htmlspecialchars($n) ?>">
+            <option value="<?= htmlspecialchars($n) ?>">
         <?php endforeach; ?>
     </datalist>
 </div>
@@ -257,9 +350,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
         <label class="form-label">&#128176; Preis je Löscher</label>
         <select name="typ" id="typSelect" class="form-select">
             <?php foreach ($preise as $k => $v): ?>
-            <option value="<?= $k ?>" <?= ($currentTyp==$k)?'selected':'' ?>>
-                <?= $k ?>
-            </option>
+            <option value="<?= $k ?>" <?= ($currentTyp==$k)?'selected':'' ?>><?= $k ?></option>
             <?php endforeach; ?>
         </select>
         <input type="text" id="preisField" class="form-control mt-1" disabled>
@@ -268,30 +359,40 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
 <div class="mb-3">
     <label class="form-label">&#128196; Rechnungsnummer</label>
-    <input type="text" name="rechnungsnummer" class="form-control"
-        value="<?= htmlspecialchars($editEntry['rechnungsnummer'] ?? '') ?>" required>
+    <input type="text" name="rechnungsnummer" class="form-control" 
+       value="<?= htmlspecialchars($editEntry['rechnungsnummer'] ?? $nextRechnungsnummer) ?>" 
+       readonly>
 </div>
 
 <?php if ($editEntry): ?>
 <p>
-    &#128424; Gedruckt:
-    <?= ($editEntry['rechnung_gedruckt'] ?? 0) ? '&#9989;' : '&#10060;' ?>
+    &#128424; Gedruckt: <?= ($editEntry['rechnung_gedruckt'] ?? 0) ? '&#9989;' : '&#10060;' ?>
 </p>
+<a id="openPdf" href="_Rechnungen/Rechnung_<?= preg_replace('/[^a-zA-Z0-9_-]/', '', $editEntry['rechnungsnummer']) ?>.pdf" target="_blank" class="btn btn-info mb-3">
+    📄 PDF öffnen
+</a>
+<form method="post" style="display:inline-block;">
+        <input type="hidden" name="edit_id" value="<?= $editEntry['id'] ?>">
+        <button type="submit" name="reprint_rechnung" class="btn btn-warning mb-2">
+            🔄 Rechnung nachdrucken
+        </button>
+        <button type="button" id="reloadData" class="btn btn-secondary mb-2">
+            🔄 Daten neu laden
+        </button>
+    </form>
+<?php else: ?>
+<a id="openPdf" href="#" style="display:none;" class="btn btn-info mb-3">📄 PDF öffnen</a>
 <?php endif; ?>
 
-<button class="btn btn-success w-100" name="save_rechnung">
-    &#128190; Speichern
-</button>
-
-<button type="button" class="btn btn-secondary w-100 mt-2" id="clearForm">
-    &#10060; Formular leeren
-</button>
+<button class="btn btn-success w-100" name="save_rechnung">&#128190; Speichern</button>
+<button type="button" class="btn btn-secondary w-100 mt-2" id="clearForm">&#10060; Formular leeren</button>
 
 </form>
 </div>
 
 <script>
 const preisMap = <?= json_encode($preise) ?>;
+const nextRechnungsnummer = "<?= $nextRechnungsnummer ?>";
 
 function updatePreis(){
     const typ = document.getElementById('typSelect').value;
@@ -302,20 +403,62 @@ document.getElementById('typSelect').addEventListener('change', updatePreis);
 updatePreis();
 
 document.getElementById('clearForm').addEventListener('click', () => {
-
-    // Formular reset
     const form = document.querySelector('form.card.p-4');
-    form.reset();
 
-    // Edit-Modus raus
-    document.querySelector('[name="edit_id"]').value = '';
+    // Felder zurücksetzen
+    form.querySelector('[name="edit_id"]').value = '';
+    form.querySelector('[name="anrede"]').value = 'Herr';
+    form.querySelector('[name="name"]').value = '';
+    form.querySelector('[name="adresse"]').value = '';
+    form.querySelector('[name="plz"]').value = '4702';
+    form.querySelector('[name="ort"]').value = 'Wallern an der Trattnach';
+    form.querySelector('[name="anzahl"]').value = 1;
+    form.querySelector('[name="typ"]').value = 'Voller Preis';
+    form.querySelector('[name="rechnungsnummer"]').value = nextRechnungsnummer;
 
-    // Preis neu berechnen
+    // Preisfeld aktualisieren
     updatePreis();
 
     // Alerts entfernen
     document.querySelectorAll('.alert').forEach(el => el.remove());
 
+    // PDF-Button ausblenden
+    const pdfButton = document.getElementById('openPdf');
+    if (pdfButton) {
+        pdfButton.style.display = 'none';
+        pdfButton.href = '#';
+    }
+});
+
+document.getElementById('reloadData').addEventListener('click', () => {
+    const editId = document.querySelector('[name="edit_id"]').value;
+    if (!editId) return alert('Keine Rechnung ausgewählt!');
+
+    fetch(`?action=reload_data&id=${editId}`)
+        .then(res => res.json())
+        .then(data => {
+            // Formularfelder aktualisieren
+            const form = document.querySelector('form.card.p-4');
+            form.querySelector('[name="anrede"]').value = data.anrede || 'Herr';
+            form.querySelector('[name="name"]').value = data.name || '';
+            form.querySelector('[name="adresse"]').value = data.adresse || '';
+            form.querySelector('[name="plz"]').value = data.plz || '4702';
+            form.querySelector('[name="ort"]').value = data.ort || 'Wallern an der Trattnach';
+            form.querySelector('[name="anzahl"]').value = data.anzahl_loescher || 1;
+            
+            // Preis-Typ setzen
+            let typ = 'Voller Preis';
+            for (const [k, v] of Object.entries(preisMap)) {
+                if (v == data.preis_pro_loescher) typ = k;
+            }
+            form.querySelector('[name="typ"]').value = typ;
+            updatePreis();
+
+            // PDF-Button aktualisieren
+            const pdfButton = document.getElementById('openPdf');
+            pdfButton.style.display = 'inline-block';
+            pdfButton.href = `_Rechnungen/Rechnung_${data.rechnungsnummer.replace(/[^a-zA-Z0-9_-]/g,'')}.pdf`;
+        });
 });
 </script>
 

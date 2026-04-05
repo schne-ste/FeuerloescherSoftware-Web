@@ -153,7 +153,8 @@ Public Class Druckservice
             Dim nummer = item("nummer").ToString()
             Dim name As String = SafeStr(item, "name")
             Dim typ As String = SafeStr(item, "typ")
-            Dim preis As String = SafeStr(item, "preis")
+            Dim presnummer As Double = CDbl(item("preis"))
+            Dim preis As String = presnummer.ToString("F2") & " €"
             Dim bezahlt As Boolean = (SafeStr(item, "bezahlt") = "1")
             Dim defekt As Boolean = (SafeStr(item, "defekt") = "1")
             Dim abgegeben = item("zeitstempel").ToString()
@@ -343,14 +344,10 @@ Public Class Druckservice
 
         ' ESC/POS Buffer holen
         Dim bytes As Byte() = printer.GetCurrentBuffer()
-        Dim txt As String = EscPosBufferToText(printer)
 
         ' ===== DEBUG → Simulation =====
         If debugMode Then
             Log("DEBUG: Simulation statt echtem Druck.")
-
-            Dim fname As String = "Sim_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".txt"
-            WriteSimulationFile(fname, txt)
             Exit Sub
         End If
 

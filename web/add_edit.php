@@ -202,6 +202,46 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&#128293; Feuerlöscher Software</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script>
+    let polling = true;
+    function pausePolling() {
+        console.log("not polling!");
+        polling = false;
+    }
+
+    async function loadPrintStatus() {
+        let response = await fetch("./add_edit_ajax.php?number=<?= htmlspecialchars($nummer ?? '') ?>&module=print");
+        let content = await response.text();
+        document.getElementById("print").outerHTML = content;
+    }
+
+    async function loadStatus() {
+        if(!polling) return;
+        let response = await fetch("./add_edit_ajax.php?number=<?= htmlspecialchars($nummer ?? '') ?>&module=status");
+        let content = await response.text();
+        document.getElementById("status").outerHTML = content;
+    }
+
+    async function loadInfo() {
+        if(!polling) return;
+        let response = await fetch("./add_edit_ajax.php?number=<?= htmlspecialchars($nummer ?? '') ?>&module=infotext");
+        let content = await response.text();
+        document.getElementById("infotext").outerHTML = content;
+    }
+
+    function setupPolling() {
+        console.log("loaded!!");
+        let int = setInterval(() => {
+            loadPrintStatus();
+            loadStatus();
+            loadInfo();
+        }, 2000);
+    }
+
+    window.onload = setupPolling; 
+
+
+</script>
 </head>
 
 <body>
@@ -237,7 +277,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     <div class="row g-2">
         <div class="col-md-6">
             <label class="form-label">&#128269; Nummer oder Name suchen</label>
-            <input type="text" name="suchfeld" id="suchfeld" class="form-control" placeholder="Nummer oder Name" required value="<?= htmlspecialchars($_POST['suchfeld'] ?? '') ?>">
+            <input type="text" name="suchfeld" id="suchfeld" class="form-control" placeholder="Nummer oder Name" required value="<?= htmlspecialchars($_POST['suchfeld'] ?? '') ?>" autocomplete="off">
         </div>
         <div class="col-md-2 align-self-end">
             <button type="submit" name="suche_nummer" class="btn btn-primary w-100">Suchen</button>
@@ -293,7 +333,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
         <button type="submit" class="btn btn-info" name="refresh_entry">
             🔄 Datensatz Aktualisieren
         </button>
-        <p>
+        <p id="print">
             &#127991; Etikette gedruckt: <?= $editEntry['etikett_gedruckt'] ? '&#9989;': '&#10060;'?> <br>
             &#129534; Abholschein gedruckt: <?= $editEntry['abholschein_gedruckt'] ? '&#9989;': '&#10060;' ?>
         </p>
@@ -310,9 +350,9 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
         <input type="number" id="editPreisField" class="form-control" value="<?= $preise[$editEntry['typ']] ?? 0 ?>" disabled>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3" id="infotext">
         <label class="form-label">&#8505; Info</label>
-        <textarea name="info" class="form-control" rows="3"><?= htmlspecialchars($editEntry['info']) ?></textarea>
+        <textarea name="info" onclick="pausePolling()" class="form-control" rows="3"><?= htmlspecialchars($editEntry['info']) ?></textarea>
     </div>
 
     <!-- OPTIONALE FELDER (EINKLAPPBAR) -->
@@ -338,27 +378,28 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
             </div>
         </div>
     </div>
-    
-    <div class="form-check mb-2">
-        <input type="checkbox" name="bezahlt" class="form-check-input" id="bezahltCheck"
-            <?= $editEntry['bezahlt'] ? 'checked' : '' ?>>
-        <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
-    </div>
+    <div id="status">
+        <div class="form-check mb-2">
+            <input type="checkbox" onclick="pausePolling()" name="bezahlt" class="form-check-input" id="bezahltCheck"
+                <?= $editEntry['bezahlt'] ? 'checked' : '' ?>>
+            <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
+        </div>
 
-    <div class="form-check mb-2">
-        <input type="checkbox" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $editEntry['geprueft'] ? 'checked' : '' ?>>
-        <label class="form-check-label" for="geprueftCheck">&#129514; Geprüft</label>
-    </div>
+        <div class="form-check mb-2">
+            <input type="checkbox" onclick="pausePolling()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $editEntry['geprueft'] ? 'checked' : '' ?>>
+            <label class="form-check-label" for="geprueftCheck">&#129514; Geprüft</label>
+        </div>
 
-    <div class="form-check mb-2">
-        <input type="checkbox" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $editEntry['abgeholt'] ? 'checked' : '' ?>>
-        <label class="form-check-label" for="abgeholtCheck">&#128230; Abgeholt</label>
+        <div class="form-check mb-2">
+            <input type="checkbox" onclick="pausePolling()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $editEntry['abgeholt'] ? 'checked' : '' ?>>
+            <label class="form-check-label" for="abgeholtCheck">&#128230; Abgeholt</label>
+        </div>
+        
+        <div class="form-check mb-2">
+            <input type="checkbox" onclick="pausePolling()" name="defekt" class="form-check-input" id="defektCheck" <?= $editEntry['defekt'] ? 'checked' : '' ?>>
+            <label class="form-check-label" for="defektCheck">&#9940; Defekt</label>
+        </div>
     </div>
-    
-    <div class="form-check mb-2">
-	    <input type="checkbox" name="defekt" class="form-check-input" id="defektCheck" <?= $editEntry['defekt'] ? 'checked' : '' ?>>
-	    <label class="form-check-label" for="defektCheck">&#9940; Defekt</label>
-	</div>
     
     <?php
 	$formattedZeit = '';

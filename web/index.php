@@ -28,15 +28,53 @@ if (isset($_POST['reset_db'])) {
     }
 
     $timestamp = date('Ymd_His');
-    $backupFile = $backupDir . '/feuerloescher_backup_' . $timestamp . '.db';
 
+    // 1. Datenbank sichern
+    $backupFile = $backupDir . '/feuerloescher_backup_' . $timestamp . '.db';
     if (file_exists(DB_FILE)) {
         copy(DB_FILE, $backupFile);
     }
 
+    // 2. _Rechnungen Ordner sichern
+    $rechnungenDir = '_Rechnungen';
+    if (is_dir($rechnungenDir)) {
+        $zipFile = $backupDir . '/feuerloescher_backup_' . $timestamp . '.zip';
+        $zip = new ZipArchive();
+        if ($zip->open($zipFile, ZipArchive::CREATE) === true) {
+            $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($rechnungenDir));
+            foreach ($files as $file) {
+                if (!$file->isDir()) {
+                    $filePath = $file->getRealPath();
+                    $relativePath = substr($filePath, strlen($rechnungenDir) + 1);
+                    $zip->addFile($filePath, $relativePath);
+                }
+            }
+            $zip->close();
+        }
+        // Ordner leeren
+        function rrmdir($dir) {
+            if (!is_dir($dir)) return;
+            $files = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::CHILD_FIRST
+            );
+
+            foreach ($files as $file) {
+                if ($file->isDir()) {
+                    rmdir($file->getRealPath());
+                } else {
+                    unlink($file->getRealPath());
+                }
+            }
+        }
+
+        rrmdir($rechnungenDir);
+    }
+
+    // 3. Datenbank initialisieren
     require 'init_db.php';
 
-    $successMessage = "Datenbank wurde zurückgesetzt! Backup: $backupFile";
+    $successMessage = "Datenbank wurde zurückgesetzt! Backup DB: $backupFile, Backup Rechnungen: $zipFile";
 }
 ?>
 <!doctype html>

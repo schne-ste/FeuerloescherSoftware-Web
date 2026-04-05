@@ -9,6 +9,14 @@ define('PREIS_VOLLER', 15);
 define('PREIS_RABATT', 8);
 define('PREIS_GRATIS', 0);
 
+define('RECHNUNGS_PREFIX', 'RFLU26-'); // Prefix für Rechnungsnummern
+
+define('FIRMA_NAME', 'FF Wallern');
+define('FIRMA_ADRESSE', 'Kienzlstraße 10');
+define('FIRMA_PLZORT', '4702 Wallern');
+define('FIRMA_WEB', 'https://feuerwehr-wallern.at');
+
+
 
 function getDB() {
     return new SQLite3(DB_FILE);

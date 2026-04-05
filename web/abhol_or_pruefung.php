@@ -13,9 +13,9 @@ $message = "";
 $statusType = ""; // success, error, warning
 $soundType = "";
 
-$modus = $_POST['modus'] ?? "abholen";
-$nummer = $_POST['nummer'] ?? null;
-$bedienmodus = $_POST['bedienmodus'] ?? "scanner";
+$modus = $_POST['modus'] ?? "pruefen";  //abholen, pruefen
+$nummer = $_POST['nummer'] ?? null; 
+$bedienmodus = $_POST['bedienmodus'] ?? "manuell"; //manuell, scanner
 
 // Logout
 if (isset($_GET['logout'])) {
@@ -31,7 +31,6 @@ if (isset($_POST['aktion']) && $nummer) {
     $nummerSafe = (int)$nummer;
 
     if ($modus === "abholen") {
-
         $check = $db->query("
             SELECT bezahlt, defekt, active FROM loescher 
             WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
@@ -46,7 +45,7 @@ if (isset($_POST['aktion']) && $nummer) {
             $message = "&#9888; Löscher defekt – Geld bitte retour!";
             $statusType = "warning";
             $soundType = "warning";
-        } elseif ($row['active'] && !$row['bezahlt']) {
+        } elseif ($row['active'] && !$row['bezahlt'] && !$row['defekt']) {
             $message = "&#128176; Nicht bezahlt – zuerst kassieren!";
             $statusType = "error";
             $soundType = "warning";
@@ -254,8 +253,6 @@ body.flash-warning { background-color: #fff3cd !important; }
             </span>
         </p>
 
-        <?php if ($modus === "abholen"): ?>
-
             <?php if ($eintrag['active'] && !$eintrag['bezahlt']): ?>
                 <div class="alert alert-danger">
                     &#128176; NICHT BEZAHLT → Zur Kassa
@@ -266,34 +263,39 @@ body.flash-warning { background-color: #fff3cd !important; }
                 </div>
             <?php endif; ?>
 
-            <p><strong>Status:</strong>
+            <p><strong>Prüfstatus:</strong>
+                 <span id="pruefStatusBox">
+                    <?= $eintrag['geprueft']
+                        ? '<span class="badge bg-success">Geprüft</span>'
+                        : '<span class="badge bg-danger">Nicht geprüft</span>' ?>
+                </span>
+            </p>
+
+
+        <p><strong>Löscherstatus:</strong>
+            <span id="loescherStatusBox">
+                <?= empty($eintrag['defekt'])
+                    ? '<span class="badge bg-success">OK</span>'
+                    : '<span class="badge bg-danger">DEFEKT</span>' ?>
+            </span>
+        </p>
+
+        <p><strong>Lagerstatus:</strong>
+            <span id="lagerStatusBox">
                 <?= $eintrag['abgeholt']
                     ? '<span class="badge bg-success">Abgeholt</span>'
                     : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
-            </p>
-
-        <?php else: ?>
-
-            <p><strong>Status:</strong>
-                <?= $eintrag['geprueft']
-                    ? '<span class="badge bg-success">Geprüft</span>'
-                    : '<span class="badge bg-danger">Nicht geprüft</span>' ?>
-            </p>
-
-        <?php endif; ?>
-
-        <p><strong>Prüfstatus:</strong>
-            <?= empty($eintrag['defekt'])
-                ? '<span class="badge bg-success">OK</span>'
-                : '<span class="badge bg-danger">DEFEKT</span>' ?>
+            </span>
         </p>
 
+        <div id="infoBox">
         <?php if (!empty($eintrag['info'])): ?>
             <div class="alert alert-warning mt-3">
                 <strong>Hinweis:</strong><br>
                 <?= nl2br(htmlspecialchars($eintrag['info'])) ?>
             </div>
         <?php endif; ?>
+        </div>
 
 
         <!--  BUTTONS -->
@@ -301,6 +303,9 @@ body.flash-warning { background-color: #fff3cd !important; }
 
             <form method="post" class="mt-3">
                 <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                <input type="hidden" name="modus" value="<?= $modus ?>">
+                <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+
                 <button type="submit" name="setInfo" class="btn btn-warning w-100">
                     &#9888; Schaummittel tauschen
                 </button>
@@ -309,6 +314,9 @@ body.flash-warning { background-color: #fff3cd !important; }
             <?php if (empty($eintrag['defekt'])): ?>
             <form method="post" class="mt-3">
                 <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                <input type="hidden" name="modus" value="<?= $modus ?>">
+                <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+
                 <button type="submit" name="setDefekt" class="btn btn-danger w-100">
                     &#9940; Löscher defekt
                 </button>
@@ -340,92 +348,152 @@ body.flash-warning { background-color: #fff3cd !important; }
 </div>
 
 <script>
-const input = document.getElementById("nummerInput");
-const form = document.getElementById("mainForm");
-const bedienmodus = document.getElementById("bedienmodus");
+    const input = document.getElementById("nummerInput");
+    const form = document.getElementById("mainForm");
+    const bedienmodus = document.getElementById("bedienmodus");
 
-input.addEventListener("input", function () {
-    this.value = this.value.replace(/\D/g, '');
-});
+    input.addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, '');
+    });
 
-input.addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
+    input.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
 
-        if (bedienmodus.value !== "scanner") return;
-        e.preventDefault();
+            if (bedienmodus.value !== "scanner") return;
+            e.preventDefault();
 
-        if (input.value.trim() === "") return;
+            if (input.value.trim() === "") return;
 
-        let hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.name = "aktion";
-        hidden.value = "1";
-        form.appendChild(hidden);
-        form.submit();
+            let hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = "aktion";
+            hidden.value = "1";
+            form.appendChild(hidden);
+            form.submit();
+        }
+    });
+
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+            input.value = "";
+            form.submit();
+        }
+    });
+
+    window.onload = function() {
+
+        const soundType = "<?= $soundType ?>";
+
+        if (soundType === "success") {
+            document.body.classList.add("flash-success");
+            playTone("success");
+        }
+        
+        if (soundType === "error") {
+            document.body.classList.add("flash-error");
+            playTone("error");
+        }
+        
+        if (soundType === "warning") {
+            document.body.classList.add("flash-warning");
+            playTone("warning");
+        }
+
+        setTimeout(()=>{
+            document.body.classList.remove("flash-success","flash-error","flash-warning");
+        }, 600);
+
+        input.focus();
+        input.select();
+    };
+
+    // Web Audio API Töne
+    function playTone(type) {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.type = 'sine';
+        gainNode.gain.value = 0.1;
+
+        switch(type) {
+            case 'success':
+                oscillator.frequency.value = 880; // hoher Ton
+                break;
+            case 'error':
+                oscillator.frequency.value = 220; // tiefer Ton
+                break;
+            case 'warning':
+                oscillator.frequency.value = 440; // mittlerer Ton
+                break;
+        }
+
+        oscillator.start();
+        setTimeout(() => oscillator.stop(), 150);
     }
-});
 
-document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape") {
-        input.value = "";
-        form.submit();
-    }
-});
+    function loadStatus() {
+        const nummer = input.value.trim();
+        if (!nummer) return;
 
-window.onload = function() {
+        fetch("abhol_or_pruefung_ajax.php?nummer=" + nummer)
+            .then(res => res.json())
+            .then(data => {
+                if (!data || data.error) return;
 
-    const soundType = "<?= $soundType ?>";
-
-    if (soundType === "success") {
-	    document.body.classList.add("flash-success");
-	    playTone("success");
-	}
-	
-	if (soundType === "error") {
-	    document.body.classList.add("flash-error");
-	    playTone("error");
-	}
-	
-	if (soundType === "warning") {
-	    document.body.classList.add("flash-warning");
-	    playTone("warning");
-	}
-
-    setTimeout(()=>{
-        document.body.classList.remove("flash-success","flash-error","flash-warning");
-    }, 600);
-
-    input.focus();
-    input.select();
-};
-
-// Web Audio API Töne
-function playTone(type) {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    oscillator.type = 'sine';
-    gainNode.gain.value = 0.1;
-
-    switch(type) {
-        case 'success':
-            oscillator.frequency.value = 880; // hoher Ton
-            break;
-        case 'error':
-            oscillator.frequency.value = 220; // tiefer Ton
-            break;
-        case 'warning':
-            oscillator.frequency.value = 440; // mittlerer Ton
-            break;
+                updateUI(data);
+            })
+            .catch(err => console.error(err));
     }
 
-    oscillator.start();
-    setTimeout(() => oscillator.stop(), 150);
-}
+    // alle 2 Sekunden aktualisieren
+    setInterval(loadStatus, 2000);
+
+   function updateUI(data) {
+        // Prüfstatus (geprüft)
+        let pruefStatusHTML = data.geprueft == 1
+            ? '<span class="badge bg-success">Geprüft</span>'
+            : '<span class="badge bg-danger">Nicht geprüft</span>';
+
+        const pruefStatusBox = document.getElementById("pruefStatusBox");
+        if (pruefStatusBox) {
+            pruefStatusBox.innerHTML = pruefStatusHTML;
+        }
+
+
+        //Löscherstatus (defekt / ok)
+        let loescherHTML = data.defekt == 1
+            ? '<span class="badge bg-danger">DEFEKT</span>'
+            : '<span class="badge bg-success">OK</span>';
+
+        const loescherBox = document.getElementById("loescherStatusBox");
+        if (loescherBox) {
+            loescherBox.innerHTML = loescherHTML;
+        }
+
+
+        // Lagerstatus (abgeholt)
+        let lagerHTML = data.abgeholt == 1
+            ? '<span class="badge bg-success">Abgeholt</span>'
+            : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>';
+
+        const lagerBox = document.getElementById("lagerStatusBox");
+        if (lagerBox) {
+            lagerBox.innerHTML = lagerHTML;
+        }
+
+
+        // Info/Hinweis
+        const infoBox = document.getElementById("infoBox");
+        if (infoBox) {
+            infoBox.innerHTML = data.info 
+                ? '<div class="alert alert-warning mt-3"><strong>Hinweis:</strong><br>' + data.info + '</div>'
+                : '';
+        }
+    }
 </script>
 
 </body>
