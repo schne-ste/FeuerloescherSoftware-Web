@@ -1,0 +1,206 @@
+<?php
+require 'config.php';
+
+if (!isset($_SESSION['logged_in'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$db = getDB();
+
+// =====================
+// FILTER
+// =====================
+$statusFilter = $_GET['status'] ?? 'alle';
+
+// =====================
+// DATEN LADEN
+// =====================
+$result = $db->query("SELECT * FROM loescher");
+$allLoscher = [];
+
+while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+    $allLoscher[] = $row;
+}
+
+// =====================
+// INITIALISIERUNG
+// =====================
+$stats = [
+    'gesamt' => 0,
+    'verrechenbar' => 0,
+    'nicht_verrechenbar' => 0,
+    'ok' => 0,
+    'defekt' => 0,
+    'nicht_geprueft' => 0
+];
+
+$gesamtVollerPreis = 0;
+
+// =====================
+// HELPER
+// =====================
+function getPreis($typ) {
+    switch ($typ) {
+        case 'Standard': return PREIS_STANDARD;
+        case 'Rabatt': return PREIS_RABATT;
+        default: return 0;
+    }
+}
+
+// =====================
+// HAUPTLOGIK
+// =====================
+$gefilterteLoscher = [];
+
+foreach ($allLoscher as $l) {
+
+    // Status bestimmen
+    if ($l['defekt']) {
+        $status = 'defekt';
+        $statusText = 'Defekt';
+    } elseif (!$l['geprueft']) {
+        $status = 'nicht';
+        $statusText = 'Nicht geprüft';
+    } else {
+        $status = 'ok';
+        $statusText = 'OK';
+    }
+
+    // FILTER
+    if ($statusFilter !== 'alle' && $statusFilter !== $status) {
+        continue;
+    }
+
+    // Preise
+    $vollpreis = getPreis($l['typ']);
+
+    $istVerrechenbar = (
+        !$l['defekt'] &&
+        $l['bezahlt'] &&
+        $l['typ'] !== 'Gratis' &&
+        $l['geprueft']
+    );
+
+    // =====================
+    // STATISTIK (GEFILTERT!)
+    // =====================
+    $stats['gesamt']++;
+
+    if ($status === 'defekt') $stats['defekt']++;
+    elseif ($status === 'ok') $stats['ok']++;
+    elseif ($status === 'nicht') $stats['nicht_geprueft']++;
+
+    if ($istVerrechenbar) {
+        $stats['verrechenbar']++;
+        $gesamtVollerPreis += $vollpreis;
+    } else {
+        $stats['nicht_verrechenbar']++;
+    }
+
+    // Werte anhängen
+    $l['statusText'] = $statusText;
+    $l['vollpreis'] = $vollpreis;
+
+    $gefilterteLoscher[] = $l;
+}
+
+// Gewinn
+$gesamtGewinnFirma = $stats['verrechenbar'] * PREIS_RABATT;
+$gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&#128293; Feuerlöscher Software</title>
+<link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
+<link rel="shortcut icon" href="./images/Feuerlöscher.ico">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+.status-ok { background-color: #d4edda; }
+.status-defekt { background-color: #f8d7da; }
+.status-nicht { background-color: #fff3cd; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand">
+            <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
+            &#128293; Feuerlöscher Software - &#128200; Statistik
+        </span>
+
+        <div class="d-flex gap-2">
+            <a href="index.php" class="btn btn-outline-light btn-sm">
+                Zurück
+            </a>
+            <a href="?logout=1" class="btn btn-danger btn-sm">
+                Abmelden
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+
+    <h1>&#128293; Übersicht</h1>
+
+    <!-- FILTER -->
+    <div class="mb-3">
+        <a href="?status=alle" class="btn btn-secondary btn-sm">Alle</a>
+        <a href="?status=ok" class="btn btn-success btn-sm">OK</a>
+        <a href="?status=defekt" class="btn btn-danger btn-sm">Defekt</a>
+        <a href="?status=nicht" class="btn btn-warning btn-sm">Nicht geprüft</a>
+        <a href="statistik_export_pdf.php?status=<?= $statusFilter ?>" class="btn btn-dark btn-sm">📄 PDF</a>
+    </div>
+
+    <!-- STATISTIK -->
+    <table class="table table-bordered w-100">
+        <tr><th>Gesamt</th><td><?= $stats['gesamt'] ?></td></tr>
+        <tr><th>Verrechenbar</th><td><?= $stats['verrechenbar'] ?></td></tr>
+        <tr><th>Nicht verrechenbar</th><td><?= $stats['nicht_verrechenbar'] ?></td></tr>
+        <tr><th>Nicht geprüft</th><td><?= $stats['nicht_geprueft'] ?></td></tr>
+        <tr><th>OK</th><td><?= $stats['ok'] ?></td></tr>
+        <tr><th>Defekt</th><td><?= $stats['defekt'] ?></td></tr>
+        <tr><th>Geld gesamt</th><td><?= number_format($gesamtVollerPreis,2) ?> €</td></tr>
+        <tr><th>Gewinn Firma</th><td><?= number_format($gesamtGewinnFirma,2) ?> €</td></tr>
+        <tr><th>Gewinn FF</th><td><?= number_format($gesamtGewinnFF,2) ?> €</td></tr>
+    </table>
+
+    <!-- TABELLE -->
+    <h3>Liste</h3>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Nr</th>
+                <th>Name</th>
+                <th>Typ</th>
+                <th>Preis</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($gefilterteLoscher as $v): ?>
+            <?php
+                if ($v['defekt']) $class='status-defekt';
+                elseif (!$v['geprueft']) $class='status-nicht';
+                else $class='status-ok';
+            ?>
+            <tr class="<?= $class ?>">
+                <td><?= sprintf("%03d",$v['nummer']) ?></td>
+                <td><?= htmlspecialchars($v['name']) ?></td>
+                <td><?= $v['typ'] ?></td>
+                <td><?= number_format($v['vollpreis'],2) ?> €</td>
+                <td><?= $v['statusText'] ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
+</div>
+</body>
+</html>

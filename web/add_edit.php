@@ -22,7 +22,7 @@ $searchResults = [];
 // PREISE
 // =====================
 $preise = [
-    'Voller Preis' => PREIS_VOLLER,
+    'Standard' => PREIS_STANDARD,
     'Rabatt' => PREIS_RABATT,
     'Gratis' => PREIS_GRATIS
 ];
@@ -50,6 +50,8 @@ if (isset($_POST['suche_nummer'])) {
             }
             if (count($rows) === 1) {
                 $editEntry = $rows[0];
+                // Suchfeld leeren, wenn nur ein Treffer
+                $_POST['suchfeld'] = '';
             } elseif (count($rows) > 1) {
                 $searchResults = $rows;
             } else {
@@ -201,42 +203,94 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&#128293; Feuerlöscher Software</title>
+<link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
+<link rel="shortcut icon" href="./images/Feuerlöscher.ico">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <script>
     let polling = true;
+    let dirty = false;
     function pausePolling() {
         console.log("not polling!");
         polling = false;
     }
 
-    async function loadPrintStatus() {
-        let response = await fetch("./add_edit_ajax.php?number=<?= htmlspecialchars($nummer ?? '') ?>&module=print");
-        let content = await response.text();
-        document.getElementById("print").outerHTML = content;
+    function resumePolling() {
+        console.log("resuming polling");
+        polling = true;
     }
 
+    function markDirty() {
+        console.log("data dirty, not updating from polling");
+        dirty = true;
+    }
+
+    
+    async function loadPrintStatus() {
+        let num = getCurrentNumber();
+        if (!num) return;
+
+        let response = await fetch(`./add_edit_ajax.php?number=${num}&module=print`);
+        document.getElementById("print").outerHTML = await response.text();
+    }
+
+
     async function loadStatus() {
-        if(!polling) return;
-        let response = await fetch("./add_edit_ajax.php?number=<?= htmlspecialchars($nummer ?? '') ?>&module=status");
+        if (!polling || dirty) return;
+
+        let num = getCurrentNumber();
+        if (!num) return;
+
+        let response = await fetch(`./add_edit_ajax.php?number=${num}&module=status`);
         let content = await response.text();
         document.getElementById("status").outerHTML = content;
     }
 
+    
     async function loadInfo() {
-        if(!polling) return;
-        let response = await fetch("./add_edit_ajax.php?number=<?= htmlspecialchars($nummer ?? '') ?>&module=infotext");
-        let content = await response.text();
-        document.getElementById("infotext").outerHTML = content;
+        if (!polling || dirty) return;
+
+        let num = getCurrentNumber();
+        if (!num) return;
+
+        let response = await fetch(`./add_edit_ajax.php?number=${num}&module=infotext`);
+        document.getElementById("infotext").outerHTML = await response.text();
     }
+
+
+    let int = null;
 
     function setupPolling() {
         console.log("loaded!!");
-        let int = setInterval(() => {
+        <? 
+            if( is_null($editEntry) || !$editEntry ) { ?> 
+                console.log("no edit entry, not starting polling");
+                return; <?
+            }
+        ?>
+        int = setInterval(() => {
             loadPrintStatus();
             loadStatus();
             loadInfo();
         }, 2000);
     }
+
+    function removePolling() {
+        if(int === null) {
+            console.log("polling never started, not proceeding");
+            return;
+        }
+
+        clearInterval(int);
+        console.log("stopped polling");
+    }
+
+
+    function getCurrentNumber() {
+        let n = document.querySelector('input[name="nummer"]');
+        if (!n) return null;
+        return n.value;
+    }
+
 
     window.onload = setupPolling; 
 
@@ -249,6 +303,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <span class="navbar-brand">
+            <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
             &#128293; Feuerlöscher Software - Löscher aufnehmen / bearbeiten
         </span>
 
@@ -299,7 +354,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 <?php endif; ?>
 
 <!-- BUTTON ZURÜCK ZUM ADD-MODUS -->
-<?php if ($editEntry || $searchResults): ?>
+<?php if ($editEntry): ?>
 <div class="mb-3">
     <button type="button" class="btn btn-secondary w-100" id="backToAdd">
         Neuer Eintrag
@@ -342,20 +397,19 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     <div class="mb-3">
         <label class="form-label">&#128176; Preis</label>
         <select name="typ" class="form-select" id="editTypSelect">
-            <option value="">-- Kein Typ --</option>
             <?php foreach ($preise as $k => $v): ?>
             <option value="<?= $k ?>" <?= ($editEntry['typ'] == $k) ? 'selected' : '' ?>><?= $k ?></option>
             <?php endforeach; ?>
         </select>
-        <input type="number" id="editPreisField" class="form-control" value="<?= $preise[$editEntry['typ']] ?? 0 ?>" disabled>
+        <input type="text" id="editPreisField" class="form-control" value="<?= $preise[$editEntry['typ']] . ",00 €" ?>" disabled>
     </div>
 
     <div class="mb-3" id="infotext">
         <label class="form-label">&#8505; Info</label>
-        <textarea name="info" onclick="pausePolling()" class="form-control" rows="3"><?= htmlspecialchars($editEntry['info']) ?></textarea>
+        <textarea name="info" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" class="form-control" rows="3"><?= htmlspecialchars($editEntry['info']) ?></textarea>
     </div>
 
-    <!-- OPTIONALE FELDER (EINKLAPPBAR) -->
+    <!-- OPTIONALE FELDER (EINKLAPPBAR) 
     <div class="mb-2">
         <button class="btn btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#optionalFields">
             Optionale Angaben anzeigen
@@ -377,26 +431,26 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
     <div id="status">
         <div class="form-check mb-2">
-            <input type="checkbox" onclick="pausePolling()" name="bezahlt" class="form-check-input" id="bezahltCheck"
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="bezahlt" class="form-check-input" id="bezahltCheck"
                 <?= $editEntry['bezahlt'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
         </div>
 
         <div class="form-check mb-2">
-            <input type="checkbox" onclick="pausePolling()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $editEntry['geprueft'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $editEntry['geprueft'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="geprueftCheck">&#129514; Geprüft</label>
         </div>
 
         <div class="form-check mb-2">
-            <input type="checkbox" onclick="pausePolling()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $editEntry['abgeholt'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $editEntry['abgeholt'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="abgeholtCheck">&#128230; Abgeholt</label>
         </div>
         
         <div class="form-check mb-2">
-            <input type="checkbox" onclick="pausePolling()" name="defekt" class="form-check-input" id="defektCheck" <?= $editEntry['defekt'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="defekt" class="form-check-input" id="defektCheck" <?= $editEntry['defekt'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="defektCheck">&#9940; Defekt</label>
         </div>
     </div>
@@ -437,10 +491,10 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
         <label class="form-label">&#128176; Preis</label>
         <select name="typ" class="form-select" id="addTypSelect">
             <?php foreach ($preise as $k => $v): ?>
-                <option value="<?= $k ?>" <?= ($k === 'Voller Preis') ? 'selected' : '' ?>><?= $k ?></option>
+                <option value="<?= $k ?>" <?= ($k === 'Standard') ? 'selected' : '' ?>><?= $k ?></option>
             <?php endforeach; ?>
         </select>
-        <input type="number" id="addPreisField" class="form-control" value="<?= $preise['Voller Preis'] ?>" disabled>
+        <input type="text" id="addPreisField" class="form-control" value="<?= $preise['Standard'] . ",00 €" ?>" disabled>
     </div>
 
     <div class="mb-3">
@@ -448,7 +502,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
         <textarea name="info" class="form-control" rows="3"></textarea>
     </div>
 
-    <!-- OPTIONALE FELDER (EINKLAPPBAR) -->
+    <!-- OPTIONALE FELDER (EINKLAPPBAR) 
     <div class="mb-3">
         <button class="btn btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#optionalFields">
             Optionale Angaben anzeigen
@@ -470,7 +524,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
     
     <div class="form-check mb-3">
         <input type="checkbox" name="bezahlt" class="form-check-input" id="addBezahltCheck" checked>
@@ -487,10 +541,31 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const preisMap = {"Voller Preis":15,"Rabatt":8,"Gratis":0};
+const preisMap = <?= json_encode($preise) ?>;
 
-document.getElementById('editTypSelect')?.addEventListener('change',()=>{document.getElementById('editPreisField').value=preisMap[document.getElementById('editTypSelect').value]??0;});
-document.getElementById('addTypSelect')?.addEventListener('change',()=>{document.getElementById('addPreisField').value=preisMap[document.getElementById('addTypSelect').value]??0;});
+document.getElementById('editTypSelect')?.addEventListener('change', () => {
+    let preis = preisMap[document.getElementById('editTypSelect').value] ?? 0;
+    if (typeof preis === "string") {
+        preis = parseFloat(preis);
+    }
+    let preisString = preis.toLocaleString(navigator.language, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }) + " €";
+    document.getElementById('editPreisField').value = preisString;
+});
+
+document.getElementById('addTypSelect')?.addEventListener('change',()=>{
+    let preis = preisMap[document.getElementById('addTypSelect').value] ?? 0;
+    if(typeof preis === "string") {
+        preis = parseFloat(preis);
+    }
+    let preisString = preis.toLocaleString(navigator.language, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }) + " €";
+    document.getElementById('addPreisField').value = preisString;
+});
 
 // ESC: Bearbeitung zurücksetzen, Add anzeigen
 document.addEventListener("keydown", function(e){
@@ -501,6 +576,7 @@ document.addEventListener("keydown", function(e){
         const addForm = document.getElementById('addForm');
         addForm.style.display='block';
         addForm.querySelector('input[name="name"]')?.focus();
+        removePolling();
     }
 });
 
@@ -508,9 +584,29 @@ document.addEventListener("keydown", function(e){
 document.getElementById('backToAdd')?.addEventListener('click',()=>{
     document.getElementById('editForm')?.remove();
     document.getElementById('multiSelectForm')?.remove();
-    const addForm=document.getElementById('addForm');
-    addForm.style.display='block';
+
+    // Add-Form anzeigen
+    const addForm = document.getElementById('addForm');
+    addForm.style.display = 'block';
     addForm.querySelector('input[name="name"]')?.focus();
+
+    // Suchfeld zurücksetzen
+    const searchField = document.getElementById('suchfeld');
+    if(searchField) searchField.value = '';
+
+    // Button selbst ausblenden
+    const backButton = document.getElementById('backToAdd');
+    if(backButton) backButton.style.display = 'none';
+
+    removePolling();
+});
+
+document.getElementById('searchForm')?.addEventListener('submit', function(e) {
+    // Nach dem Absenden das Feld leeren
+    setTimeout(() => {
+        const searchField = document.getElementById('suchfeld');
+        if(searchField) searchField.value = '';
+    }, 50); // kleine Verzögerung, damit das Formular noch gesendet wird
 });
 </script>
 </body>

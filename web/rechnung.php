@@ -22,7 +22,7 @@ $editEntry = null;
 // PREISE
 // =====================
 $preise = [
-    'Voller Preis' => PREIS_VOLLER,
+    'Standard' => PREIS_STANDARD,
     'Rabatt' => PREIS_RABATT,
     'Gratis' => PREIS_GRATIS
 ];
@@ -31,7 +31,7 @@ $preise = [
 // NAMEN LADEN
 // =====================
 $namen = [];
-$res = $db->query("SELECT DISTINCT TRIM(name) as name FROM loescher WHERE name IS NOT NULL AND TRIM(name) != '' ORDER BY name");
+$res = $db->query("SELECT DISTINCT TRIM(name) as name FROM loescher WHERE name IS NOT NULL AND TRIM(name) != '' ORDER BY nummer DESC");
 while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
     $namen[] = $row['name'];
 }
@@ -203,6 +203,7 @@ if (isset($_POST['save_rechnung'])) {
     // Logo
     $logoPath = __DIR__ . '/images/Logo.png';
     if (file_exists($logoPath)) {
+        $bildBreite = 40;
         $seitenBreite = $pdf->getPageWidth();
         $rechteMargin = $pdf->getMargins()['right'];
         $xPos = $seitenBreite - $rechteMargin - $bildBreite;
@@ -220,8 +221,8 @@ if (isset($_POST['save_rechnung'])) {
     <p><strong>Adresse:</strong> {$_POST['adresse']}, {$_POST['plz']} {$_POST['ort']}</p>
     <hr>
     <p><strong>Anzahl Löscher:</strong> {$_POST['anzahl']}</p>
-    <p><strong>Preis pro Löscher:</strong> {$preis} €</p>
-    <p><strong>Gesamt:</strong> ".((int)$_POST['anzahl'] * $preis)." €</p>
+    <p><strong>Preis pro Löscher:</strong> " . number_format(floatval($preis), 2, ',', '.') . " €</p>
+    <p><strong>Gesamt:</strong> " . number_format(floatval((int)$_POST['anzahl'] * $preis), 2, ',', '.') . " €</p>
     ";
     $pdf->writeHTML($html, true, false, true, false, '');
 
@@ -251,18 +252,28 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&#128293; Feuerlöscher Software</title>
+<link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
+<link rel="shortcut icon" href="./images/Feuerlöscher.ico">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-<div class="container-fluid">
-    <span class="navbar-brand">&#128293; Feuerlöscher Software - &#129534; Rechnungen</span>
-    <div class="d-flex gap-2">
-        <a href="index.php" class="btn btn-outline-light btn-sm">Zurück</a>
-        <a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>
+    <div class="container-fluid">
+        <span class="navbar-brand">
+            <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
+            &#128293; Feuerlöscher Software - &#128179; Rechnungen
+        </span>
+
+        <div class="d-flex gap-2">
+            <a href="index.php" class="btn btn-outline-light btn-sm">
+                Zurück
+            </a>
+            <a href="?logout=1" class="btn btn-danger btn-sm">
+                Abmelden
+            </a>
+        </div>
     </div>
-</div>
 </nav>
 
 <div class="container mt-5">
@@ -303,9 +314,11 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <div class="mb-3">
     <label class="form-label">&#128100; Anrede</label>
     <select name="anrede" class="form-select">
+        <option <?= ($editEntry['anrede'] ?? '')==''?'selected':'' ?>>-</option>
         <option <?= ($editEntry['anrede'] ?? '')=='Herr'?'selected':'' ?>>Herr</option>
         <option <?= ($editEntry['anrede'] ?? '')=='Frau'?'selected':'' ?>>Frau</option>
         <option <?= ($editEntry['anrede'] ?? '')=='Firma'?'selected':'' ?>>Firma</option>
+        <option <?= ($editEntry['anrede'] ?? '')=='Verein'?'selected':'' ?>>Verein</option>
     </select>
 </div>
 
@@ -364,25 +377,40 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
        readonly>
 </div>
 
-<?php if ($editEntry): ?>
+<?php if (!is_null($editEntry) && $editEntry) { ?>
+
 <p>
     &#128424; Gedruckt: <?= ($editEntry['rechnung_gedruckt'] ?? 0) ? '&#9989;' : '&#10060;' ?>
 </p>
-<a id="openPdf" href="_Rechnungen/Rechnung_<?= preg_replace('/[^a-zA-Z0-9_-]/', '', $editEntry['rechnungsnummer']) ?>.pdf" target="_blank" class="btn btn-info mb-3">
+
+<div class="d-flex gap-2 mb-3 flex-wrap">
+
+    <a id="openPdf" 
+       href="_Rechnungen/Rechnung_<?= preg_replace('/[^a-zA-Z0-9_-]/', '', $editEntry['rechnungsnummer']) ?>.pdf" 
+       target="_blank" 
+       class="btn btn-info">
+        📄 PDF Rechnung öffnen
+    </a>
+
+    <button type="submit" name="reprint_rechnung" class="btn btn-warning">
+        🔄 Bon Nachdrucken
+    </button>
+
+    <button type="button" id="reloadData" class="btn btn-secondary">
+        🔄 Daten neu laden
+    </button>
+
+</div>
+
+<input type="hidden" name="edit_id" value="<?= $editEntry['id'] ?>">
+
+<?php } else { ?>
+
+<a id="openPdf" href="#" style="display:none;" class="btn btn-info mb-3">
     📄 PDF öffnen
 </a>
-<form method="post" style="display:inline-block;">
-        <input type="hidden" name="edit_id" value="<?= $editEntry['id'] ?>">
-        <button type="submit" name="reprint_rechnung" class="btn btn-warning mb-2">
-            🔄 Rechnung nachdrucken
-        </button>
-        <button type="button" id="reloadData" class="btn btn-secondary mb-2">
-            🔄 Daten neu laden
-        </button>
-    </form>
-<?php else: ?>
-<a id="openPdf" href="#" style="display:none;" class="btn btn-info mb-3">📄 PDF öffnen</a>
-<?php endif; ?>
+
+<?php } ?>
 
 <button class="btn btn-success w-100" name="save_rechnung">&#128190; Speichern</button>
 <button type="button" class="btn btn-secondary w-100 mt-2" id="clearForm">&#10060; Formular leeren</button>
@@ -396,38 +424,17 @@ const nextRechnungsnummer = "<?= $nextRechnungsnummer ?>";
 
 function updatePreis(){
     const typ = document.getElementById('typSelect').value;
-    document.getElementById('preisField').value = preisMap[typ] + " €";
+    const preis = preisMap[typ] || 0;
+
+    document.getElementById('preisField').value =
+        preis.toFixed(2).replace('.', ',') + " €";
 }
 
 document.getElementById('typSelect').addEventListener('change', updatePreis);
 updatePreis();
 
 document.getElementById('clearForm').addEventListener('click', () => {
-    const form = document.querySelector('form.card.p-4');
-
-    // Felder zurücksetzen
-    form.querySelector('[name="edit_id"]').value = '';
-    form.querySelector('[name="anrede"]').value = 'Herr';
-    form.querySelector('[name="name"]').value = '';
-    form.querySelector('[name="adresse"]').value = '';
-    form.querySelector('[name="plz"]').value = '4702';
-    form.querySelector('[name="ort"]').value = 'Wallern an der Trattnach';
-    form.querySelector('[name="anzahl"]').value = 1;
-    form.querySelector('[name="typ"]').value = 'Voller Preis';
-    form.querySelector('[name="rechnungsnummer"]').value = nextRechnungsnummer;
-
-    // Preisfeld aktualisieren
-    updatePreis();
-
-    // Alerts entfernen
-    document.querySelectorAll('.alert').forEach(el => el.remove());
-
-    // PDF-Button ausblenden
-    const pdfButton = document.getElementById('openPdf');
-    if (pdfButton) {
-        pdfButton.style.display = 'none';
-        pdfButton.href = '#';
-    }
+    window.location = window.location.href;
 });
 
 document.getElementById('reloadData').addEventListener('click', () => {
@@ -447,7 +454,7 @@ document.getElementById('reloadData').addEventListener('click', () => {
             form.querySelector('[name="anzahl"]').value = data.anzahl_loescher || 1;
             
             // Preis-Typ setzen
-            let typ = 'Voller Preis';
+            let typ = 'Standard';
             for (const [k, v] of Object.entries(preisMap)) {
                 if (v == data.preis_pro_loescher) typ = k;
             }

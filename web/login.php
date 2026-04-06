@@ -19,6 +19,8 @@ if ($_POST) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>&#128293; Feuerlöscher Software</title>
+    <link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="./images/Feuerlöscher.ico">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -27,6 +29,7 @@ if ($_POST) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <span class="navbar-brand">
+            <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
             &#128293; Feuerlöscher Software
         </span>
     </div>
@@ -35,8 +38,14 @@ if ($_POST) {
 <div class="container">
     <div class="row justify-content-center align-items-center vh-100">
         <div class="col-md-4">
+            <div class="text-center mb-4">
+                <img src="./images/Banner.gif" alt="Logo" class="img-fluid" style="max-height: 120px;">
+            </div>
             <div class="card shadow-sm">
                 <div class="card-body">
+                    <div class="text-center mb-2">
+                        <img src="./images/Feuerlöscher.ico" alt="Icon" style="width: 48px; height: 48px;">
+                    </div>
                     <h3 class="card-title text-center mb-4">Login - Feuerlöscher Software</h3>
 
                     <?php if(isset($error)): ?>

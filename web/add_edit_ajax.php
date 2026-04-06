@@ -15,13 +15,13 @@ if (isset($_GET['logout'])) {
 if (isset($_GET['number']) && is_numeric($_GET['number'])) {
     $number = (int)$_GET['number'];
 } else {
-    die("not provided");
+    die("number not provided");
 }
 
 if(isset($_GET['module'])) {
     $module = $_GET['module'];
 } else {
-    die("not provided");
+    die("module not provided");
 }
 
 $result = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $number");
@@ -51,23 +51,23 @@ if ($result) {
 <? if($module == "status") {  ?>
     <div id="status">
         <div class="form-check mb-2">
-            <input type="checkbox" onclick="pausePolling()" name="bezahlt" class="form-check-input" id="bezahltCheck"
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="bezahlt" class="form-check-input" id="bezahltCheck"
                 <?= $entry['bezahlt'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
         </div>
 
         <div class="form-check mb-2">
-            <input type="checkbox" onclick="pausePolling()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $entry['geprueft'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $entry['geprueft'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="geprueftCheck">&#129514; Geprüft</label>
         </div>
 
         <div class="form-check mb-2">
-            <input type="checkbox" onclick="pausePolling()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $entry['abgeholt'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $entry['abgeholt'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="abgeholtCheck">&#128230; Abgeholt</label>
         </div>
         
         <div class="form-check mb-2">
-            <input type="checkbox" onclick="pausePolling()" name="defekt" class="form-check-input" id="defektCheck" <?= $entry['defekt'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="defekt" class="form-check-input" id="defektCheck" <?= $entry['defekt'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="defektCheck">&#9940; Defekt</label>
         </div>
     </div>
@@ -76,6 +76,6 @@ if ($result) {
 <? if($module=="infotext") { ?>
     <div class="mb-3" id="infotext">
         <label class="form-label">&#8505; Info</label>
-        <textarea name="info" onclick="pausePolling()" class="form-control" rows="3"><?= htmlspecialchars($entry['info']) ?></textarea>
+        <textarea name="info" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" class="form-control" rows="3"><?= htmlspecialchars($entry['info']) ?></textarea>
     </div>
 <? } ?>

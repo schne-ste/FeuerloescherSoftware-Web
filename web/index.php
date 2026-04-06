@@ -83,6 +83,8 @@ if (isset($_POST['reset_db'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>&#128293; Feuerlöscher Software</title>
+    <link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="./images/Feuerlöscher.ico">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -92,13 +94,11 @@ if (isset($_POST['reset_db'])) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <span class="navbar-brand">
+            <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
             &#128293; Feuerlöscher Software
         </span>
 
         <div class="d-flex gap-2">
-            <a href="index.php" class="btn btn-outline-light btn-sm">
-                Zurück
-            </a>
             <a href="?logout=1" class="btn btn-danger btn-sm">
                 Abmelden
             </a>
@@ -121,8 +121,8 @@ if (isset($_POST['reset_db'])) {
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Löscher verwalten</h5>
-                    <p class="card-text">Neue Löscher anlegen oder bearbeiten</p>
+                    <h5 class="card-title">&#10010; Löscher verwalten</h5>
+                    <p class="card-text">Löscher anlegen oder bearbeiten</p>
                     <a href="add_edit.php" class="btn btn-primary w-100">Öffnen</a>
                 </div>
             </div>
@@ -141,7 +141,7 @@ if (isset($_POST['reset_db'])) {
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Liste</h5>
+                    <h5 class="card-title">&#128196; Liste</h5>
                     <p class="card-text">Alle Feuerlöscher anzeigen</p>
                     <a href="liste.php" class="btn btn-primary w-100">Öffnen</a>
                 </div>
@@ -151,9 +151,29 @@ if (isset($_POST['reset_db'])) {
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Rechnung</h5>
-                    <p class="card-text">Rechnungen erstellen</p>
+                    <h5 class="card-title">&#128179; Rechnung</h5>
+                    <p class="card-text">Rechnungen erstellen oder earbeiten</p>
                     <a href="rechnung.php" class="btn btn-primary w-100">Öffnen</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">&#128200; Statistik</h5>
+                    <p class="card-text">Statistiken</p>
+                    <a href="statistik.php" class="btn btn-primary w-100">Öffnen</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">&#128228; Verrechnung</h5>
+                    <p class="card-text">Auswertung zur Verrechnung</p>
+                    <a href="verrechnung.php" class="btn btn-primary w-100">Öffnen</a>
                 </div>
             </div>
         </div>

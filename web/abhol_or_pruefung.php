@@ -41,23 +41,27 @@ if (isset($_POST['aktion']) && $nummer) {
             $message = "&#10060; Nicht gefunden!";
             $statusType = "error";
             $soundType = "error";
-        } elseif ($row['active'] && $row['defekt']) {
-            $message = "&#9888; Löscher defekt – Geld bitte retour!";
-            $statusType = "warning";
-            $soundType = "warning";
         } elseif ($row['active'] && !$row['bezahlt'] && !$row['defekt']) {
             $message = "&#128176; Nicht bezahlt – zuerst kassieren!";
             $statusType = "error";
             $soundType = "warning";
         } else {
+            // Status umschalten, egal ob defekt
             $db->exec("
                 UPDATE loescher 
                 SET abgeholt = CASE WHEN abgeholt = 1 THEN 0 ELSE 1 END
                 WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
             ");
-            $message = "&#9989; Abholung erfolgreich!";
-            $statusType = "success";
-            $soundType = "success";
+
+            if ($row['defekt']) {
+                $message = "&#9888; Löscher defekt – Status trotzdem geändert!";
+                $statusType = "warning";
+                $soundType = "warning";
+            } else {
+                $message = "&#9989; Abholung erfolgreich!";
+                $statusType = "success";
+                $soundType = "success";
+            }
         }
     }
 
@@ -123,7 +127,7 @@ if (isset($_POST['setDefekt']) && $nummer) {
 
     $db->exec("
         UPDATE loescher
-        SET defekt = 1
+        SET defekt = CASE WHEN defekt = 1 THEN 0 ELSE 1 END
         WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
     ");
 
@@ -133,9 +137,15 @@ if (isset($_POST['setDefekt']) && $nummer) {
     ");
     $eintrag = $result->fetchArray();
 
-    $message = "&#9940; Datensatz als defekt markiert!";
-    $statusType = "error";
-    $soundType = "warning";
+    if ($eintrag['defekt']) {
+        $message = "&#9940; Datensatz als defekt markiert!";
+        $statusType = "error";
+        $soundType = "warning";
+    } else {
+        $message = "&#9989; Defekt zurückgesetzt!";
+        $statusType = "success";
+        $soundType = "success";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -144,6 +154,8 @@ if (isset($_POST['setDefekt']) && $nummer) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&#128293; Feuerlöscher Software</title>
+<link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
+<link rel="shortcut icon" href="./images/Feuerlöscher.ico">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -167,6 +179,7 @@ body.flash-warning { background-color: #fff3cd !important; }
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <span class="navbar-brand">
+        <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
             &#128293; Feuerlöscher Software - &#128230; &#129514; Abhol- / Prüfstation
         </span>
 
@@ -191,7 +204,7 @@ body.flash-warning { background-color: #fff3cd !important; }
 
             <div class="mb-2">
                 <label class="form-label small">Station</label>
-                <select name="modus" class="form-select form-select-sm">
+                <select name="modus" class="form-select form-select-sm" onchange="submitForm()">
                     <option value="abholen" <?= $modus === 'abholen' ? 'selected' : '' ?>>
                         &#128230;  Abholstation
                     </option>
@@ -203,7 +216,7 @@ body.flash-warning { background-color: #fff3cd !important; }
 
             <div class="mb-2">
                 <label class="form-label small">Modus</label>
-                <select name="bedienmodus" id="bedienmodus" class="form-select form-select-sm">
+                <select name="bedienmodus" id="bedienmodus" class="form-select form-select-sm" onchange="submitForm()">
                     <option value="scanner" <?= $bedienmodus === 'scanner' ? 'selected' : '' ?>>
                         &#9889; Scanner
                     </option>
@@ -221,6 +234,12 @@ body.flash-warning { background-color: #fff3cd !important; }
                        class="form-control form-control-sm"
                        inputmode="numeric"
                        value="<?= htmlspecialchars($nummer ?? '') ?>">
+            </div>
+
+            <div class="d-grid mt-2">
+                <button type="button" id="loadDataBtn" class="btn btn-primary btn-sm">
+                    &#128190; Daten laden
+                </button>
             </div>
 
         </form>
@@ -267,7 +286,7 @@ body.flash-warning { background-color: #fff3cd !important; }
                  <span id="pruefStatusBox">
                     <?= $eintrag['geprueft']
                         ? '<span class="badge bg-success">Geprüft</span>'
-                        : '<span class="badge bg-danger">Nicht geprüft</span>' ?>
+                        : '<span class="badge bg-warning text-dark">Nicht geprüft</span>' ?>
                 </span>
             </p>
 
@@ -310,19 +329,19 @@ body.flash-warning { background-color: #fff3cd !important; }
                     &#9888; Schaummittel tauschen
                 </button>
             </form>
-
-            <?php if (empty($eintrag['defekt'])): ?>
             <form method="post" class="mt-3">
                 <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
                 <input type="hidden" name="modus" value="<?= $modus ?>">
                 <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
-                <button type="submit" name="setDefekt" class="btn btn-danger w-100">
-                    &#9940; Löscher defekt
+                <button type="submit" name="setDefekt"
+                    class="btn w-100 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
+                    
+                    <?= $eintrag['defekt'] 
+                        ? '&#128295; Defekt zurücksetzen'
+                        : '&#9940; Löscher defekt' ?> 
                 </button>
             </form>
-            <?php endif; ?>
-
         <?php endif; ?>
 
 
@@ -352,6 +371,10 @@ body.flash-warning { background-color: #fff3cd !important; }
     const form = document.getElementById("mainForm");
     const bedienmodus = document.getElementById("bedienmodus");
 
+    function submitForm() {
+        form.submit();
+    }
+
     input.addEventListener("input", function () {
         this.value = this.value.replace(/\D/g, '');
     });
@@ -372,6 +395,14 @@ body.flash-warning { background-color: #fff3cd !important; }
             form.submit();
         }
     });
+    const loadDataBtn = document.getElementById("loadDataBtn");
+
+    if (loadDataBtn) {
+        loadDataBtn.addEventListener("click", function() {
+            if (input.value.trim() === "") return;
+            form.submit();
+        });
+    }
 
     document.addEventListener("keydown", function(e) {
         if (e.key === "Escape") {
@@ -380,8 +411,9 @@ body.flash-warning { background-color: #fff3cd !important; }
         }
     });
 
-    window.onload = function() {
+    const number = <?= isset($nummerSafe) ? $nummerSafe : 'null' ?>;
 
+    window.onload = function() {
         const soundType = "<?= $soundType ?>";
 
         if (soundType === "success") {
@@ -417,7 +449,7 @@ body.flash-warning { background-color: #fff3cd !important; }
         gainNode.connect(ctx.destination);
 
         oscillator.type = 'sine';
-        gainNode.gain.value = 0.1;
+        gainNode.gain.value = 0.2;
 
         switch(type) {
             case 'success':
@@ -436,10 +468,9 @@ body.flash-warning { background-color: #fff3cd !important; }
     }
 
     function loadStatus() {
-        const nummer = input.value.trim();
-        if (!nummer) return;
+        if (!number) return;
 
-        fetch("abhol_or_pruefung_ajax.php?nummer=" + nummer)
+        fetch("abhol_or_pruefung_ajax.php?nummer=" + number)
             .then(res => res.json())
             .then(data => {
                 if (!data || data.error) return;
@@ -456,7 +487,7 @@ body.flash-warning { background-color: #fff3cd !important; }
         // Prüfstatus (geprüft)
         let pruefStatusHTML = data.geprueft == 1
             ? '<span class="badge bg-success">Geprüft</span>'
-            : '<span class="badge bg-danger">Nicht geprüft</span>';
+            : '<span class="badge bg-warning text-dark">Nicht geprüft</span>';
 
         const pruefStatusBox = document.getElementById("pruefStatusBox");
         if (pruefStatusBox) {
