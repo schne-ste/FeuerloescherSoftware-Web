@@ -48,7 +48,7 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Images\FeuerlöscherSchild.ico</ApplicationIcon>
+    <ApplicationIcon>Images\Feuerlöscher.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Interop.bpac, Version=1.3.0.0, Culture=neutral, processorArchitecture=x86">
@@ -169,10 +169,10 @@
     <Content Include="Brother QL Serie\Treiber.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FeuerlöscherSchild.ico">
+    <Content Include="Images\Feuerlöscher.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FF Wallern_500px.bmp">
+    <Content Include="Images\FF Wallern.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\Logo.png">

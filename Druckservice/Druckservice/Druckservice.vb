@@ -522,6 +522,8 @@ Public Class Druckservice
                 p.Write("      Adresse: ")
                 p.SetBold(False)
                 p.WriteLine(adresse)
+                p.Write("      Ort: ")
+                p.SetBold(False)
                 p.WriteLine(plzort)
             End If
 
