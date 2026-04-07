@@ -4427,3 +4427,232 @@
 [2026-04-06 23:55:38] >>> API URL oder Token ist leer, bitte Werte eingeben.
 [2026-04-06 23:55:43] Timer gestartet - prüfe API...
 [2026-04-06 23:55:43] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-07 13:02:27] DEBUG MODE: True
+[2026-04-07 13:02:27] Printservice gestartet...
+[2026-04-07 13:02:27] -------------------------------------------------------------------------------------------
+[2026-04-07 13:02:32] Timer gestartet - prüfe API...
+[2026-04-07 13:02:32] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-07 13:02:37] Timer gestartet - prüfe API...
+[2026-04-07 13:02:37] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-07 13:02:42] Timer gestartet - prüfe API...
+[2026-04-07 13:02:42] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-07 13:02:47] Timer gestartet - prüfe API...
+[2026-04-07 13:02:47] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-07 13:02:52] Timer gestartet - prüfe API...
+[2026-04-07 13:02:52] >>> Bitte Drucker für Etiketten und Bons auswählen.
+[2026-04-07 13:02:57] Timer gestartet - prüfe API...
+[2026-04-07 13:02:57] >>> Bitte Drucker für Etiketten und Bons auswählen.
+[2026-04-07 13:03:00] DEBUG MODE: True
+[2026-04-07 13:03:00] Printservice gestartet...
+[2026-04-07 13:03:00] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:05] Timer gestartet - prüfe API...
+[2026-04-07 13:03:05] Gefundene Etiketten: 2
+[2026-04-07 13:03:05] Drucke Etikett: 001 / Kunde: Mayer Standard
+[2026-04-07 13:03:05] Starte Etikettendruck: 001
+[2026-04-07 13:03:05] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-07 13:03:05] Markiere Etikett 001 als gedruckt
+[2026-04-07 13:03:05] Drucke Etikett: 019 / Kunde: Test2
+[2026-04-07 13:03:05] Starte Etikettendruck: 019
+[2026-04-07 13:03:05] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-07 13:03:05] Markiere Etikett 019 als gedruckt
+[2026-04-07 13:03:05] Gefundene Abholscheine: 19
+[2026-04-07 13:03:05] Drucke Abholschein: 001 / Kunde: Mayer Standard / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:05] Starte Druck Abholschein: 001
+[2026-04-07 13:03:05] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:05] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:05] Druck Abholschein abgeschlossen: 001
+[2026-04-07 13:03:05] Markiere Abholschein 001 als gedruckt
+[2026-04-07 13:03:05] Drucke Abholschein: 002 / Kunde: Mayer Standard / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:05] Starte Druck Abholschein: 002
+[2026-04-07 13:03:05] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:05] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:05] Druck Abholschein abgeschlossen: 002
+[2026-04-07 13:03:05] Markiere Abholschein 002 als gedruckt
+[2026-04-07 13:03:05] Drucke Abholschein: 003 / Kunde: Mayer Standard / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:05] Starte Druck Abholschein: 003
+[2026-04-07 13:03:05] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:05] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:05] Druck Abholschein abgeschlossen: 003
+[2026-04-07 13:03:05] Markiere Abholschein 003 als gedruckt
+[2026-04-07 13:03:05] Drucke Abholschein: 004 / Kunde: Mayer Standard / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:05] Starte Druck Abholschein: 004
+[2026-04-07 13:03:05] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:05] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:05] Druck Abholschein abgeschlossen: 004
+[2026-04-07 13:03:05] Markiere Abholschein 004 als gedruckt
+[2026-04-07 13:03:05] Drucke Abholschein: 005 / Kunde: Schneeberger Rabatt / Typ: Rabatt / Preis: 8,00 €€
+[2026-04-07 13:03:05] Starte Druck Abholschein: 005
+[2026-04-07 13:03:05] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:05] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:05] Druck Abholschein abgeschlossen: 005
+[2026-04-07 13:03:05] Markiere Abholschein 005 als gedruckt
+[2026-04-07 13:03:05] Drucke Abholschein: 006 / Kunde: Schneeberger Rabatt / Typ: Rabatt / Preis: 8,00 €€
+[2026-04-07 13:03:06] Starte Druck Abholschein: 006
+[2026-04-07 13:03:06] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:06] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:06] Druck Abholschein abgeschlossen: 006
+[2026-04-07 13:03:06] Markiere Abholschein 006 als gedruckt
+[2026-04-07 13:03:06] Drucke Abholschein: 007 / Kunde: Musterman Gratis / Typ: Gratis / Preis: 0,00 €€
+[2026-04-07 13:03:06] Starte Druck Abholschein: 007
+[2026-04-07 13:03:06] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:06] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:06] Druck Abholschein abgeschlossen: 007
+[2026-04-07 13:03:06] Markiere Abholschein 007 als gedruckt
+[2026-04-07 13:03:06] Drucke Abholschein: 008 / Kunde: Musterman Gratis / Typ: Gratis / Preis: 0,00 €€
+[2026-04-07 13:03:06] Starte Druck Abholschein: 008
+[2026-04-07 13:03:06] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:06] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:06] Druck Abholschein abgeschlossen: 008
+[2026-04-07 13:03:06] Markiere Abholschein 008 als gedruckt
+[2026-04-07 13:03:06] Drucke Abholschein: 009 / Kunde: Musterman Gratis / Typ: Gratis / Preis: 0,00 €€
+[2026-04-07 13:03:06] Starte Druck Abholschein: 009
+[2026-04-07 13:03:06] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:06] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:06] Druck Abholschein abgeschlossen: 009
+[2026-04-07 13:03:06] Markiere Abholschein 009 als gedruckt
+[2026-04-07 13:03:06] Drucke Abholschein: 010 / Kunde: max / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:06] Starte Druck Abholschein: 010
+[2026-04-07 13:03:06] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:06] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:06] Druck Abholschein abgeschlossen: 010
+[2026-04-07 13:03:06] Markiere Abholschein 010 als gedruckt
+[2026-04-07 13:03:06] Drucke Abholschein: 011 / Kunde: Test1 / Typ: Rabatt / Preis: 8,00 €€
+[2026-04-07 13:03:06] Starte Druck Abholschein: 011
+[2026-04-07 13:03:06] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:06] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:06] Druck Abholschein abgeschlossen: 011
+[2026-04-07 13:03:06] Markiere Abholschein 011 als gedruckt
+[2026-04-07 13:03:06] Drucke Abholschein: 012 / Kunde: VollerPreisTest / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:06] Starte Druck Abholschein: 012
+[2026-04-07 13:03:06] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:06] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:06] Druck Abholschein abgeschlossen: 012
+[2026-04-07 13:03:06] Markiere Abholschein 012 als gedruckt
+[2026-04-07 13:03:06] Drucke Abholschein: 013 / Kunde: Pflüglmayer Stefan / Typ: Rabatt / Preis: 8,00 €€
+[2026-04-07 13:03:06] Starte Druck Abholschein: 013
+[2026-04-07 13:03:06] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:06] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:06] Druck Abholschein abgeschlossen: 013
+[2026-04-07 13:03:06] Markiere Abholschein 013 als gedruckt
+[2026-04-07 13:03:07] Drucke Abholschein: 014 / Kunde: Pflüglmayer Stefan / Typ: Rabatt / Preis: 8,00 €€
+[2026-04-07 13:03:07] Starte Druck Abholschein: 014
+[2026-04-07 13:03:07] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:07] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:07] Druck Abholschein abgeschlossen: 014
+[2026-04-07 13:03:07] Markiere Abholschein 014 als gedruckt
+[2026-04-07 13:03:07] Drucke Abholschein: 015 / Kunde: Pflüglmayer Stefan / Typ: Rabatt / Preis: 8,00 €€
+[2026-04-07 13:03:07] Starte Druck Abholschein: 015
+[2026-04-07 13:03:07] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:07] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:07] Druck Abholschein abgeschlossen: 015
+[2026-04-07 13:03:07] Markiere Abholschein 015 als gedruckt
+[2026-04-07 13:03:07] Drucke Abholschein: 016 / Kunde: Pflüglmayer Stefan / Typ: Rabatt / Preis: 8,00 €€
+[2026-04-07 13:03:07] Starte Druck Abholschein: 016
+[2026-04-07 13:03:07] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:07] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:07] Druck Abholschein abgeschlossen: 016
+[2026-04-07 13:03:07] Markiere Abholschein 016 als gedruckt
+[2026-04-07 13:03:07] Drucke Abholschein: 017 / Kunde: Pflüglmayer Stefan / Typ: Rabatt / Preis: 8,00 €€
+[2026-04-07 13:03:07] Starte Druck Abholschein: 017
+[2026-04-07 13:03:07] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:07] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:07] Druck Abholschein abgeschlossen: 017
+[2026-04-07 13:03:07] Markiere Abholschein 017 als gedruckt
+[2026-04-07 13:03:07] Drucke Abholschein: 018 / Kunde: Test2 / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:07] Starte Druck Abholschein: 018
+[2026-04-07 13:03:07] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:07] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:07] Druck Abholschein abgeschlossen: 018
+[2026-04-07 13:03:07] Markiere Abholschein 018 als gedruckt
+[2026-04-07 13:03:07] Drucke Abholschein: 019 / Kunde: Test2 / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:07] Starte Druck Abholschein: 019
+[2026-04-07 13:03:07] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:07] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:07] Druck Abholschein abgeschlossen: 019
+[2026-04-07 13:03:07] Markiere Abholschein 019 als gedruckt
+[2026-04-07 13:03:07] Gefundene Rechnungen: 0
+[2026-04-07 13:03:07] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:07] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:12] Timer gestartet - prüfe API...
+[2026-04-07 13:03:12] Gefundene Etiketten: 0
+[2026-04-07 13:03:12] Gefundene Abholscheine: 0
+[2026-04-07 13:03:12] Gefundene Rechnungen: 0
+[2026-04-07 13:03:12] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:12] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:17] Timer gestartet - prüfe API...
+[2026-04-07 13:03:17] Gefundene Etiketten: 1
+[2026-04-07 13:03:17] Drucke Etikett: 001 / Kunde: Mayer Standard
+[2026-04-07 13:03:17] Starte Etikettendruck: 001
+[2026-04-07 13:03:18] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-07 13:03:18] Markiere Etikett 001 als gedruckt
+[2026-04-07 13:03:18] Gefundene Abholscheine: 0
+[2026-04-07 13:03:18] Gefundene Rechnungen: 0
+[2026-04-07 13:03:18] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:18] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:23] Timer gestartet - prüfe API...
+[2026-04-07 13:03:23] Gefundene Etiketten: 0
+[2026-04-07 13:03:23] Gefundene Abholscheine: 1
+[2026-04-07 13:03:23] Drucke Abholschein: 001 / Kunde: Mayer Standard / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:23] Starte Druck Abholschein: 001
+[2026-04-07 13:03:23] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:23] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:23] Druck Abholschein abgeschlossen: 001
+[2026-04-07 13:03:23] Markiere Abholschein 001 als gedruckt
+[2026-04-07 13:03:23] Gefundene Rechnungen: 0
+[2026-04-07 13:03:23] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:23] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:28] Timer gestartet - prüfe API...
+[2026-04-07 13:03:28] Gefundene Etiketten: 0
+[2026-04-07 13:03:28] Gefundene Abholscheine: 0
+[2026-04-07 13:03:28] Gefundene Rechnungen: 0
+[2026-04-07 13:03:28] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:28] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:33] Timer gestartet - prüfe API...
+[2026-04-07 13:03:33] Gefundene Etiketten: 0
+[2026-04-07 13:03:33] Gefundene Abholscheine: 0
+[2026-04-07 13:03:33] Gefundene Rechnungen: 0
+[2026-04-07 13:03:33] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:33] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:38] Timer gestartet - prüfe API...
+[2026-04-07 13:03:38] Gefundene Etiketten: 0
+[2026-04-07 13:03:38] Gefundene Abholscheine: 1
+[2026-04-07 13:03:38] Drucke Abholschein: 001 / Kunde: Mayer Standard / Typ: Standard / Preis: 15,00 €€
+[2026-04-07 13:03:38] Starte Druck Abholschein: 001
+[2026-04-07 13:03:38] Logo gefunden, versuche zu drucken: C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-07 13:03:38] DEBUG: Simulation statt echtem Druck.
+[2026-04-07 13:03:38] Druck Abholschein abgeschlossen: 001
+[2026-04-07 13:03:38] Markiere Abholschein 001 als gedruckt
+[2026-04-07 13:03:38] Gefundene Rechnungen: 0
+[2026-04-07 13:03:38] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:38] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:43] Timer gestartet - prüfe API...
+[2026-04-07 13:03:43] Gefundene Etiketten: 0
+[2026-04-07 13:03:43] Gefundene Abholscheine: 0
+[2026-04-07 13:03:43] Gefundene Rechnungen: 0
+[2026-04-07 13:03:43] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:43] -------------------------------------------------------------------------------------------
+[2026-04-07 13:03:48] Timer gestartet - prüfe API...
+[2026-04-07 13:03:48] Gefundene Etiketten: 0
+[2026-04-07 13:03:48] Gefundene Abholscheine: 0
+[2026-04-07 13:03:48] Gefundene Rechnungen: 0
+[2026-04-07 13:03:48] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:03:48] -------------------------------------------------------------------------------------------
+[2026-04-07 13:22:45] DEBUG MODE: True
+[2026-04-07 13:22:45] Printservice gestartet...
+[2026-04-07 13:22:45] -------------------------------------------------------------------------------------------
+[2026-04-07 13:22:50] Timer gestartet - prüfe API...
+[2026-04-07 13:22:50] Gefundene Etiketten: 1
+[2026-04-07 13:22:50] Drucke Etikett: 003 / Kunde: Mayer Standard
+[2026-04-07 13:22:50] Starte Etikettendruck: 003
+[2026-04-07 13:22:50] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-07 13:22:50] Markiere Etikett 003 als gedruckt
+[2026-04-07 13:22:50] Gefundene Abholscheine: 0
+[2026-04-07 13:22:50] Gefundene Rechnungen: 0
+[2026-04-07 13:22:50] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:22:50] -------------------------------------------------------------------------------------------
+[2026-04-07 13:22:55] Timer gestartet - prüfe API...
+[2026-04-07 13:22:55] Gefundene Etiketten: 0
+[2026-04-07 13:22:55] Gefundene Abholscheine: 0
+[2026-04-07 13:22:55] Gefundene Rechnungen: 0
+[2026-04-07 13:22:55] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-07 13:22:55] -------------------------------------------------------------------------------------------

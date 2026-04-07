@@ -15,6 +15,9 @@ if (isset($_GET['logout'])) {
 
 $db = getDB();
 $successMessage = '';
+if (isset($_GET['success'])) {
+    $successMessage = "&#9989; Rechnung gespeichert und PDF generiert!";
+}
 $searchResults = [];
 $editEntry = null;
 
@@ -35,6 +38,18 @@ $res = $db->query("SELECT DISTINCT TRIM(name) as name FROM loescher WHERE name I
 while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
     $namen[] = $row['name'];
 }
+
+// =====================
+// RECHNUNGSLISTE FÜR SUCHE (DATALIST)
+// =====================
+$rechnungsListe = [];
+$resR = $db->query("SELECT name, rechnungsnummer FROM rechnungen ORDER BY zeitstempel_erstellung DESC");
+while ($rowR = $resR->fetchArray(SQLITE3_ASSOC)) {
+    // Kombiniert Nummer und Name für die Anzeige
+    $rechnungsListe[] = $rowR['rechnungsnummer'] . " - " . $rowR['name'];
+}
+// Duplikate entfernen falls nötig
+$rechnungsListe = array_unique($rechnungsListe);
 
 // =====================
 // NÄCHSTE RECHNUNGSNUMMER BERECHNEN
@@ -83,11 +98,21 @@ if (isset($_POST['suche'])) {
     $input = trim($_POST['suchfeld'] ?? '');
 
     if ($input !== '') {
-        $safe = $db->escapeString($input);
+        // Falls der User einen Vorschlag gewählt hat (Format: "R2024-0001 - Name")
+        // nehmen wir nur den Teil vor dem ersten Bindestrich
+        if (strpos($input, ' - ') !== false) {
+            $parts = explode(' - ', $input);
+            $searchVal = trim($parts[0]); // Das ist die Rechnungsnummer
+        } else {
+            $searchVal = $input; // Manuelle Eingabe (nur Name oder nur Nummer)
+        }
+
+        $safe = $db->escapeString($searchVal);
 
         $result = $db->query("
             SELECT * FROM rechnungen
-            WHERE name LIKE '%$safe%'
+            WHERE rechnungsnummer = '$safe'
+            OR name LIKE '%$safe%'
             OR rechnungsnummer LIKE '%$safe%'
         ");
 
@@ -180,57 +205,138 @@ if (isset($_POST['save_rechnung'])) {
 
     class MYPDF extends TCPDF {
         public function Footer() {
-            // Position 15 mm vom unteren Rand
-            $this->SetY(-15);
+            // Position 25 mm vom unteren Rand
+            $this->SetY(-25);
             $this->SetFont('helvetica', 'I', 8);
+            
+            // Dezente Trennlinie über dem Footer
+            $this->Line(15, $this->GetY(), 195, $this->GetY());
+            $this->Ln(2);
 
-            // Firmeninfos aus config.php (Konstanten)
-            $firma = FIRMA_NAME . " | " . FIRMA_ADRESSE . " | " . FIRMA_PLZORT . " | " . FIRMA_WEB;
+            $firma = FIRMA_NAME . " | " . FIRMA_ADRESSE . " | " . FIRMA_PLZORT;
+            $info = "Web: " . FIRMA_WEB . " | Erstellt mit Feuerlöscher-Software";
 
-            // Text zentriert ausgeben
-            $this->Cell(0, 8, 'Danke für Ihren Besuch!', 0, 1, 'C');
-            $this->Cell(0, 10, $firma, 0, false, 'C', 0, '', 0, false, 'T', 'M');
+            $this->Cell(0, 4, $firma, 0, 1, 'C');
+            $this->Cell(0, 4, $info, 0, 1, 'C');
+            $this->Cell(0, 4, 'Vielen Dank für Ihre geschätzte Unterstützung!', 0, 0, 'C');
         }
     }
 
     $pdf = new MYPDF();
     $pdf->SetCreator(PDF_CREATOR);
-    $pdf->SetAuthor('Stefan Schneebauer - FF Wallern');
-    $pdf->SetTitle('Rechnung '.$rechnungsnummer);
-    $pdf->SetMargins(15, 20, 15);
+    $pdf->SetAuthor(FIRMA_NAME);
+    $pdf->SetTitle('Rechnung ' . $rechnungsnummer);
+    $pdf->SetMargins(15, 25, 15);
+    $pdf->SetAutoPageBreak(TRUE, 25);
     $pdf->AddPage();
 
-    // Logo
+    // --- 1. LOGO & ABSENDERZEILE ---
     $logoPath = __DIR__ . '/images/Logo.png';
     if (file_exists($logoPath)) {
-        $bildBreite = 40;
-        $seitenBreite = $pdf->getPageWidth();
-        $rechteMargin = $pdf->getMargins()['right'];
-        $xPos = $seitenBreite - $rechteMargin - $bildBreite;
-        $pdf->Image($logoPath, $xPos, 15, $bildBreite);
+        // Logo rechts oben (Breite 50mm)
+        $pdf->Image($logoPath, 145, 15, 50);
     }
 
-    $pdf->SetFont('helvetica', '', 12);
-    $html = "
-    <h2>Rechnung</h2>
-    <p><strong>Rechnungsnummer:</strong> {$rechnungsnummer}</p>
-    <p><strong>Datum:</strong> ".date('d.m.Y')."</p>
-    <hr>
-    <p><strong>Anrede:</strong> {$_POST['anrede']}</p>
-    <p><strong>Name:</strong> {$_POST['name']}</p>
-    <p><strong>Adresse:</strong> {$_POST['adresse']}, {$_POST['plz']} {$_POST['ort']}</p>
-    <hr>
-    <p><strong>Anzahl Löscher:</strong> {$_POST['anzahl']}</p>
-    <p><strong>Preis pro Löscher:</strong> " . number_format(floatval($preis), 2, ',', '.') . " €</p>
-    <p><strong>Gesamt:</strong> " . number_format(floatval((int)$_POST['anzahl'] * $preis), 2, ',', '.') . " €</p>
-    ";
-    $pdf->writeHTML($html, true, false, true, false, '');
+    // Kleiner Absender (Einzeiler für Fensterkuvert)
+    $pdf->SetFont('helvetica', '', 8);
+    $pdf->SetXY(15, 42);
+    $pdf->Cell(0, 5, FIRMA_NAME . " • " . FIRMA_ADRESSE . " • " . FIRMA_PLZORT, 0, 1, 'L');
 
+    // --- 2. EMPFÄNGER & RECHNUNGSDATEN ---
+    $pdf->SetFont('helvetica', '', 11);
+    $pdf->SetY(52);
+
+    $anrede = (!empty($_POST['anrede']) && $_POST['anrede'] !== '-') ? htmlspecialchars($_POST['anrede']) . '<br>' : '';
+    $adresse = !empty($_POST['adresse']) ? htmlspecialchars($_POST['adresse']) . '<br>' . ' ' . htmlspecialchars($_POST['plz']) . ' ' . htmlspecialchars($_POST['ort']) : '';
+
+    // Layout-Tabelle für Anschrift und Infoblock
+    $headerTable = '
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td width="55%">
+                ' . $anrede . '
+                <strong>' . htmlspecialchars($_POST['name']) . '</strong><br>
+                ' . $adresse . '
+            </td>
+            <td width="45%">
+                <table border="0" cellpadding="2" cellspacing="0" width="100%">
+                    <tr>
+                        <td width="50%" align="right"><strong>Datum:</strong></td>
+                        <td width="50%" align="right">' . date('d.m.Y') . '</td>
+                    </tr>
+                    <tr>
+                        <td width="50%" align="right"><strong>Rechnungs-Nr:</strong></td>
+                        <td width="50%" align="right">' . $rechnungsnummer . '</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>';
+
+    $pdf->writeHTML($headerTable, true, false, true, false, '');
+
+    // --- 3. TITEL ---
+    $pdf->Ln(15);
+    $pdf->SetFont('helvetica', 'B', 18);
+    $pdf->Cell(0, 10, "Rechnung", 0, 1, 'L');
+    $pdf->SetFont('helvetica', '', 11);
+    $pdf->Cell(0, 5, "über die Feuerlöscherüberprüfung", 0, 1, 'L');
+    $pdf->Ln(10);
+
+    // --- 4. LEISTUNGSTABELLE ---
+    $anzahl = (int)$_POST['anzahl'];
+    $einzelpreis = floatval($preis);
+    $gesamtpreis = $anzahl * $einzelpreis;
+
+    // Definierte Breiten für absolute Fluchtung
+    $w_bez = "55%";
+    $w_menge = "15%";
+    $w_einzel = "15%";
+    $w_gesamt = "15%";
+
+    $tbl = '
+    <table border="0" cellpadding="6" cellspacing="0" width="100%">
+        <thead>
+            <tr style="background-color:#eeeeee; font-weight:bold;">
+                <th width="'.$w_bez.'" style="border-bottom: 1px solid #333;">Bezeichnung</th>
+                <th width="'.$w_menge.'" align="center" style="border-bottom: 1px solid #333;">Menge</th>
+                <th width="'.$w_einzel.'" align="right" style="border-bottom: 1px solid #333;">Einzel</th>
+                <th width="'.$w_gesamt.'" align="right" style="border-bottom: 1px solid #333;">Gesamt</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td width="'.$w_bez.'" style="border-bottom: 0.5px solid #ccc;">Fachmännische Überprüfung von tragbaren Feuerlöschern gemäß ÖNORM F 1053</td>
+                <td width="'.$w_menge.'" align="center" style="border-bottom: 0.5px solid #ccc;">' . $anzahl . ' Stk.</td>
+                <td width="'.$w_einzel.'" align="right" style="border-bottom: 0.5px solid #ccc;">' . number_format($einzelpreis, 2, ',', '.') . ' €</td>
+                <td width="'.$w_gesamt.'" align="right" style="border-bottom: 0.5px solid #ccc;">' . number_format($gesamtpreis, 2, ',', '.') . ' €</td>
+            </tr>
+            <tr style="font-size: 12pt; font-weight:bold;">
+                <td colspan="3" align="right">Gesamtsumme:</td>
+                <td align="right">' . number_format($gesamtpreis, 2, ',', '.') . ' €</td>
+            </tr>
+        </tbody>
+    </table>';
+
+    $pdf->writeHTML($tbl, true, false, true, false, '');
+
+    // --- 5. MWST-HINWEIS ---
+    $pdf->Ln(10);
+    $pdf->SetFont('helvetica', 'I', 9);
+
+    $hinweis = "Hinweis: Als Körperschaft öffentlichen Rechts ist die Freiwillige Feuerwehr gemäß § 2 Abs. 5 UStG nicht umsatzsteuerpflichtig. Der ausgewiesene Betrag entspricht dem Bruttobetrag (0% MwSt).";
+
+    $pdf->MultiCell(0, 5, $hinweis, 0, 'L');
+
+    // --- 6. DATEI SPEICHERN ---
     $folder = __DIR__ . '/_Rechnungen';
     if (!is_dir($folder)) mkdir($folder, 0777, true);
 
     $filename = $folder.'/Rechnung_'.preg_replace('/[^a-zA-Z0-9_-]/', '', $rechnungsnummer).'.pdf';
     $pdf->Output($filename, 'F');
+
+    header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
+    exit;
 }
 
 // =====================
@@ -256,7 +362,8 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <link rel="shortcut icon" href="./images/Feuerlöscher.ico">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+
+<body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -286,9 +393,15 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <form method="post" class="card p-3 mb-4">
     <label class="form-label">&#128269; Name oder Rechnungsnummer</label>
     <div class="d-flex gap-2">
-        <input type="text" name="suchfeld" class="form-control" autocomplete="off">
+        <input type="text" name="suchfeld" class="form-control" autocomplete="off" list="sucheListe">
         <button name="suche" class="btn btn-primary">Suchen</button>
     </div>
+    
+    <datalist id="sucheListe">
+        <?php foreach ($rechnungsListe as $item): ?>
+            <option value="<?= htmlspecialchars($item) ?>">
+        <?php endforeach; ?>
+    </datalist>
 </form>
 
 <!-- MEHRFACH -->
@@ -419,54 +532,71 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 </div>
 
 <script>
+// 1. PHP-Daten sicher übernehmen
 const preisMap = <?= json_encode($preise) ?>;
 const nextRechnungsnummer = "<?= $nextRechnungsnummer ?>";
 
+// 2. Preis-Update Funktion
 function updatePreis(){
-    const typ = document.getElementById('typSelect').value;
-    const preis = preisMap[typ] || 0;
+    const typSelect = document.getElementById('typSelect');
+    const preisField = document.getElementById('preisField');
+    if(!typSelect || !preisField) return;
 
-    document.getElementById('preisField').value =
-        preis.toFixed(2).replace('.', ',') + " €";
+    const typ = typSelect.value;
+    const preis = preisMap[typ] || 0;
+    preisField.value = preis.toFixed(2).replace('.', ',') + " €";
 }
 
-document.getElementById('typSelect').addEventListener('change', updatePreis);
-updatePreis();
+// 3. Hauptlogik beim Laden der Seite
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Event-Listener für Preis-Dropdown
+    document.getElementById('typSelect').addEventListener('change', updatePreis);
+    updatePreis();
 
-document.getElementById('clearForm').addEventListener('click', () => {
-    window.location = window.location.href;
+    // Formular leeren (lädt die Seite ohne Parameter neu)
+    document.getElementById('clearForm').addEventListener('click', () => {
+    window.location.href = window.location.pathname;
 });
 
-document.getElementById('reloadData').addEventListener('click', () => {
-    const editId = document.querySelector('[name="edit_id"]').value;
-    if (!editId) return alert('Keine Rechnung ausgewählt!');
-
-    fetch(`?action=reload_data&id=${editId}`)
-        .then(res => res.json())
-        .then(data => {
-            // Formularfelder aktualisieren
-            const form = document.querySelector('form.card.p-4');
-            form.querySelector('[name="anrede"]').value = data.anrede || 'Herr';
-            form.querySelector('[name="name"]').value = data.name || '';
-            form.querySelector('[name="adresse"]').value = data.adresse || '';
-            form.querySelector('[name="plz"]').value = data.plz || '4702';
-            form.querySelector('[name="ort"]').value = data.ort || 'Wallern an der Trattnach';
-            form.querySelector('[name="anzahl"]').value = data.anzahl_loescher || 1;
-            
-            // Preis-Typ setzen
-            let typ = 'Standard';
-            for (const [k, v] of Object.entries(preisMap)) {
-                if (v == data.preis_pro_loescher) typ = k;
-            }
-            form.querySelector('[name="typ"]').value = typ;
-            updatePreis();
-
-            // PDF-Button aktualisieren
-            const pdfButton = document.getElementById('openPdf');
-            pdfButton.style.display = 'inline-block';
-            pdfButton.href = `_Rechnungen/Rechnung_${data.rechnungsnummer.replace(/[^a-zA-Z0-9_-]/g,'')}.pdf`;
+    // --- RECHNUNG NACHLADEN ---
+    const reloadBtn = document.getElementById('reloadData');
+    if (reloadBtn) {
+        reloadBtn.addEventListener('click', () => {
+            const editId = document.querySelector('[name="edit_id"]').value;
+            if (!editId) return alert('Keine Rechnung ausgewählt!');
+            fetch(`?action=reload_data&id=${editId}`)
+                .then(res => res.json())
+                .then(data => {
+                    location.reload(); // Einfachste Methode um alles konsistent zu haben
+                });
         });
+    }
+
+    // --- ERFOLGSMELDUNG & URL BEREINIGEN ---
+    
+    // Sofort die URL bereinigen (entfernt ?success=1 aus der Adresszeile)
+    if (window.location.search.includes('success=1')) {
+        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+
+    // Die Meldung nach 2 Sekunden ausblenden
+    const alert = document.querySelector('.alert-success');
+    if (alert) {
+        setTimeout(() => {
+            alert.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-20px)"; // Schiebt es leicht hoch beim faden
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 600);
+        }, 2000);
+    }
 });
+
+
 </script>
 
 </body>

@@ -175,7 +175,8 @@ body.flash-warning { background-color: #fff3cd !important; }
 </style>
 </head>
 
-<body>
+<body class="bg-light">
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <span class="navbar-brand">
@@ -200,7 +201,7 @@ body.flash-warning { background-color: #fff3cd !important; }
 
     <div class="col-md-3">
 
-        <form method="post" id="mainForm" class="card p-3 mb-3">
+        <form method="post" id="mainForm" class="card shadow p-3 mb-4">
 
             <div class="mb-2">
                 <label class="form-label small">Station</label>
@@ -236,9 +237,13 @@ body.flash-warning { background-color: #fff3cd !important; }
                        value="<?= htmlspecialchars($nummer ?? '') ?>">
             </div>
 
-            <div class="d-grid mt-2">
+           <div class="d-grid gap-2 mt-2">
                 <button type="button" id="loadDataBtn" class="btn btn-primary btn-sm">
                     &#128190; Daten laden
+                </button>
+    
+                <button type="button" id="clearBtn" class="btn btn-outline-secondary btn-sm">
+                    &#128465; Formular leeren
                 </button>
             </div>
 
@@ -272,15 +277,17 @@ body.flash-warning { background-color: #fff3cd !important; }
             </span>
         </p>
 
-            <?php if ($eintrag['active'] && !$eintrag['bezahlt']): ?>
-                <div class="alert alert-danger">
-                    &#128176; NICHT BEZAHLT → Zur Kassa
-                </div>
-            <?php elseif ($eintrag['active'] && $eintrag['defekt']): ?>
-                <div class="alert alert-warning">
-                    &#9888; Defekt – Geld retour!
-                </div>
-            <?php endif; ?>
+            <div id="paymentStatusBox">
+                <?php if ($eintrag['active'] && !$eintrag['bezahlt'] && !$eintrag['defekt']): ?>
+                    <div class="alert alert-danger">
+                        &#128176; NICHT BEZAHLT → Zur Kassa
+                    </div>
+                <?php elseif ($eintrag['active'] && $eintrag['bezahlt'] && $eintrag['defekt']): ?>
+                    <div class="alert alert-warning">
+                        &#9888; Defekt – Geld retour!
+                    </div>
+                <?php endif; ?>
+            </div>
 
             <p><strong>Prüfstatus:</strong>
                  <span id="pruefStatusBox">
@@ -353,7 +360,7 @@ body.flash-warning { background-color: #fff3cd !important; }
 
             <button type="submit" name="aktion" value="1"
                 class="btn btn-success w-100"
-                <?= (!$eintrag['bezahlt'] && $modus === "abholen") ? 'disabled' : '' ?>>
+                <?= (!$eintrag['active'] || ($modus === "abholen" && !$eintrag['bezahlt'] && !$eintrag['defekt'])) ? 'disabled' : '' ?>>
                 &#128260; Status umschalten
             </button>
         </form>
@@ -370,6 +377,17 @@ body.flash-warning { background-color: #fff3cd !important; }
     const input = document.getElementById("nummerInput");
     const form = document.getElementById("mainForm");
     const bedienmodus = document.getElementById("bedienmodus");
+    const clearBtn = document.getElementById("clearBtn");
+
+    if (clearBtn) {
+        clearBtn.addEventListener("click", function() {
+            // 1. Eingabefeld leeren
+            input.value = "";
+        
+            // 2. Formular absenden (löst den PHP-Reset aus)
+            form.submit();
+        });
+    }
 
     function submitForm() {
         form.submit();
@@ -516,15 +534,51 @@ body.flash-warning { background-color: #fff3cd !important; }
             lagerBox.innerHTML = lagerHTML;
         }
 
+        const paymentBox = document.getElementById("paymentStatusBox");
+        if (paymentBox) {
+            let paymentHTML = '';
+            // Logik: Aktiv UND nicht bezahlt UND nicht defekt
+            if (data.active == 1 && data.bezahlt == 0 && data.defekt == 0) {
+                paymentHTML = '<div class="alert alert-danger">&#128176; NICHT BEZAHLT → Zur Kassa</div>';
+            } 
+            // Logik: Aktiv UND bezahlt UND defekt
+            else if (data.active == 1 && data.bezahlt == 1 && data.defekt == 1) {
+                paymentHTML = '<div class="alert alert-warning">&#9888; Defekt – Geld retour!</div>';
+            }
+            paymentBox.innerHTML = paymentHTML;
+        }
+
 
         // Info/Hinweis
         const infoBox = document.getElementById("infoBox");
         if (infoBox) {
-            infoBox.innerHTML = data.info 
-                ? '<div class="alert alert-warning mt-3"><strong>Hinweis:</strong><br>' + data.info + '</div>'
-                : '';
+            if (data.info) {
+                // .replace(/\n/g, '<br>') wandelt die Umbrüche für HTML um
+                let formattedInfo = data.info.replace(/\n/g, '<br>'); 
+                infoBox.innerHTML = '<div class="alert alert-warning mt-3"><strong>Hinweis:</strong><br>' + formattedInfo + '</div>';
+            } else {
+                infoBox.innerHTML = '';
+            }
         }
     }
+    // ALLE Meldungen (Erfolg, Warnung und Fehler) nach x Sekunden schließen
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wir wählen alle Elemente mit der Klasse .alert aus
+        const allAlerts = document.querySelectorAll('.alert');
+    
+        allAlerts.forEach(function(alert) {
+            setTimeout(function() {
+                // Prüfung auf Bootstrap-Objekt für sauberes Schließen
+                if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                    let bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                } else {
+                    // Fallback: Einfaches Ausblenden, falls JS-Library hakt
+                    alert.style.display = 'none';
+                }
+            }, 3000); // Zeit in Millisekunden
+        });
+    });
 </script>
 
 </body>

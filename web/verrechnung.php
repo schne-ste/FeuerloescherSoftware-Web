@@ -15,7 +15,7 @@ $db = getDB();
 // =====================
 // DATEN LADEN
 // =====================
-$result = $db->query("SELECT * FROM loescher");
+$result = $db->query("SELECT * FROM loescher WHERE active=1");
 $allLoscher = [];
 
 while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
@@ -117,7 +117,8 @@ $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
 .status-nicht_geprueft { background-color: #fff3cd; }
 </style>
 </head>
-<body>
+
+<body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -142,7 +143,9 @@ $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
 
     <!-- PDF Export -->
     <div class="mb-3">
-        <a href="verrechnung_export_pdf.php" class="btn btn-dark btn-sm">📄 PDF Export</a>
+       <a href="verrechnung_export_pdf.php" target="_blank" rel="noopener noreferrer" class="btn btn-dark btn-sm">
+            📄 PDF Export
+        </a>
     </div>
 
     <!-- STATISTIK -->

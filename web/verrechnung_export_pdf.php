@@ -62,7 +62,7 @@ $pdf->Ln(8);
 // DATEN LADEN (nur verrechenbare)
 // =====================
 $db = getDB();
-$result = $db->query("SELECT * FROM loescher");
+$result = $db->query("SELECT * FROM loescher WHERE active=1");
 
 $stats = [
     'gesamt' => 0,

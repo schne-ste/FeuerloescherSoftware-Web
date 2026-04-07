@@ -49,4 +49,4 @@ CREATE TABLE rechnungen (
 );
 ");
 
-echo "Datenbank wurde neu erstellt!";
+//echo "Datenbank wurde neu erstellt!";

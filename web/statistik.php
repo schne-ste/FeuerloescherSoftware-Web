@@ -16,7 +16,7 @@ $statusFilter = $_GET['status'] ?? 'alle';
 // =====================
 // DATEN LADEN
 // =====================
-$result = $db->query("SELECT * FROM loescher");
+$result = $db->query("SELECT * FROM loescher WHERE active=1");
 $allLoscher = [];
 
 while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
@@ -120,12 +120,27 @@ $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
 <link rel="shortcut icon" href="./images/Feuerlöscher.ico">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-.status-ok { background-color: #d4edda; }
-.status-defekt { background-color: #f8d7da; }
-.status-nicht { background-color: #fff3cd; }
+/* Statusfarben für die Tabelle */
+.status-ok { background-color: #d4edda !important; }       /* grün */
+.status-defekt { background-color: #f8d7da !important; }   /* rot */
+.status-nicht { background-color: #fff3cd !important; }    /* orange */
+
+/* Optional: Hover-Effekt für alle Status-Zeilen */
+tr.status-ok:hover,
+tr.status-defekt:hover,
+tr.status-nicht:hover {
+    opacity: 0.85;
+    transition: 0.2s;
+}
+
+/* Optional: zentrierte Zahlen in der Tabelle */
+td {
+    vertical-align: middle;
+}
 </style>
 </head>
-<body>
+
+<body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -155,7 +170,12 @@ $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
         <a href="?status=ok" class="btn btn-success btn-sm">OK</a>
         <a href="?status=defekt" class="btn btn-danger btn-sm">Defekt</a>
         <a href="?status=nicht" class="btn btn-warning btn-sm">Nicht geprüft</a>
-        <a href="statistik_export_pdf.php?status=<?= $statusFilter ?>" class="btn btn-dark btn-sm">📄 PDF</a>
+        <a href="statistik_export_pdf.php?status=<?= $statusFilter ?>" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="btn btn-dark btn-sm">
+           📄 PDF
+        </a>
     </div>
 
     <!-- STATISTIK -->
@@ -173,33 +193,38 @@ $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
 
     <!-- TABELLE -->
     <h3>Liste</h3>
-    <table class="table table-striped table-bordered">
-        <thead>
-            <tr>
-                <th>Nr</th>
-                <th>Name</th>
-                <th>Typ</th>
-                <th>Preis</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($gefilterteLoscher as $v): ?>
+    <table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Nr</th>
+            <th>Name</th>
+            <th>Typ</th>
+            <th>Preis</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($gefilterteLoscher as $v): ?>
             <?php
-                if ($v['defekt']) $class='status-defekt';
-                elseif (!$v['geprueft']) $class='status-nicht';
-                else $class='status-ok';
+            // Status-Klasse bestimmen
+            if ($v['defekt']) {
+                $class = 'status-defekt'; // rot
+            } elseif (!$v['geprueft']) {
+                $class = 'status-nicht';  // orange
+            } else {
+                $class = 'status-ok';     // grün
+            }
             ?>
-            <tr class="<?= $class ?>">
-                <td><?= sprintf("%03d",$v['nummer']) ?></td>
-                <td><?= htmlspecialchars($v['name']) ?></td>
-                <td><?= $v['typ'] ?></td>
-                <td><?= number_format($v['vollpreis'],2) ?> €</td>
-                <td><?= $v['statusText'] ?></td>
+            <tr>
+                <td class="<?= $class ?>"><?= sprintf("%03d", $v['nummer']) ?></td>
+                <td class="<?= $class ?>"><?= htmlspecialchars($v['name']) ?></td>
+                <td class="<?= $class ?>"><?= htmlspecialchars($v['typ']) ?></td>
+                <td class="<?= $class ?>"><?= number_format($v['vollpreis'],2) ?> €</td>
+                <td class="<?= $class ?>"><?= $v['statusText'] ?></td>
             </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+        <?php endforeach; ?>
+    </tbody>
+</table>
 
 </div>
 </body>

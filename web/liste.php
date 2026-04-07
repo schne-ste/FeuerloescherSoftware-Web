@@ -1,5 +1,6 @@
 <?php
 require 'config.php';
+
 if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
@@ -15,6 +16,41 @@ if (isset($_GET['logout'])) {
 }
 
 // =====================
+// HILFSFUNKTIONEN
+// =====================
+if (!function_exists('percent')) {
+    function percent($teil, $gesamt) {
+        return $gesamt > 0 ? round(($teil / $gesamt) * 100) : 0;
+    }
+}
+
+function getStats($db) {
+    $stats = [];
+    // Nur aktive Löscher zählen
+    $stats['gesamt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE active = 1");
+    
+    $stats['geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND active = 1");
+    $stats['nicht_geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 0 AND active = 1");
+    
+    $stats['abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 1 AND active = 1");
+    $stats['nicht_abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 0 AND active = 1");
+    
+    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1");
+    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1");
+    
+    $stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND defekt = 0 AND active = 1");
+    $stats['defekt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 1 AND active = 1");
+    
+    // Prozente basierend auf den neuen aktiven Zahlen berechnen
+    $stats['p_defekt'] = percent($stats['defekt'], $stats['gesamt']);
+    $stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt']);
+    $stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt']);
+    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt']);
+    
+    return $stats;
+}
+
+// =====================
 // AJAX UPDATES
 // =====================
 if (isset($_POST['ajax_update'])) {
@@ -22,7 +58,6 @@ if (isset($_POST['ajax_update'])) {
     $field = $_POST['field'];
     $value = $_POST['value'];
 
-    // Definiere erlaubte Felder für AJAX
     $allowed = ['typ','name','etikett_gedruckt','abholschein_gedruckt','geprueft','abgeholt','bezahlt','defekt','active'];
     if (!in_array($field, $allowed)) exit;
 
@@ -42,35 +77,16 @@ if (isset($_POST['ajax_update'])) {
         $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
         $stmt->execute();
     }
-    echo "ok";
+
+    echo json_encode(['status'=>'ok', 'stats'=>getStats($db)]);
     exit;
 }
 
 // =====================
-// STATISTIK
+// INITIALE DATEN
 // =====================
-function percent($teil, $gesamt) {
-    return $gesamt > 0 ? round(($teil / $gesamt) * 100) : 0;
-}
+$stats = getStats($db);
 
-$stats = [];
-$stats['gesamt'] = $db->querySingle("SELECT COUNT(*) FROM loescher");
-$stats['geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1");
-$stats['nicht_geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 0");
-$stats['abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 1");
-$stats['nicht_abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 0");
-$stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1");
-$stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0");
-$stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND defekt = 0");
-$stats['defekt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 1");
-$stats['p_defekt'] = percent($stats['defekt'], $stats['gesamt']);
-$stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt']);
-$stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt']);
-$stats['p_bezahlt'] = percent($stats['gesamt'] - $stats['nicht_bezahlt'], $stats['gesamt']);
-
-// =====================
-// FILTER
-// =====================
 $where = [];
 if (!empty($_GET['suche'])) {
     $suche = SQLite3::escapeString($_GET['suche']);
@@ -84,6 +100,7 @@ if (isset($_GET['defekt'])) $where[] = "defekt = 1";
 $whereSQL = count($where) ? "WHERE " . implode(" AND ", $where) : "";
 $result = $db->query("SELECT * FROM loescher $whereSQL ORDER BY id DESC");
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -93,21 +110,15 @@ $result = $db->query("SELECT * FROM loescher $whereSQL ORDER BY id DESC");
 <link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
 <link rel="shortcut icon" href="./images/Feuerlöscher.ico">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-.table-danger { background-color: #f8d7da !important; }
-.table-success { background-color: #d4edda !important; }
-.table-warning { background-color: #fff3cd !important; }
-.table-info { background-color: #d1ecf1 !important; }
-.row-inactive { opacity: 0.4; pointer-events: none; }
-</style>
 </head>
-<body>
+
+<body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <span class="navbar-brand">
             <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
-            &#128293; Feuerlöscher Software - Alle Löscher
+            &#128293; Feuerlöscher Software - &#128196; Liste aller Löscher
         </span>
 
         <div class="d-flex gap-2">
@@ -122,98 +133,70 @@ $result = $db->query("SELECT * FROM loescher $whereSQL ORDER BY id DESC");
 </nav>
 
 <div class="container mt-5">
-<h1>&#128293; Liste aller Löscher</h1>
-<div class="row mb-4">
 
-    <!-- Gesamt -->
+<h1>&#128293; Liste aller Löscher</h1>
+
+<div class="row mb-4">
     <div class="col-6 col-md-2">
         <div class="card text-center bg-light mb-2">
             <div class="card-body p-2">
                 <h6 class="mb-1"><strong>Gesamt</strong></h6>
-                <h5 class="mb-0"><?= $stats['gesamt'] ?></h5>
+                <h5 class="mb-0" id="stat-gesamt"><?= $stats['gesamt'] ?></h5>
             </div>
         </div>
     </div>
-
-    <!-- Geprüft / Nicht geprüft -->
     <div class="col-6 col-md-2">
         <div class="card text-center bg-warning mb-2">
             <div class="card-body p-2">
                 <h6 class="mb-1"><strong>Geprüft</strong></h6>
-                <small>✅ <?= $stats['geprueft'] ?> | ❌ <?= $stats['nicht_geprueft'] ?></small>
+                <small id="stat-geprueft">✅ <?= $stats['geprueft'] ?> | ❌ <?= $stats['nicht_geprueft'] ?></small>
             </div>
         </div>
     </div>
-
-    <!-- Abgeholt / Nicht abgeholt -->
     <div class="col-6 col-md-2">
         <div class="card text-center bg-warning mb-2">
             <div class="card-body p-2">
                 <h6 class="mb-1"><strong>Abgeholt</strong></h6>
-                <small>✅ <?= $stats['abgeholt'] ?> | ❌ <?= $stats['nicht_abgeholt'] ?></small>
+                <small id="stat-abgeholt">✅ <?= $stats['abgeholt'] ?> | ❌ <?= $stats['nicht_abgeholt'] ?></small>
             </div>
         </div>
     </div>
-
-    <!-- Bezahlt / Nicht bezahlt -->
     <div class="col-6 col-md-2">
         <div class="card text-center bg-warning mb-2">
             <div class="card-body p-2">
                 <h6 class="mb-1"><strong>Bezahlt</strong></h6>
-                <small>✅ <?= $stats['bezahlt'] ?> | ❌ <?= $stats['nicht_bezahlt'] ?></small>
+                <small id="stat-bezahlt">✅ <?= $stats['bezahlt'] ?> | ❌ <?= $stats['nicht_bezahlt'] ?></small>
             </div>
         </div>
     </div>
-
-    <!-- OK / Defekt -->
     <div class="col-6 col-md-2">
         <div class="card text-center bg-success text-white mb-2">
             <div class="card-body p-2">
                 <h6 class="mb-1"><strong>OK/DEFEKT</strong></h6>
-                <small>✅ <?= $stats['ok'] ?> | ❌ <?= $stats['defekt'] ?></small>
+                <small id="stat-ok">✅ <?= $stats['ok'] ?> | ❌ <?= $stats['defekt'] ?></small>
             </div>
         </div>
     </div>
-
 </div>
 
-<!-- STATISTIK KARTEN 
- <div class="row mb-4">
-    <div class="col-6 col-md-2"><div class="card text-center bg-light"><div class="card-body"><h6>Gesamt</h6><h4><?= $stats['gesamt'] ?></h4></div></div></div>
-</div>
-<div class="row mb-4">
-    <div class="col-6 col-md-2"><div class="card text-center bg-warning"><div class="card-body"><h6>Nicht geprüft</h6><h4><?= $stats['nicht_geprueft'] ?></h4></div></div></div>
-    <div class="col-6 col-md-2"><div class="card text-center bg-warning"><div class="card-body"><h6>Nicht abgeholt</h6><h4><?= $stats['nicht_abgeholt'] ?></h4></div></div></div>
-    <div class="col-6 col-md-2"><div class="card text-center bg-warning"><div class="card-body"><h6>Nicht bezahlt</h6><h4><?= $stats['nicht_bezahlt'] ?></h4></div></div></div>
-    <div class="col-6 col-md-2"><div class="card text-center bg-danger text-white"><div class="card-body"><h6>Defekt</h6><h4><?= $stats['defekt'] ?></h4></div></div></div>
-</div>
-<div class="row mb-4">
-    <div class="col-6 col-md-2"><div class="card text-center bg-success text-white"><div class="card-body"><h6>Geprüft</h6><h4><?= $stats['geprueft'] ?></h4></div></div></div>
-    <div class="col-6 col-md-2"><div class="card text-center bg-success text-white"><div class="card-body"><h6>Abgeholt</h6><h4><?= $stats['abgeholt'] ?></h4></div></div></div>
-    <div class="col-6 col-md-2"><div class="card text-center bg-success text-white"><div class="card-body"><h6>Bezahlt</h6><h4><?= $stats['bezahlt'] ?></h4></div></div></div>
-    <div class="col-6 col-md-2"><div class="card text-center bg-success text-white"><div class="card-body"><h6>OK</h6><h4><?= $stats['ok'] ?></h4></div></div></div>
-</div>-->
-
-<!-- PROGRESSBALKEN -->
 <div class="mb-4">
-    <label>Geprüft (<?= $stats['p_geprueft'] ?>%)</label>
-    <div class="progress mb-2"><div class="progress-bar bg-success" style="width: <?= $stats['p_geprueft'] ?>%"></div></div>
+    <label>Geprüft (<span id="label-p-geprueft"><?= $stats['p_geprueft'] ?></span>%)</label>
+    <div class="progress mb-2"><div class="progress-bar bg-success" id="bar-geprueft" style="width: <?= $stats['p_geprueft'] ?>%"></div></div>
 
-    <label>Abgeholt (<?= $stats['p_abgeholt'] ?>%)</label>
-    <div class="progress mb-2"><div class="progress-bar bg-info" style="width: <?= $stats['p_abgeholt'] ?>%"></div></div>
+    <label>Abgeholt (<span id="label-p-abgeholt"><?= $stats['p_abgeholt'] ?></span>%)</label>
+    <div class="progress mb-2"><div class="progress-bar bg-info" id="bar-abgeholt" style="width: <?= $stats['p_abgeholt'] ?>%"></div></div>
 
-    <label>Bezahlt (<?= $stats['p_bezahlt'] ?>%)</label>
-    <div class="progress mb-2"><div class="progress-bar bg-dark" style="width: <?= $stats['p_bezahlt'] ?>%"></div></div>
+    <label>Bezahlt (<span id="label-p-bezahlt"><?= $stats['p_bezahlt'] ?></span>%)</label>
+    <div class="progress mb-2"><div class="progress-bar bg-dark" id="bar-bezahlt" style="width: <?= $stats['p_bezahlt'] ?>%"></div></div>
 
-    <label>Defekt (<?= $stats['p_defekt'] ?>%)</label>
-    <div class="progress mb-2"><div class="progress-bar bg-danger" style="width: <?= $stats['p_defekt'] ?>%"></div></div>
+    <label>Defekt (<span id="label-p-defekt"><?= $stats['p_defekt'] ?></span>%)</label>
+    <div class="progress mb-2"><div class="progress-bar bg-danger" id="bar-defekt" style="width: <?= $stats['p_defekt'] ?>%"></div></div>
 </div>
 
-<!-- FILTER -->
 <form method="get" class="row g-1 mb-3 align-items-center">
     <div class="col-auto">
         <input type="text" name="suche" class="form-control form-control-sm me-3" style="width:150px;"
-               placeholder="&#128269; Name/Nummer" value="<?= htmlspecialchars($_GET['suche'] ?? '') ?>">
+               placeholder="🔍 Name/Nummer" value="<?= htmlspecialchars($_GET['suche'] ?? '') ?>">
     </div>
     <div class="col-auto form-check form-check-inline">
         <input type="checkbox" name="nicht_bezahlt" class="form-check-input" id="chkBezahlt" <?= isset($_GET['nicht_bezahlt'])?'checked':'' ?>>
@@ -239,82 +222,122 @@ $result = $db->query("SELECT * FROM loescher $whereSQL ORDER BY id DESC");
     </div>
 </form>
 
-<!-- TABELLE -->
 <table class="table table-bordered table-striped align-middle">
-<thead>
-<tr>
-<th>ID</th><th>Name</th><th>Typ</th><th>Bezahlt</th><th>Defekt</th><th>Geprüft</th><th>Abgeholt</th><th>Info</th><th>Aktion</th>
-</tr>
-</thead>
-<tbody>
-<?php while ($row = $result->fetchArray()): 
-    $rowClass = !$row['geprueft'] ? "table-danger" : ($row['geprueft'] && !$row['abgeholt'] ? "table-warning" : ($row['abgeholt'] ? "table-info" : "table-success"));
-?>
-<tr data-id="<?= $row['id'] ?>" class="<?= $rowClass ?> <?= !$row['active']?'row-inactive':'' ?>">
-<td><?= htmlspecialchars($row['nummer']) ?></td>
-<td><?= htmlspecialchars($row['name']) ?></td>
-<td>
-<select class="form-select typ-select">
-    <option value="Standard" <?= $row['typ']=="Standard"?"selected":"" ?>>Standard (<?= PREIS_STANDARD ?> €)</option>
-    <option value="Rabatt" <?= $row['typ']=="Rabatt"?"selected":"" ?>>Rabatt (<?= PREIS_RABATT ?> €)</option>
-    <option value="Gratis" <?= $row['typ']=="Gratis"?"selected":"" ?>>Gratis (<?= PREIS_GRATIS ?> €)</option>
-</select>
-</td>
-<td><input type="checkbox" class="cb-bezahlt" <?= $row['bezahlt']?'checked':'' ?>></td>
-<td><input type="checkbox" class="cb-defekt" <?= $row['defekt']?'checked':'' ?>></td>
-<td><input type="checkbox" class="cb-geprueft" <?= $row['geprueft']?'checked':'' ?>></td>
-<td><input type="checkbox" class="cb-abgeholt" <?= $row['abgeholt']?'checked':'' ?>></td>
-<td><?= nl2br(htmlspecialchars($row['info'])) ?></td>
-<td>
-<?php if ($row['active']): ?>
-<button class="btn btn-sm btn-danger btn-delete">Löschen</button>
-<?php else: ?>
-<span class="text-muted">Gelöscht</span>
-<?php endif; ?>
-</td>
-</tr>
-<?php endwhile; ?>
-</tbody>
-</table>
+    <thead>
+        <tr><th>ID</th><th>Name</th><th>Typ</th><th>Bezahlt</th><th>Defekt</th><th>Geprüft</th><th>Abgeholt</th><th>Info</th><th>Aktion</th></tr>
+    </thead>
+    <tbody>
+    <?php while ($row = $result->fetchArray()): 
+        $rowClass = !$row['geprueft'] ? "table-warning" : (!$row['abgeholt'] ? "table-warning" : "table-info");
+        if ($row['geprueft'] && $row['abgeholt'] && $row['bezahlt'] && !$row['defekt']) $rowClass="table-success";
+        if ($row['defekt']) $rowClass="table-danger";
+        
+        // Prüfen ob deaktiviert
+        $disabled = ($row['active'] == 0) ? 'disabled' : '';
+    ?>
+    <tr data-id="<?= $row['id'] ?>" class="<?= $rowClass ?> <?= !$row['active']?'row-inactive':'' ?>">
+        <td><?= htmlspecialchars($row['nummer']) ?></td>
+        <td><?= htmlspecialchars($row['name']) ?></td>
+        <td>
+            <select class="form-select typ-select" <?= $disabled ?>>
+                <option value="Standard" <?= $row['typ']=="Standard"?"selected":"" ?>>Standard (<?= PREIS_STANDARD ?> €)</option>
+                <option value="Rabatt" <?= $row['typ']=="Rabatt"?"selected":"" ?>>Rabatt (<?= PREIS_RABATT ?> €)</option>
+                <option value="Gratis" <?= $row['typ']=="Gratis"?"selected":"" ?>>Gratis (<?= PREIS_GRATIS ?> €)</option>
+            </select>
+        </td>
+        <td><input type="checkbox" class="cb-bezahlt" <?= $row['bezahlt']?'checked':'' ?> <?= $disabled ?>></td>
+        <td><input type="checkbox" class="cb-defekt" <?= $row['defekt']?'checked':'' ?> <?= $disabled ?>></td>
+        <td><input type="checkbox" class="cb-geprueft" <?= $row['geprueft']?'checked':'' ?> <?= $disabled ?>></td>
+        <td><input type="checkbox" class="cb-abgeholt" <?= $row['abgeholt']?'checked':'' ?> <?= $disabled ?>></td>
+        <td><?= nl2br(htmlspecialchars($row['info'])) ?></td>
+        <td>
+            <?php if ($row['active']): ?>
+                <button class="btn btn-sm btn-danger btn-delete">Löschen</button>
+            <?php else: ?>
+                <span class="badge bg-secondary">Gelöscht</span>
+            <?php endif; ?>
+        </td>
+    </tr>
+    <?php endwhile; ?>
+    </tbody>
+    </table>
+
 </div>
 
 <script>
-function updateField(id, field, value, callback=null){
-    const formData = new FormData();
-    formData.append('ajax_update',1);
-    formData.append('id',id);
-    formData.append('field',field);
-    formData.append('value',value);
+// Hilfsfunktion für Zeilenfarben (Exakt nach Logik der Vorgabe)
+function updateRowClass(row){
+    const geprueft = row.querySelector('.cb-geprueft').checked;
+    const abgeholt = row.querySelector('.cb-abgeholt').checked;
+    const bezahlt = row.querySelector('.cb-bezahlt').checked;
+    const defekt = row.querySelector('.cb-defekt').checked;
 
-    fetch('liste.php',{method:'POST',body:formData})
-        .then(resp=>resp.text())
-        .then(data=>{ if(callback) callback(); })
-        .catch(err=>console.error(err));
+    row.classList.remove('table-danger','table-warning','table-info','table-success');
+
+    if (defekt) {
+        row.classList.add('table-danger');
+    } else if (geprueft && abgeholt && bezahlt) {
+        row.classList.add('table-success');
+    } else if (!geprueft || !abgeholt) {
+        row.classList.add('table-warning');
+    } else {
+        row.classList.add('table-info');
+    }
 }
 
-// Checkboxen und Typ-Select
-['geprueft','abgeholt','bezahlt','defekt'].forEach(field=>{
-    document.querySelectorAll(`.cb-${field}`).forEach(cb=>{
-        cb.addEventListener('change',()=>{
-            const row = cb.closest('tr');
-            updateField(row.dataset.id, field, cb.checked?1:0);
+// Live-Update der Statistik-Anzeige
+function updateStatsDOM(stats){
+    document.getElementById('stat-gesamt').innerText = stats.gesamt;
+    document.getElementById('stat-geprueft').innerText = `✅ ${stats.geprueft} | ❌ ${stats.nicht_geprueft}`;
+    document.getElementById('stat-abgeholt').innerText = `✅ ${stats.abgeholt} | ❌ ${stats.nicht_abgeholt}`;
+    document.getElementById('stat-bezahlt').innerText = `✅ ${stats.bezahlt} | ❌ ${stats.nicht_bezahlt}`;
+    document.getElementById('stat-ok').innerText = `✅ ${stats.ok} | ❌ ${stats.defekt}`;
+
+    // Balken und Prozent-Labels
+    document.getElementById('bar-geprueft').style.width = stats.p_geprueft+'%';
+    document.getElementById('label-p-geprueft').innerText = stats.p_geprueft;
+    
+    document.getElementById('bar-abgeholt').style.width = stats.p_abgeholt+'%';
+    document.getElementById('label-p-abgeholt').innerText = stats.p_abgeholt;
+
+    document.getElementById('bar-bezahlt').style.width = stats.p_bezahlt+'%';
+    document.getElementById('label-p-bezahlt').innerText = stats.p_bezahlt;
+
+    document.getElementById('bar-defekt').style.width = stats.p_defekt+'%';
+    document.getElementById('label-p-defekt').innerText = stats.p_defekt;
+}
+
+// AJAX LIVE UPDATE
+document.querySelectorAll('tbody tr').forEach(row=>{
+    row.querySelectorAll('input[type="checkbox"], select').forEach(el=>{
+        el.addEventListener('change', ()=>{
+            const id = row.dataset.id;
+            let field = '';
+            
+            if(el.classList.contains('cb-bezahlt')) field = 'bezahlt';
+            else if(el.classList.contains('cb-defekt')) field = 'defekt';
+            else if(el.classList.contains('cb-geprueft')) field = 'geprueft';
+            else if(el.classList.contains('cb-abgeholt')) field = 'abgeholt';
+            else if(el.classList.contains('typ-select')) field = 'typ';
+
+            if(!field) return;
+
+            let value = el.type==='checkbox' ? (el.checked?1:0) : el.value;
+
+            fetch('liste.php', {
+                method:'POST',
+                headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                body:`ajax_update=1&id=${id}&field=${field}&value=${encodeURIComponent(value)}`
+            })
+            .then(res=>res.json())
+            .then(data=>{
+                if(data.status==='ok'){
+                    updateRowClass(row);
+                    updateStatsDOM(data.stats);
+                }
+            })
+            .catch(err => console.error("Update fehlgeschlagen:", err));
         });
-    });
-});
-
-document.querySelectorAll('.typ-select').forEach(sel=>{
-    sel.addEventListener('change',()=>{
-        const row = sel.closest('tr');
-        updateField(row.dataset.id,'typ',sel.value);
-    });
-});
-
-// Löschen → active=0
-document.querySelectorAll('.btn-delete').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-        if(!confirm("Wirklich löschen?")) return;
-        const row = btn.closest('tr');
-        updateField(row.dataset.id,'active',0,()=>row.classList.add('row-inactive'));
     });
 });
 </script>

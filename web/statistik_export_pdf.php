@@ -66,7 +66,7 @@ $pdf->Ln(8);
 // DATEN LADEN
 // =====================
 $db = getDB();
-$result = $db->query("SELECT * FROM loescher");
+$result = $db->query("SELECT * FROM loescher WHERE active=1");
 
 $stats = [
     'gesamt' => 0,
@@ -149,9 +149,24 @@ $statData = [
 ];
 
 foreach ($statData as $row) {
-    $pdf->SetFillColor(240,240,240);
+
+    // Standard grau
+    $bgColor = [240, 240, 240];
+
+    if ($row[0] === 'OK') {
+        $bgColor = [198, 239, 206]; // grün
+    } elseif ($row[0] === 'Defekt') {
+        $bgColor = [255, 199, 206]; // rot
+    } elseif ($row[0] === 'Nicht verrechenbar') {
+        $bgColor = [255, 235, 156]; // orange
+    } elseif ($row[0] === 'Verrechenbar') {
+        $bgColor = [198, 239, 206]; // grün
+    }
+
+    $pdf->SetFillColor($bgColor[0], $bgColor[1], $bgColor[2]);
+
     $pdf->Cell(90, 8, $row[0], 1, 0, 'L', true);
-    $pdf->Cell(90, 8, $row[1], 1, 1, 'R');
+    $pdf->Cell(90, 8, $row[1], 1, 1, 'R', true);
 }
 
 $pdf->Ln(6);
@@ -177,15 +192,23 @@ $pdf->SetFont('helvetica', '', 10);
 $fill = false;
 foreach ($rows as $r) {
 
-    $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
+    // Standardfarbe (weiß)
+    $bgColor = [255, 255, 255];
+
+    if ($r['status'] === 'OK') {
+        $bgColor = [198, 239, 206]; // grün
+    } elseif ($r['status'] === 'Defekt') {
+        $bgColor = [255, 199, 206]; // rot
+    } elseif ($r['status'] === 'Nicht geprüft') {
+        $bgColor = [255, 235, 156]; // orange/gelb
+    }
+
+    $pdf->SetFillColor($bgColor[0], $bgColor[1], $bgColor[2]);
 
     $pdf->Cell(20, 7, $r['nummer'], 1, 0, 'C', true);
     $pdf->Cell(95, 7, $r['name'], 1, 0, 'L', true);
-    //$pdf->Cell(35, 7, $r['typ'], 1, 0, 'L', true);
     $pdf->Cell(30, 7, $r['preis'], 1, 0, 'R', true);
     $pdf->Cell(35, 7, $r['status'], 1, 1, 'C', true);
-
-    $fill = !$fill;
 }
 
 // =====================

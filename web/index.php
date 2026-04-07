@@ -89,7 +89,7 @@ if (isset($_POST['reset_db'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
+<body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -216,6 +216,30 @@ function confirmReset() {
     document.getElementById("reset_password").value = pwd;
     document.getElementById("resetForm").submit();
 }
+
+// Logik zum Ausblenden der Meldung
+document.addEventListener('DOMContentLoaded', function() {
+    const alert = document.querySelector('.alert-danger'); // Wir wählen die rote Alert-Box
+    
+    if (alert) {
+        // Starte Timer für 3 Sekunden (3000ms)
+        setTimeout(() => {
+            // Weicher Übergang
+            alert.style.transition = "opacity 0.8s ease, transform 0.8s ease, height 0.8s ease, margin 0.8s ease, padding 0.8s ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-10px)";
+            
+            // Nach dem Fade-out das Element komplett entfernen
+            setTimeout(() => {
+                alert.style.height = "0";
+                alert.style.margin = "0";
+                alert.style.padding = "0";
+                alert.style.overflow = "hidden";
+                setTimeout(() => alert.remove(), 800);
+            }, 400);
+        }, 3000);
+    }
+});
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

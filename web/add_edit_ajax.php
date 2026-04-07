@@ -1,17 +1,21 @@
 <?php 
 require 'config.php';
 $db = getDB();
+
+// Sicherheits-Check: Eingeloggt?
 if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
 }
 
+// Logout-Logik (optional, falls direkt aufgerufen)
 if (isset($_GET['logout'])) {
     session_destroy();
     header("Location: login.php");
     exit;
 }
 
+// Parameter prüfen
 if (isset($_GET['number']) && is_numeric($_GET['number'])) {
     $number = (int)$_GET['number'];
 } else {
@@ -24,6 +28,7 @@ if(isset($_GET['module'])) {
     die("module not provided");
 }
 
+// Datenbankabfrage
 $result = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $number");
 
 if ($result) {
@@ -39,20 +44,39 @@ if ($result) {
         die("not found");
     }
 }
-
 ?>
-<? if($module == "print")  { ?>
-    <p id="print">
-        &#127991; Etikette gedruckt: <?= $entry['etikett_gedruckt'] ? '&#9989;': '&#10060;'?> <br>
-        &#129534; Abholschein gedruckt: <?= $entry['abholschein_gedruckt'] ? '&#9989;': '&#10060;' ?>
-    </p>
-<? } ?>
+<?php if($module == "print") { ?>
+    <div class="col-md-6" id="print">
+        <label class="form-label fw-bold small text-uppercase text-muted mb-3">Druck</label>
+        
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted">Etikette</span>
+                <?= $entry['etikett_gedruckt'] == 1 ? '<span class="badge bg-success">Gedruckt</span>' : '<span class="badge bg-danger">Offen</span>' ?>
+            </div>
+            <button type="submit" name="redruck_etikett" class="btn btn-outline-secondary btn-sm w-100">
+                &#127991; Nachdrucken
+            </button>
+        </div>
 
-<? if($module == "status") {  ?>
-    <div id="status">
+        <div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small text-muted">Abholschein</span>
+                <?= $entry['abholschein_gedruckt'] == 1 ? '<span class="badge bg-success">Gedruckt</span>' : '<span class="badge bg-danger">Offen</span>' ?>
+            </div>
+            <button type="submit" name="redruck_abholschein" class="btn btn-outline-secondary btn-sm w-100">
+                &#129534; Nachdrucken
+            </button>
+        </div>
+    </div>
+<?php } ?>
+
+<?php if($module == "status") { ?>
+    <div class="col-md-6 border-end" id="status">
+        <label class="form-label fw-bold small text-uppercase text-muted mb-3">Statusübersicht</label>
+        
         <div class="form-check mb-2">
-            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="bezahlt" class="form-check-input" id="bezahltCheck"
-                <?= $entry['bezahlt'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="bezahlt" class="form-check-input" id="bezahltCheck" <?= $entry['bezahlt'] ? 'checked' : '' ?>>
             <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
         </div>
 
@@ -68,14 +92,26 @@ if ($result) {
         
         <div class="form-check mb-2">
             <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="defekt" class="form-check-input" id="defektCheck" <?= $entry['defekt'] ? 'checked' : '' ?>>
-            <label class="form-check-label" for="defektCheck">&#9940; Defekt</label>
+            <label class="form-check-label text-danger" for="defektCheck">&#9940; Defekt</label>
         </div>
     </div>
-<? } ?>
+<?php } ?>
 
-<? if($module=="infotext") { ?>
+<?php if($module == "infotext") { 
+    $infoText = $entry['info'] ?? '';
+    $lineCount = substr_count($infoText, "\n") + 1;
+    $rows = max(1, $lineCount);
+?>
     <div class="mb-3" id="infotext">
         <label class="form-label">&#8505; Info</label>
-        <textarea name="info" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" class="form-control" rows="3"><?= htmlspecialchars($entry['info']) ?></textarea>
+        <textarea 
+            name="info" 
+            class="form-control" 
+            onfocus="pausePolling()" 
+            onblur="resumePolling()" 
+            oninput="markDirty(); this.rows = (this.value.split('\n').length || 1);" 
+            style="resize:none; overflow:hidden;"
+            rows="<?= $rows ?>"
+        ><?= htmlspecialchars($infoText) ?></textarea>
     </div>
-<? } ?>
+<?php } ?>
