@@ -1,0 +1,30 @@
+{
+  "name": "🔥 Feuerlöscher Software",
+  "short_name": "Feuerlöscher",
+  "start_url": "/index.php",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#212529",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./images/Feuerlöscher.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "./images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "description": "Verwaltung von Feuerlöschern, Prüfungen, Rechnungen und Statistiken.",
+  "lang": "de-DE",
+  "scope": "/",
+  "categories": ["business", "productivity"]
+}

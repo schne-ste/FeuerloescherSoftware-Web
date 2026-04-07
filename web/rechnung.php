@@ -253,12 +253,14 @@ if (isset($_POST['save_rechnung'])) {
     $headerTable = '
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tr>
-            <td width="55%">
+            <td>
+            <p>
                 ' . $anrede . '
                 <strong>' . htmlspecialchars($_POST['name']) . '</strong><br>
                 ' . $adresse . '
+            </p>
             </td>
-            <td width="45%">
+            <td>
                 <table border="0" cellpadding="2" cellspacing="0" width="100%">
                     <tr>
                         <td width="50%" align="right"><strong>Datum:</strong></td>
@@ -355,6 +357,11 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <!DOCTYPE html>
 <html>
 <head>
+<style>
+    .highlight {
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.35) !important;
+    }
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&#128293; Feuerlöscher Software</title>
@@ -437,7 +444,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
 <div class="mb-3">
     <label class="form-label">&#128100; Name</label>
-    <input list="namenListe" name="name" class="form-control" autocomplete="off"
+    <input list="namenListe" name="name" class="form-control highlight" autocomplete="off"
         value="<?= htmlspecialchars($editEntry['name'] ?? '') ?>" required>
     <datalist id="namenListe">
         <?php foreach ($namen as $n): ?>
@@ -468,7 +475,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <div class="row">
     <div class="col-md-6 mb-3">
         <label class="form-label">&#128293; Anzahl</label>
-        <input type="number" name="anzahl" class="form-control"
+        <input type="number" name="anzahl" class="form-control highlight"
             value="<?= $editEntry['anzahl_loescher'] ?? 1 ?>">
     </div>
 

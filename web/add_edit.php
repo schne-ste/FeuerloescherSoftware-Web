@@ -228,6 +228,11 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 <!DOCTYPE html>
 <html>
 <head>
+<style>
+    .highlight {
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.35) !important;
+    }
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>&#128293; Feuerlöscher Software</title>
@@ -531,7 +536,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 <form method="post" class="card shadow p-3 mb-4" id="addForm" style="<?= $editEntry ? 'display:none;' : 'display:block;' ?>">
     <div class="mb-3">
         <label class="form-label fw-bold small text-uppercase text-muted">&#128100; Name</label>
-        <input type="text" name="name" class="form-control" required>
+        <input type="text" name="name" class="form-control highlight" required>
     </div>
 
     <div class="mb-3">
@@ -562,7 +567,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 
     <div class="mb-3">
         <label class="form-label fw-bold small text-uppercase text-muted">&#128290; Anzahl gleiche Löscher</label>
-        <input type="number" name="anzahl" class="form-control" value="1" min="1">
+        <input type="number" name="anzahl" class="form-control highlight" value="1" min="1">
     </div>
 
     <button type="submit" class="btn btn-success" name="add_loscher">Speichern</button>

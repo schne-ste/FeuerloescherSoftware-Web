@@ -160,16 +160,50 @@ td {
     </div>
 </nav>
 
+<? 
+    function status_link_resolver($status = "", $text = "") {
+        $selectedStatus = "alle";
+        if(array_key_exists("status", $_GET)) {
+            $selectedStatus = $_GET["status"];
+        }
+        $btncls = "";
+        switch($status) {
+            case "":
+            case "alle":
+                $btncls = "secondary";
+                break;
+            case "ok":
+                $btncls = "success";
+                break;
+            case "defekt":
+                $btncls = "danger";
+                break;
+            case "nicht":
+                $btncls = "warning";
+                break;
+        }
+
+        $fullbtncls = "";
+        if($selectedStatus == $status) {
+            $fullbtncls = "btn-outline-" . $btncls;
+        } else {
+            $fullbtncls = "btn-" . $btncls;
+        }
+
+        echo '<a href="?status=' . $status . '" class="btn ' . $fullbtncls . ' btn-sm">' . $text . "</a>";
+    }
+?>
+
 <div class="container mt-4">
 
     <h1>&#128293; Übersicht</h1>
 
     <!-- FILTER -->
     <div class="mb-3">
-        <a href="?status=alle" class="btn btn-secondary btn-sm">Alle</a>
-        <a href="?status=ok" class="btn btn-success btn-sm">OK</a>
-        <a href="?status=defekt" class="btn btn-danger btn-sm">Defekt</a>
-        <a href="?status=nicht" class="btn btn-warning btn-sm">Nicht geprüft</a>
+        <?= status_link_resolver("alle", "Alle"); ?>
+        <?= status_link_resolver("ok", "OK"); ?>
+        <?= status_link_resolver("defekt", "Defekt"); ?>
+        <?= status_link_resolver("nicht", "Nicht geprüft"); ?>
         <a href="statistik_export_pdf.php?status=<?= $statusFilter ?>" 
            target="_blank" 
            rel="noopener noreferrer" 

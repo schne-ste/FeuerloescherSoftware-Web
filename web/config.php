@@ -2,7 +2,7 @@
 session_start();
 
 define('DB_FILE', 'feuerloescher.db');
-define('PASSWORD', '123'); // ändern!
+define('PASSWORD', 'admin'); // ändern!
 define('API_TOKEN', '123'); // ändern!
 
 define('PREIS_STANDARD', 15);

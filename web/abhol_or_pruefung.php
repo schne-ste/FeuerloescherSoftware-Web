@@ -264,61 +264,61 @@ body.flash-warning { background-color: #fff3cd !important; }
     <?php if ($eintrag && $modus): ?>
     <div class="card p-4">
 
-        <h4 class="mb-3">Details</h4>
+        <h3 class="mb-3">Details - <strong> <?= htmlspecialchars($eintrag['nummer']) ?></strong></h3>
 
-        <p><strong>Nummer:</strong> <?= htmlspecialchars($eintrag['nummer']) ?></p>
-        <p><strong>Name:</strong> <?= htmlspecialchars($eintrag['name']) ?></p>
+        <h5><strong>Name:</strong> <?= htmlspecialchars($eintrag['name']) ?></h5>
 
-        <p><strong>Erstellt:</strong>
-            <span class="badge bg-secondary">
+        <h5><strong>Erstellt:</strong>
+            <span>
                 <?= !empty($eintrag['zeitstempel']) 
                     ? date('d.m.Y H:i', strtotime($eintrag['zeitstempel'])) 
                     : '-' ?>
             </span>
-        </p>
+        </h5>
+        <hr>
 
             <div id="paymentStatusBox">
                 <?php if ($eintrag['active'] && !$eintrag['bezahlt'] && !$eintrag['defekt']): ?>
                     <div class="alert alert-danger">
-                        &#128176; NICHT BEZAHLT → Zur Kassa
+                        <h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4>
                     </div>
                 <?php elseif ($eintrag['active'] && $eintrag['bezahlt'] && $eintrag['defekt']): ?>
                     <div class="alert alert-warning">
-                        &#9888; Defekt – Geld retour!
+                        <h4>&#9888; Defekt – Geld retour!</h4>
                     </div>
                 <?php endif; ?>
             </div>
 
-            <p><strong>Prüfstatus:</strong>
+            <h4><strong>Prüfstatus:</strong>
                  <span id="pruefStatusBox">
                     <?= $eintrag['geprueft']
                         ? '<span class="badge bg-success">Geprüft</span>'
                         : '<span class="badge bg-warning text-dark">Nicht geprüft</span>' ?>
                 </span>
-            </p>
+            </h4>
 
 
-        <p><strong>Löscherstatus:</strong>
+        <h4><strong>Löscherstatus:</strong>
             <span id="loescherStatusBox">
                 <?= empty($eintrag['defekt'])
                     ? '<span class="badge bg-success">OK</span>'
                     : '<span class="badge bg-danger">DEFEKT</span>' ?>
             </span>
-        </p>
+                </h4>
 
-        <p><strong>Lagerstatus:</strong>
+        <h4><strong>Abholstatus:</strong>
             <span id="lagerStatusBox">
                 <?= $eintrag['abgeholt']
                     ? '<span class="badge bg-success">Abgeholt</span>'
                     : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
             </span>
-        </p>
+                </h4>
 
         <div id="infoBox">
         <?php if (!empty($eintrag['info'])): ?>
             <div class="alert alert-warning mt-3">
                 <strong>Hinweis:</strong><br>
-                <?= nl2br(htmlspecialchars($eintrag['info'])) ?>
+                <h4><?= nl2br(htmlspecialchars($eintrag['info'])) ?></h4>
             </div>
         <?php endif; ?>
         </div>
@@ -326,29 +326,30 @@ body.flash-warning { background-color: #fff3cd !important; }
 
         <!--  BUTTONS -->
         <?php if ($modus === "pruefen"): ?>
+            <div class="row gap-1">
+                <form method="post" class="mt-3 col">
+                    <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                    <input type="hidden" name="modus" value="<?= $modus ?>">
+                    <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
-            <form method="post" class="mt-3">
-                <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
-                <input type="hidden" name="modus" value="<?= $modus ?>">
-                <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+                    <button type="submit" name="setInfo" class="btn btn-warning w-100">
+                        <strong>&#9888; Schaummittel tauschen</strong>
+                    </button>
+                </form>
+                <form method="post" class="mt-3 col">
+                    <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                    <input type="hidden" name="modus" value="<?= $modus ?>">
+                    <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
-                <button type="submit" name="setInfo" class="btn btn-warning w-100">
-                    &#9888; Schaummittel tauschen
-                </button>
-            </form>
-            <form method="post" class="mt-3">
-                <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
-                <input type="hidden" name="modus" value="<?= $modus ?>">
-                <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
-
-                <button type="submit" name="setDefekt"
-                    class="btn w-100 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
-                    
-                    <?= $eintrag['defekt'] 
-                        ? '&#128295; Defekt zurücksetzen'
-                        : '&#9940; Löscher defekt' ?> 
-                </button>
-            </form>
+                    <button type="submit" name="setDefekt"
+                        class="btn w-100 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
+                        
+                         <strong><?= $eintrag['defekt'] 
+                            ? '&#128295; Defekt zurücksetzen'
+                            : '&#9940; Löscher defekt' ?></strong> 
+                    </button>
+                </form>
+            </div>
         <?php endif; ?>
 
 
@@ -361,7 +362,7 @@ body.flash-warning { background-color: #fff3cd !important; }
             <button type="submit" name="aktion" value="1"
                 class="btn btn-success w-100"
                 <?= (!$eintrag['active'] || ($modus === "abholen" && !$eintrag['bezahlt'] && !$eintrag['defekt'])) ? 'disabled' : '' ?>>
-                &#128260; Status umschalten
+                <strong>&#128260; Status umschalten</strong>
             </button>
         </form>
         <?php endif; ?>
@@ -539,11 +540,11 @@ body.flash-warning { background-color: #fff3cd !important; }
             let paymentHTML = '';
             // Logik: Aktiv UND nicht bezahlt UND nicht defekt
             if (data.active == 1 && data.bezahlt == 0 && data.defekt == 0) {
-                paymentHTML = '<div class="alert alert-danger">&#128176; NICHT BEZAHLT → Zur Kassa</div>';
+                paymentHTML = '<div class="alert alert-danger"><h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4></div>';
             } 
             // Logik: Aktiv UND bezahlt UND defekt
             else if (data.active == 1 && data.bezahlt == 1 && data.defekt == 1) {
-                paymentHTML = '<div class="alert alert-warning">&#9888; Defekt – Geld retour!</div>';
+                paymentHTML = '<div class="alert alert-warning"><h4>&#9888; Defekt – Geld retour!</h4></div>';
             }
             paymentBox.innerHTML = paymentHTML;
         }
@@ -555,7 +556,7 @@ body.flash-warning { background-color: #fff3cd !important; }
             if (data.info) {
                 // .replace(/\n/g, '<br>') wandelt die Umbrüche für HTML um
                 let formattedInfo = data.info.replace(/\n/g, '<br>'); 
-                infoBox.innerHTML = '<div class="alert alert-warning mt-3"><strong>Hinweis:</strong><br>' + formattedInfo + '</div>';
+                infoBox.innerHTML = '<div class="alert alert-warning mt-3"><strong>Hinweis:</strong><br><h4>' + formattedInfo + '</h4></div>';
             } else {
                 infoBox.innerHTML = '';
             }

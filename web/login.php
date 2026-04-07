@@ -23,6 +23,8 @@ if ($_POST) {
     <link rel="shortcut icon" href="./images/Feuerlöscher.ico">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#212529">
 </head>
 
 <body class="bg-light">
