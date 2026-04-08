@@ -213,12 +213,12 @@ if (isset($_POST['save_rechnung'])) {
             $this->Line(15, $this->GetY(), 195, $this->GetY());
             $this->Ln(2);
 
-            $firma = FIRMA_NAME . " | " . FIRMA_ADRESSE . " | " . FIRMA_PLZORT;
-            $info = "Web: " . FIRMA_WEB . " | Erstellt mit Feuerlöscher-Software";
+            $firma = FIRMA_NAME . " | " . FIRMA_ADRESSE . " | " . FIRMA_PLZORT. " | " . FIRMA_WEB;
+            $info = "Erstellt mit Feuerlöscher-Software";
 
             $this->Cell(0, 4, $firma, 0, 1, 'C');
             $this->Cell(0, 4, $info, 0, 1, 'C');
-            $this->Cell(0, 4, 'Vielen Dank für Ihre geschätzte Unterstützung!', 0, 0, 'C');
+            $this->Cell(0, 4, 'Vielen Dank für Ihren Besuch!', 0, 0, 'C');
         }
     }
 
@@ -236,44 +236,70 @@ if (isset($_POST['save_rechnung'])) {
         // Logo rechts oben (Breite 50mm)
         $pdf->Image($logoPath, 145, 15, 50);
     }
-
+    
     // Kleiner Absender (Einzeiler für Fensterkuvert)
     $pdf->SetFont('helvetica', '', 8);
     $pdf->SetXY(15, 42);
     $pdf->Cell(0, 5, FIRMA_NAME . " • " . FIRMA_ADRESSE . " • " . FIRMA_PLZORT, 0, 1, 'L');
 
-    // --- 2. EMPFÄNGER & RECHNUNGSDATEN ---
-    $pdf->SetFont('helvetica', '', 11);
-    $pdf->SetY(52);
-
-    $anrede = (!empty($_POST['anrede']) && $_POST['anrede'] !== '-') ? htmlspecialchars($_POST['anrede']) . '<br>' : '';
-    $adresse = !empty($_POST['adresse']) ? htmlspecialchars($_POST['adresse']) . '<br>' . ' ' . htmlspecialchars($_POST['plz']) . ' ' . htmlspecialchars($_POST['ort']) : '';
-
-    // Layout-Tabelle für Anschrift und Infoblock
-    $headerTable = '
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td>
-            <p>
-                ' . $anrede . '
-                <strong>' . htmlspecialchars($_POST['name']) . '</strong><br>
-                ' . $adresse . '
-            </p>
-            </td>
-            <td>
-                <table border="0" cellpadding="2" cellspacing="0" width="100%">
-                    <tr>
-                        <td width="50%" align="right"><strong>Datum:</strong></td>
-                        <td width="50%" align="right">' . date('d.m.Y') . '</td>
-                    </tr>
-                    <tr>
-                        <td width="50%" align="right"><strong>Rechnungs-Nr:</strong></td>
-                        <td width="50%" align="right">' . $rechnungsnummer . '</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>';
+	// =====================
+	// EMPFÄNGER LINKS
+	// =====================
+	
+	$pdf->SetFont('helvetica', '', 11);
+	
+	// Linke Spalte
+	$leftX = 15;
+	$leftWidth = 100;
+	
+	$pdf->SetXY($leftX, 50);
+	
+	// Anrede
+	if (!empty($_POST['anrede']) && $_POST['anrede'] !== '-') {
+	    $pdf->MultiCell($leftWidth, 6, $_POST['anrede'], 0, 'L');
+	}
+	
+	// Name (fett)
+	$pdf->SetX($leftX);
+	$pdf->SetFont('helvetica', 'B', 11);
+	$pdf->MultiCell($leftWidth, 6, $_POST['name'], 0, 'L');
+	
+	$pdf->SetFont('helvetica', '', 11);
+	
+	// Adresse
+	if (!empty($_POST['adresse'])) {
+	    $pdf->SetX($leftX);
+	    $pdf->MultiCell($leftWidth, 6, $_POST['adresse'], 0, 'L');
+	}
+	
+	// PLZ Ort
+	$pdf->SetX($leftX);
+	$pdf->MultiCell($leftWidth, 6, $_POST['plz'] . ' ' . $_POST['ort'], 0, 'L');
+	
+	
+	// =====================
+	// RECHTSBLOCK (fix rechts)
+	// =====================
+	
+	// Rechte Spalte beginnt fix rechts
+	$rightX = 130;
+	
+	$pdf->SetXY($rightX, 50);
+	
+	// Datum
+	$pdf->Cell(40, 6, 'Datum:', 0, 0, 'R');
+	$pdf->Cell(30, 6, date('d.m.Y'), 0, 1, 'L');
+	
+	// Rechnungsnummer
+	$pdf->SetX($rightX);
+	$pdf->Cell(40, 6, 'Rechnungs-Nr.:', 0, 0, 'R');
+	$pdf->Cell(30, 6, $rechnungsnummer, 0, 1, 'L');
+	
+	
+	// =====================
+	// ABSTAND NACH UNTEN
+	// =====================
+	$pdf->Ln(15);
 
     $pdf->writeHTML($headerTable, true, false, true, false, '');
 
@@ -282,7 +308,7 @@ if (isset($_POST['save_rechnung'])) {
     $pdf->SetFont('helvetica', 'B', 18);
     $pdf->Cell(0, 10, "Rechnung", 0, 1, 'L');
     $pdf->SetFont('helvetica', '', 11);
-    $pdf->Cell(0, 5, "über die Feuerlöscherüberprüfung", 0, 1, 'L');
+    //$pdf->Cell(0, 5, "über die Feuerlöscherüberprüfung", 0, 1, 'L');
     $pdf->Ln(10);
 
     // --- 4. LEISTUNGSTABELLE ---
@@ -474,7 +500,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label class="form-label">&#128293; Anzahl</label>
+        <label class="form-label">&#128293; Anzahl Löscher</label>
         <input type="number" name="anzahl" class="form-control highlight"
             value="<?= $editEntry['anzahl_loescher'] ?? 1 ?>">
     </div>
@@ -509,15 +535,15 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
        href="_Rechnungen/Rechnung_<?= preg_replace('/[^a-zA-Z0-9_-]/', '', $editEntry['rechnungsnummer']) ?>.pdf" 
        target="_blank" 
        class="btn btn-info">
-        📄 PDF Rechnung öffnen
+         &#128196; PDF Rechnung öffnen
     </a>
 
     <button type="submit" name="reprint_rechnung" class="btn btn-warning">
-        🔄 Bon Nachdrucken
+         Bon Nachdrucken
     </button>
 
     <button type="button" id="reloadData" class="btn btn-secondary">
-        🔄 Daten neu laden
+        &#128260; Daten neu laden
     </button>
 
 </div>
@@ -527,13 +553,13 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <?php } else { ?>
 
 <a id="openPdf" href="#" style="display:none;" class="btn btn-info mb-3">
-    📄 PDF öffnen
+    &#128196; PDF öffnen
 </a>
 
 <?php } ?>
 
 <button class="btn btn-success w-100" name="save_rechnung">&#128190; Speichern</button>
-<button type="button" class="btn btn-secondary w-100 mt-2" id="clearForm">&#10060; Formular leeren</button>
+<button type="button" class="btn btn-outline-secondary w-100 mt-2" id="clearForm">&#128465; Formular leeren</button>
 
 </form>
 </div>

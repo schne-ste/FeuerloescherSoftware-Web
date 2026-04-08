@@ -72,10 +72,35 @@ if (isset($_POST['ajax_update'])) {
         $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
         $stmt->execute();
     } else {
-        $stmt = $db->prepare("UPDATE loescher SET $field=:value WHERE id=:id");
-        $stmt->bindValue(':value', $value, SQLITE3_INTEGER);
-        $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
-        $stmt->execute();
+
+        // LÖSCHEN
+        if ($field === 'active' && $value == 0) {
+            $stmt = $db->prepare("
+                UPDATE loescher 
+                SET active = 0, info = COALESCE(info,'') || ' | Gelöscht' 
+                WHERE id = :id
+            ");
+            $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+            $stmt->execute();
+
+        // WIEDERHERSTELLEN
+        } elseif ($field === 'active' && $value == 1) {
+            $stmt = $db->prepare("
+                UPDATE loescher 
+                SET active = 1,
+                    info = TRIM(REPLACE(info, ' | Gelöscht', ''))
+                WHERE id = :id
+            ");
+            $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+            $stmt->execute();
+
+        } else {
+            $stmt = $db->prepare("UPDATE loescher SET $field=:value WHERE id=:id");
+            $stmt->bindValue(':value', $value, SQLITE3_INTEGER);
+            $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
+            $stmt->execute();
+        }
+
     }
 
     echo json_encode(['status'=>'ok', 'stats'=>getStats($db)]);
@@ -339,6 +364,70 @@ document.querySelectorAll('tbody tr').forEach(row=>{
             .catch(err => console.error("Update fehlgeschlagen:", err));
         });
     });
+});
+
+// DELETE BUTTON
+document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if (!confirm('Wirklich löschen?')) return;
+
+        const row = btn.closest('tr');
+        const id = row.dataset.id;
+
+        fetch('liste.php', {
+            method:'POST',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:`ajax_update=1&id=${id}&field=active&value=0`
+        })
+        .then(res=>res.json())
+        .then(data=>{
+            if(data.status==='ok'){
+                row.classList.add('table-secondary');
+                row.querySelectorAll('input, select, button').forEach(el => el.disabled = true);
+
+                // Info setzen
+                row.querySelector('td:nth-child(8)').innerText = "Gelöscht";
+
+                // Button ersetzen
+                btn.outerHTML = '<button class="btn btn-sm btn-outline-success btn-restore">Wiederherstellen</button>';
+
+                updateStatsDOM(data.stats);
+            }
+        });
+    });
+});
+
+// RESTORE BUTTON
+document.addEventListener('click', function(e){
+    if(e.target.classList.contains('btn-restore')){
+
+        const row = e.target.closest('tr');
+        const id = row.dataset.id;
+
+        fetch('liste.php', {
+            method:'POST',
+            headers:{'Content-Type':'application/x-www-form-urlencoded'},
+            body:`ajax_update=1&id=${id}&field=active&value=1`
+        })
+        .then(res=>res.json())
+        .then(data=>{
+            if(data.status==='ok'){
+
+                row.classList.remove('table-secondary');
+                row.querySelectorAll('input, select').forEach(el => el.disabled = false);
+
+                // Info bereinigen
+                let infoCell = row.querySelector('td:nth-child(8)');
+                infoCell.innerText = infoCell.innerText.replace('Gelöscht','').replace('|','').trim();
+
+                // Button zurück
+                e.target.outerHTML = '<button class="btn btn-sm btn-danger btn-delete">Löschen</button>';
+
+                updateRowClass(row);
+                updateStatsDOM(data.stats);
+            }
+        });
+    }
 });
 </script>
 

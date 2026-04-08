@@ -232,6 +232,10 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     .highlight {
         box-shadow: 0 .125rem .25rem rgba(0,0,0,.35) !important;
     }
+    .status-unbekannt {
+	    filter: grayscale(1);
+	    opacity: 0.6;
+	}
 </style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -385,33 +389,33 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 </form>
 
 <?php if ($searchResults): ?>
-<form method="post" class="card shadow p-3 mb-4" id="multiSelectForm">
-    <label class="form-label">Mehrere Treffer gefunden. Wähle einen Datensatz:</label>
-    <select name="selected_entry" class="form-select mb-2" id="multiSelect">
-        <?php foreach ($searchResults as $r): ?>
-        <option value="<?= $r['id'] ?>"><?= sprintf("%03d", $r['nummer']) ?> - <?= htmlspecialchars($r['name']) ?></option>
-        <?php endforeach; ?>
-    </select>
-    <button type="submit" name="select_entry" class="btn btn-primary">Datensatz laden</button>
-</form>
+	<form method="post" class="card shadow p-3 mb-4" id="multiSelectForm">
+	    <label class="form-label">Mehrere Treffer gefunden. Wähle einen Datensatz:</label>
+	    <select name="selected_entry" class="form-select mb-2" id="multiSelect">
+	        <?php foreach ($searchResults as $r): ?>
+	        <option value="<?= $r['id'] ?>"><?= sprintf("%03d", $r['nummer']) ?> - <?= htmlspecialchars($r['name']) ?></option>
+	        <?php endforeach; ?>
+	    </select>
+	    <button type="submit" name="select_entry" class="btn btn-primary">Datensatz laden</button>
+	</form>
 <?php endif; ?>
 
 <?php if ($editEntry): ?>
-<div class="row g-2 mb-3" id="editButtons">
-    <div class="col-6">
-        <button type="button" class="btn btn-secondary w-100" id="backToAdd">
-            &#10010; Neuer Eintrag
-        </button>
-    </div>
-    <div class="col-6">
-        <form method="post" class="m-0">
-            <input type="hidden" name="nummer" value="<?= $editEntry['nummer'] ?>">
-            <button type="submit" name="refresh_entry" class="btn btn-info w-100">
-                &#128260; Neu laden
-            </button>
-        </form>
-    </div>
-</div>
+	<div class="row g-2 mb-3" id="editButtons">
+	    <div class="col-6">
+	        <button type="button" class="btn btn-secondary w-100" id="backToAdd">
+	            &#10010; Neuer Eintrag
+	        </button>
+	    </div>
+	    <div class="col-6">
+	        <form method="post" class="m-0">
+	            <input type="hidden" name="nummer" value="<?= $editEntry['nummer'] ?>">
+	            <button type="submit" name="refresh_entry" class="btn btn-info w-100">
+	                &#128260; Neu laden
+	            </button>
+	        </form>
+	    </div>
+	</div>
 <?php endif; ?>
 
 <?php if ($editEntry): ?>
@@ -422,17 +426,17 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
         <div class="row">
             <div class="col-md-6 border-end">
                 <div class="mb-3">
-                    <label class="form-label fw-bold small text-uppercase text-muted">Nummer</label>
+                    <label class="form-label">Nummer</label>
                     <input type="text" class="form-control bg-light" value="<?= sprintf("%03d", $editEntry['nummer']) ?>" disabled>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold small text-uppercase text-muted">&#128100; Name</label>
+                    <label class="form-label">&#128100; Name</label>
                     <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($editEntry['name']) ?>" required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold small text-uppercase text-muted">&#128176; Preismodell</label>
+                    <label class="form-label">&#128176; Preis je Löscher</label>
                     <select name="typ" class="form-select mb-1" id="editTypSelect">
                         <?php foreach ($preise as $k => $v): ?>
                         <option value="<?= $k ?>" <?= ($editEntry['typ'] == $k) ? 'selected' : '' ?>><?= $k ?></option>
@@ -442,7 +446,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
                 </div>
 
                 <div class="mb-3" id="infotext">
-                    <label class="form-label">&#8505; Info</label>
+                    <label class="form-label">&#128161; Info</label>
                     <?php 
                         $infoText = $editEntry['info'] ?? '';
                         // Berechne Zeilen, mindestens 1
@@ -480,34 +484,59 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
                             <label class="form-check-label" for="abgeholtCheck">&#128230; Abgeholt</label>
                         </div>
                     
-                        <div class="form-check mb-2">
-                            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="defekt" class="form-check-input" id="defektCheck" <?= $editEntry['defekt'] ? 'checked' : '' ?>>
-                            <label class="form-check-label text-danger" for="defektCheck">&#9940; Defekt</label>
-                        </div>
+						<div class="form-check mb-2" style="<?= ($editEntry['defekt'] == -1) ? 'filter: grayscale(1); opacity: 0.5;' : '' ?>">
+						    <input type="checkbox" 
+						           onfocus="pausePolling()" 
+						           onblur="resumePolling()" 
+						           oninput="markDirty()" 
+						           name="defekt" 
+						           class="form-check-input" 
+						           id="defektCheck" 
+						           <?= ($editEntry['defekt'] == 1) ? 'checked' : '' ?>>
+						    <label class="form-check-label text-danger" for="defektCheck">
+						        &#9940; Defekt <?= ($editEntry['defekt'] == -1) ? '<small class="text-muted">(noch ungeprüft)</small>' : '' ?>
+						    </label>
+						</div>
                     </div>
 
                     <div class="col-md-6" id="print">
                         <label class="form-label fw-bold small text-uppercase text-muted mb-3">Druck</label>
                         
                         <div class="mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="small text-muted">Etikette</span>
-                                <?= $editEntry['etikett_gedruckt'] == 1 ? '<span class="badge bg-success">Gedruckt</span>' : '<span class="badge bg-danger">Offen</span>' ?>
-                            </div>
-                            <button type="submit" name="redruck_etikett" class="btn btn-outline-secondary btn-sm w-100">
-                                &#127991; Nachdrucken
-                            </button>
-                        </div>
+						    <div class="d-flex justify-content-between align-items-center mb-1">
+						        <span class="small text-muted">
+						            Etikette: 
+						            <span class="badge <?= $editEntry['etikett_gedruckt'] == 1 ? 'bg-success' : 'bg-danger' ?>">
+						                <?= $editEntry['etikett_gedruckt'] == 1 ? 'Gedruckt' : 'Offen' ?>
+						            </span>
+						        </span>
+						        <span>
+						            <?= $editEntry['etikett_gedruckt'] == 1 ? '&#9989;' : '&#10060;' ?>
+						        </span>
+						    </div>
+						
+						    <button type="submit" name="redruck_etikett" class="btn btn-outline-secondary btn-sm w-100">
+						        &#127991; Nachdrucken
+						    </button>
+						</div>
 
-                        <div>
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <span class="small text-muted">Abholschein</span>
-                                <?= $editEntry['abholschein_gedruckt'] == 1 ? '<span class="badge bg-success">Gedruckt</span>' : '<span class="badge bg-danger">Offen</span>' ?>
-                            </div>
-                            <button type="submit" name="redruck_abholschein" class="btn btn-outline-secondary btn-sm w-100">
-                                &#129534; Nachdrucken
-                            </button>
-                        </div>
+                        <div class="mb-3">
+						    <div class="d-flex justify-content-between align-items-center mb-1">
+						        <span class="small text-muted">
+						            Abholschein: 
+						            <span class="badge <?= $editEntry['abholschein_gedruckt'] == 1 ? 'bg-success' : 'bg-danger' ?>">
+						                <?= $editEntry['abholschein_gedruckt'] == 1 ? 'Gedruckt' : 'Offen' ?>
+						            </span>
+						        </span>
+						        <span>
+						            <?= $editEntry['abholschein_gedruckt'] == 1 ? '&#9989;' : '&#10060;' ?>
+						        </span>
+						    </div>
+						
+						    <button type="submit" name="redruck_abholschein" class="btn btn-outline-secondary btn-sm w-100">
+						        &#129534; Nachdrucken
+						    </button>
+						</div>
                     </div>
                 </div>
             </div>
@@ -525,7 +554,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
                          &#128176; Geld retour gegeben
                     </button>
                 <?php endif; ?>
-                <button type="submit" class="btn btn-success px-4" name="edit_id">Speichern</button>
+                <button type="submit" class="btn btn-success px-4" name="edit_id">&#128190;  Speichern</button>
             </div>
         </div>
     </form>
@@ -535,12 +564,12 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 <!-- Add-Formular wird nur angezeigt, wenn kein Eintrag zur Bearbeitung geladen ist -->
 <form method="post" class="card shadow p-3 mb-4" id="addForm" style="<?= $editEntry ? 'display:none;' : 'display:block;' ?>">
     <div class="mb-3">
-        <label class="form-label fw-bold small text-uppercase text-muted">&#128100; Name</label>
+        <label class="form-label">&#128100; Name</label>
         <input type="text" name="name" class="form-control highlight" required>
     </div>
 
     <div class="mb-3">
-        <label class="form-label fw-bold small text-uppercase text-muted">&#128176; Preismodell</label>
+        <label class="form-label">&#128176; Preis je Löscher</label>
         <select name="typ" class="form-select" id="addTypSelect">
             <?php foreach ($preise as $k => $v): ?>
                 <option value="<?= $k ?>" <?= ($k === 'Standard') ? 'selected' : '' ?>><?= $k ?></option>
@@ -550,7 +579,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     </div>
 
     <div class="mb-3">
-        <label class="form-label fw-bold small text-uppercase text-muted">&#8505; Info</label>
+        <label class="form-label">&#128161; Info</label>
         <textarea 
             name="info" 
             class="form-control" 
@@ -566,13 +595,15 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     </div>
 
     <div class="mb-3">
-        <label class="form-label fw-bold small text-uppercase text-muted">&#128290; Anzahl gleiche Löscher</label>
+        <label class="form-label">&#128290; Anzahl gleiche Löscher</label>
         <input type="number" name="anzahl" class="form-control highlight" value="1" min="1">
     </div>
 
-    <button type="submit" class="btn btn-success" name="add_loscher">Speichern</button>
+    <button type="submit" class="btn btn-success" name="add_loscher">&#128190;  Speichern</button>
 </form>
+<?php include 'massenverwaltung.php'; ?>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const preisMap = <?= json_encode($preise) ?>;

@@ -239,12 +239,13 @@ body.flash-warning { background-color: #fff3cd !important; }
 
            <div class="d-grid gap-2 mt-2">
                 <button type="button" id="loadDataBtn" class="btn btn-primary btn-sm">
-                    &#128190; Daten laden
+                    &#128260; Neu laden
                 </button>
     
                 <button type="button" id="clearBtn" class="btn btn-outline-secondary btn-sm">
                     &#128465; Formular leeren
                 </button>
+                
             </div>
 
         </form>
@@ -277,42 +278,58 @@ body.flash-warning { background-color: #fff3cd !important; }
         </h5>
         <hr>
 
-            <div id="paymentStatusBox">
-                <?php if ($eintrag['active'] && !$eintrag['bezahlt'] && !$eintrag['defekt']): ?>
-                    <div class="alert alert-danger">
-                        <h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4>
-                    </div>
-                <?php elseif ($eintrag['active'] && $eintrag['bezahlt'] && $eintrag['defekt']): ?>
-                    <div class="alert alert-warning">
-                        <h4>&#9888; Defekt – Geld retour!</h4>
-                    </div>
-                <?php endif; ?>
-            </div>
+        <div id="paymentStatusBox">
+            <?php if ($eintrag['active'] && !$eintrag['bezahlt'] && !$eintrag['defekt']): ?>
+                <div class="alert alert-danger">
+                    <h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4>
+                </div>
+            <?php elseif ($eintrag['active'] && $eintrag['bezahlt'] && $eintrag['defekt']): ?>
+                <div class="alert alert-warning">
+                    <h4>&#9888; Defekt – Geld retour!</h4>
+                </div>
+            <?php endif; ?>
+        </div>
+        <br>
 
-            <h4><strong>Prüfstatus:</strong>
-                 <span id="pruefStatusBox">
-                    <?= $eintrag['geprueft']
-                        ? '<span class="badge bg-success">Geprüft</span>'
-                        : '<span class="badge bg-warning text-dark">Nicht geprüft</span>' ?>
-                </span>
-            </h4>
+		<h4 class="d-flex mb-2">
+		    <span class="me-2" style="width:160px;">Prüfstatus:</span>
+		    <?php
+		        // Status 1
+		        if ($eintrag['geprueft']) {
+		            if (!empty($eintrag['defekt'])) {
+		                // Geprüft + DEFEKT → Status1 als Outline
+		                $status1 = '<span class="badge border border-success text-success bg-transparent">Geprüft</span>';
+		            } else {
+		                // Geprüft + OK → normal
+		                $status1 = '<span class="badge bg-success">Geprüft</span>';
+		            }
+		        } else {
+		            // Nicht geprüft → normal gelb
+		            $status1 = '<span class="badge bg-warning text-dark">Nicht geprüft</span>';
+		        }
+		
+		        // Status 2
+		        $status2 = empty($eintrag['defekt'])
+		            ? '<span class="badge bg-success">OK</span>'
+		            : '<span class="badge bg-danger">DEFEKT</span>';
+		
+		        // Ausgabe
+		        if ($eintrag['geprueft']) {
+		            echo $status1 . ' &nbsp;-&nbsp; ' . $status2;
+		        } else {
+		            echo $status1;
+		        }
+		    ?>
+		</h4>
+		<br>
+		<h4 class="d-flex mb-2">
+		    <span class="me-2" style="width:160px;">Abholstatus:</span>
+		    <?= $eintrag['abgeholt']
+		        ? '<span class="badge bg-success">Abgeholt</span>'
+		        : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
+		</h4>
 
-
-        <h4><strong>Löscherstatus:</strong>
-            <span id="loescherStatusBox">
-                <?= empty($eintrag['defekt'])
-                    ? '<span class="badge bg-success">OK</span>'
-                    : '<span class="badge bg-danger">DEFEKT</span>' ?>
-            </span>
-                </h4>
-
-        <h4><strong>Abholstatus:</strong>
-            <span id="lagerStatusBox">
-                <?= $eintrag['abgeholt']
-                    ? '<span class="badge bg-success">Abgeholt</span>'
-                    : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
-            </span>
-                </h4>
+		<hr>
 
         <div id="infoBox">
         <?php if (!empty($eintrag['info'])): ?>
@@ -428,6 +445,19 @@ body.flash-warning { background-color: #fff3cd !important; }
             input.value = "";
             form.submit();
         }
+
+        if (e.code === "Space") {
+        e.preventDefault(); // verhindert Scrollen!
+        if (input.value.trim() === "") return;
+
+        let hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = "aktion";
+        hidden.value = "1";
+        form.appendChild(hidden);
+
+        form.submit();
+    }
     });
 
     const number = <?= isset($nummerSafe) ? $nummerSafe : 'null' ?>;
