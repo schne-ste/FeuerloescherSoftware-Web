@@ -3,6 +3,7 @@ session_start();
 
 define('DB_FILE', 'feuerloescher.db');
 define('PASSWORD', 'admin'); // ändern!
+define('RESET_PASSWORD', '47Wallern02'); // ändern!
 define('API_TOKEN', '123'); // ändern!
 
 define('PREIS_STANDARD', 15);

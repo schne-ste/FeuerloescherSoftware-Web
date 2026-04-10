@@ -1,4 +1,10 @@
 <?php
+
+if (basename($_SERVER["SCRIPT_NAME"]) === "init_db.php") {
+    http_response_code(404);
+    exit("Not found");
+}
+
 $dbFile = 'feuerloescher.db';
 
 // Alte DB löschen

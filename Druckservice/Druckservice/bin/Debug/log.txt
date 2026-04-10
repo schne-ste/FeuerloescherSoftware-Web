@@ -4656,3 +4656,298 @@
 [2026-04-07 13:22:55] Gefundene Rechnungen: 0
 [2026-04-07 13:22:55] Timer beendet - nächster Lauf in 5 Sekunden.
 [2026-04-07 13:22:55] -------------------------------------------------------------------------------------------
+[2026-04-10 15:28:14] DEBUG MODE: True
+[2026-04-10 15:28:14] Printservice gestartet...
+[2026-04-10 15:28:14] -------------------------------------------------------------------------------------------
+[2026-04-10 15:28:19] Timer gestartet - prüfe API...
+[2026-04-10 15:28:19] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-10 15:28:24] Timer gestartet - prüfe API...
+[2026-04-10 15:28:24] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-10 15:28:29] Timer gestartet - prüfe API...
+[2026-04-10 15:28:29] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-10 15:28:34] Timer gestartet - prüfe API...
+[2026-04-10 15:28:34] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-10 15:28:39] Timer gestartet - prüfe API...
+[2026-04-10 15:28:39] >>> API URL oder Token ist leer, bitte Werte eingeben.
+[2026-04-10 15:28:43] DEBUG MODE: True
+[2026-04-10 15:28:43] Printservice gestartet...
+[2026-04-10 15:28:43] -------------------------------------------------------------------------------------------
+[2026-04-10 15:28:48] Timer gestartet - prüfe API...
+[2026-04-10 15:28:48] Gefundene Etiketten: 10
+[2026-04-10 15:28:48] Drucke Etikett: 001 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:48] Starte Etikettendruck: 001
+[2026-04-10 15:28:48] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:48] Markiere Etikett 001 als gedruckt
+[2026-04-10 15:28:49] Drucke Etikett: 002 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:49] Starte Etikettendruck: 002
+[2026-04-10 15:28:49] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:49] Markiere Etikett 002 als gedruckt
+[2026-04-10 15:28:49] Drucke Etikett: 003 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:49] Starte Etikettendruck: 003
+[2026-04-10 15:28:49] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:49] Markiere Etikett 003 als gedruckt
+[2026-04-10 15:28:49] Drucke Etikett: 004 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:49] Starte Etikettendruck: 004
+[2026-04-10 15:28:49] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:49] Markiere Etikett 004 als gedruckt
+[2026-04-10 15:28:49] Drucke Etikett: 005 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:49] Starte Etikettendruck: 005
+[2026-04-10 15:28:49] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:49] Markiere Etikett 005 als gedruckt
+[2026-04-10 15:28:50] Drucke Etikett: 006 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:50] Starte Etikettendruck: 006
+[2026-04-10 15:28:50] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:50] Markiere Etikett 006 als gedruckt
+[2026-04-10 15:28:50] Drucke Etikett: 007 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:50] Starte Etikettendruck: 007
+[2026-04-10 15:28:50] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:50] Markiere Etikett 007 als gedruckt
+[2026-04-10 15:28:50] Drucke Etikett: 008 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:50] Starte Etikettendruck: 008
+[2026-04-10 15:28:50] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:50] Markiere Etikett 008 als gedruckt
+[2026-04-10 15:28:51] Drucke Etikett: 009 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:51] Starte Etikettendruck: 009
+[2026-04-10 15:28:51] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:51] Markiere Etikett 009 als gedruckt
+[2026-04-10 15:28:51] Drucke Etikett: 010 / Kunde: Mustermann GmbH
+[2026-04-10 15:28:51] Starte Etikettendruck: 010
+[2026-04-10 15:28:51] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-10 15:28:51] Markiere Etikett 010 als gedruckt
+[2026-04-10 15:28:51] Gefundene Abholscheine: 10
+[2026-04-10 15:28:51] Drucke Abholschein: 001 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:51] Starte Druck Abholschein: 001
+[2026-04-10 15:28:51] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:51] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:51] Druck Abholschein abgeschlossen: 001
+[2026-04-10 15:28:51] Markiere Abholschein 001 als gedruckt
+[2026-04-10 15:28:51] Drucke Abholschein: 002 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:51] Starte Druck Abholschein: 002
+[2026-04-10 15:28:51] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:51] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:51] Druck Abholschein abgeschlossen: 002
+[2026-04-10 15:28:51] Markiere Abholschein 002 als gedruckt
+[2026-04-10 15:28:51] Drucke Abholschein: 003 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:51] Starte Druck Abholschein: 003
+[2026-04-10 15:28:51] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:51] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:51] Druck Abholschein abgeschlossen: 003
+[2026-04-10 15:28:51] Markiere Abholschein 003 als gedruckt
+[2026-04-10 15:28:52] Drucke Abholschein: 004 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:52] Starte Druck Abholschein: 004
+[2026-04-10 15:28:52] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:52] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:52] Druck Abholschein abgeschlossen: 004
+[2026-04-10 15:28:52] Markiere Abholschein 004 als gedruckt
+[2026-04-10 15:28:52] Drucke Abholschein: 005 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:52] Starte Druck Abholschein: 005
+[2026-04-10 15:28:52] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:52] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:52] Druck Abholschein abgeschlossen: 005
+[2026-04-10 15:28:52] Markiere Abholschein 005 als gedruckt
+[2026-04-10 15:28:52] Drucke Abholschein: 006 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:52] Starte Druck Abholschein: 006
+[2026-04-10 15:28:52] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:52] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:52] Druck Abholschein abgeschlossen: 006
+[2026-04-10 15:28:52] Markiere Abholschein 006 als gedruckt
+[2026-04-10 15:28:52] Drucke Abholschein: 007 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:52] Starte Druck Abholschein: 007
+[2026-04-10 15:28:52] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:52] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:52] Druck Abholschein abgeschlossen: 007
+[2026-04-10 15:28:52] Markiere Abholschein 007 als gedruckt
+[2026-04-10 15:28:52] Drucke Abholschein: 008 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:52] Starte Druck Abholschein: 008
+[2026-04-10 15:28:52] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:52] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:52] Druck Abholschein abgeschlossen: 008
+[2026-04-10 15:28:52] Markiere Abholschein 008 als gedruckt
+[2026-04-10 15:28:52] Drucke Abholschein: 009 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:52] Starte Druck Abholschein: 009
+[2026-04-10 15:28:53] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:53] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:53] Druck Abholschein abgeschlossen: 009
+[2026-04-10 15:28:53] Markiere Abholschein 009 als gedruckt
+[2026-04-10 15:28:53] Drucke Abholschein: 010 / Kunde: Mustermann GmbH / Typ: Standard / Preis: 15,00 €€
+[2026-04-10 15:28:53] Starte Druck Abholschein: 010
+[2026-04-10 15:28:53] Logo gefunden, versuche zu drucken: D:\Git\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
+[2026-04-10 15:28:53] DEBUG: Simulation statt echtem Druck.
+[2026-04-10 15:28:53] Druck Abholschein abgeschlossen: 010
+[2026-04-10 15:28:53] Markiere Abholschein 010 als gedruckt
+[2026-04-10 15:28:53] Gefundene Rechnungen: 0
+[2026-04-10 15:28:53] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:28:53] -------------------------------------------------------------------------------------------
+[2026-04-10 15:28:58] Timer gestartet - prüfe API...
+[2026-04-10 15:28:58] Gefundene Etiketten: 0
+[2026-04-10 15:28:58] Gefundene Abholscheine: 0
+[2026-04-10 15:28:58] Gefundene Rechnungen: 0
+[2026-04-10 15:28:58] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:28:58] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:03] Timer gestartet - prüfe API...
+[2026-04-10 15:29:03] Gefundene Etiketten: 0
+[2026-04-10 15:29:03] Gefundene Abholscheine: 0
+[2026-04-10 15:29:03] Gefundene Rechnungen: 0
+[2026-04-10 15:29:03] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:03] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:08] Timer gestartet - prüfe API...
+[2026-04-10 15:29:08] Gefundene Etiketten: 0
+[2026-04-10 15:29:08] Gefundene Abholscheine: 0
+[2026-04-10 15:29:08] Gefundene Rechnungen: 0
+[2026-04-10 15:29:08] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:08] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:10] DEBUG MODE: False
+[2026-04-10 15:29:10] Printservice gestartet...
+[2026-04-10 15:29:10] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:15] Timer gestartet - prüfe API...
+[2026-04-10 15:29:16] Gefundene Etiketten: 0
+[2026-04-10 15:29:16] Gefundene Abholscheine: 0
+[2026-04-10 15:29:16] Gefundene Rechnungen: 0
+[2026-04-10 15:29:16] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:16] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:21] Timer gestartet - prüfe API...
+[2026-04-10 15:29:21] Gefundene Etiketten: 0
+[2026-04-10 15:29:21] Gefundene Abholscheine: 0
+[2026-04-10 15:29:21] Gefundene Rechnungen: 0
+[2026-04-10 15:29:21] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:21] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:26] Timer gestartet - prüfe API...
+[2026-04-10 15:29:26] Gefundene Etiketten: 0
+[2026-04-10 15:29:26] Gefundene Abholscheine: 0
+[2026-04-10 15:29:26] Gefundene Rechnungen: 0
+[2026-04-10 15:29:26] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:26] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:31] Timer gestartet - prüfe API...
+[2026-04-10 15:29:31] Gefundene Etiketten: 0
+[2026-04-10 15:29:31] Gefundene Abholscheine: 0
+[2026-04-10 15:29:31] Gefundene Rechnungen: 0
+[2026-04-10 15:29:31] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:31] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:36] Timer gestartet - prüfe API...
+[2026-04-10 15:29:36] Gefundene Etiketten: 1
+[2026-04-10 15:29:36] Drucke Etikett: 008 / Kunde: Mustermann GmbH
+[2026-04-10 15:29:36] Starte Etikettendruck: 008
+[2026-04-10 15:29:37] Etikettendruck abgeschlossen: 008
+[2026-04-10 15:29:37] Markiere Etikett 008 als gedruckt
+[2026-04-10 15:29:37] Gefundene Abholscheine: 0
+[2026-04-10 15:29:37] Gefundene Rechnungen: 0
+[2026-04-10 15:29:37] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:37] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:42] Timer gestartet - prüfe API...
+[2026-04-10 15:29:42] Gefundene Etiketten: 0
+[2026-04-10 15:29:42] Gefundene Abholscheine: 0
+[2026-04-10 15:29:42] Gefundene Rechnungen: 0
+[2026-04-10 15:29:42] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:43] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:48] Timer gestartet - prüfe API...
+[2026-04-10 15:29:48] Gefundene Etiketten: 0
+[2026-04-10 15:29:48] Gefundene Abholscheine: 0
+[2026-04-10 15:29:48] Gefundene Rechnungen: 0
+[2026-04-10 15:29:48] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:48] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:53] Timer gestartet - prüfe API...
+[2026-04-10 15:29:53] Gefundene Etiketten: 0
+[2026-04-10 15:29:53] Gefundene Abholscheine: 0
+[2026-04-10 15:29:53] Gefundene Rechnungen: 0
+[2026-04-10 15:29:53] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:53] -------------------------------------------------------------------------------------------
+[2026-04-10 15:29:58] Timer gestartet - prüfe API...
+[2026-04-10 15:29:58] Gefundene Etiketten: 0
+[2026-04-10 15:29:58] Gefundene Abholscheine: 0
+[2026-04-10 15:29:58] Gefundene Rechnungen: 0
+[2026-04-10 15:29:58] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:29:58] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:03] Timer gestartet - prüfe API...
+[2026-04-10 15:30:03] Gefundene Etiketten: 0
+[2026-04-10 15:30:03] Gefundene Abholscheine: 0
+[2026-04-10 15:30:03] Gefundene Rechnungen: 0
+[2026-04-10 15:30:03] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:03] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:08] Timer gestartet - prüfe API...
+[2026-04-10 15:30:08] Gefundene Etiketten: 0
+[2026-04-10 15:30:08] Gefundene Abholscheine: 0
+[2026-04-10 15:30:08] Gefundene Rechnungen: 0
+[2026-04-10 15:30:08] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:08] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:13] Timer gestartet - prüfe API...
+[2026-04-10 15:30:13] Gefundene Etiketten: 0
+[2026-04-10 15:30:13] Gefundene Abholscheine: 0
+[2026-04-10 15:30:13] Gefundene Rechnungen: 0
+[2026-04-10 15:30:13] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:13] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:18] Timer gestartet - prüfe API...
+[2026-04-10 15:30:18] Gefundene Etiketten: 0
+[2026-04-10 15:30:18] Gefundene Abholscheine: 0
+[2026-04-10 15:30:18] Gefundene Rechnungen: 0
+[2026-04-10 15:30:18] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:18] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:23] Timer gestartet - prüfe API...
+[2026-04-10 15:30:23] Gefundene Etiketten: 0
+[2026-04-10 15:30:23] Gefundene Abholscheine: 0
+[2026-04-10 15:30:23] Gefundene Rechnungen: 0
+[2026-04-10 15:30:23] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:23] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:28] Timer gestartet - prüfe API...
+[2026-04-10 15:30:28] Gefundene Etiketten: 0
+[2026-04-10 15:30:28] Gefundene Abholscheine: 0
+[2026-04-10 15:30:28] Gefundene Rechnungen: 0
+[2026-04-10 15:30:28] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:28] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:33] Timer gestartet - prüfe API...
+[2026-04-10 15:30:33] Gefundene Etiketten: 0
+[2026-04-10 15:30:33] Gefundene Abholscheine: 0
+[2026-04-10 15:30:33] Gefundene Rechnungen: 0
+[2026-04-10 15:30:33] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:33] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:38] Timer gestartet - prüfe API...
+[2026-04-10 15:30:38] Gefundene Etiketten: 0
+[2026-04-10 15:30:38] Gefundene Abholscheine: 0
+[2026-04-10 15:30:38] Gefundene Rechnungen: 0
+[2026-04-10 15:30:38] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:38] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:43] Timer gestartet - prüfe API...
+[2026-04-10 15:30:43] Gefundene Etiketten: 0
+[2026-04-10 15:30:43] Gefundene Abholscheine: 0
+[2026-04-10 15:30:43] Gefundene Rechnungen: 0
+[2026-04-10 15:30:43] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:43] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:48] Timer gestartet - prüfe API...
+[2026-04-10 15:30:48] Gefundene Etiketten: 0
+[2026-04-10 15:30:48] Gefundene Abholscheine: 0
+[2026-04-10 15:30:48] Gefundene Rechnungen: 0
+[2026-04-10 15:30:48] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:48] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:53] Timer gestartet - prüfe API...
+[2026-04-10 15:30:53] Gefundene Etiketten: 0
+[2026-04-10 15:30:53] Gefundene Abholscheine: 0
+[2026-04-10 15:30:53] Gefundene Rechnungen: 0
+[2026-04-10 15:30:53] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:53] -------------------------------------------------------------------------------------------
+[2026-04-10 15:30:58] Timer gestartet - prüfe API...
+[2026-04-10 15:30:58] Gefundene Etiketten: 0
+[2026-04-10 15:30:58] Gefundene Abholscheine: 0
+[2026-04-10 15:30:58] Gefundene Rechnungen: 0
+[2026-04-10 15:30:58] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:30:58] -------------------------------------------------------------------------------------------
+[2026-04-10 15:31:03] Timer gestartet - prüfe API...
+[2026-04-10 15:31:04] Gefundene Etiketten: 0
+[2026-04-10 15:31:04] Gefundene Abholscheine: 0
+[2026-04-10 15:31:04] Gefundene Rechnungen: 0
+[2026-04-10 15:31:04] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:31:04] -------------------------------------------------------------------------------------------
+[2026-04-10 15:31:09] Timer gestartet - prüfe API...
+[2026-04-10 15:31:09] Gefundene Etiketten: 0
+[2026-04-10 15:31:09] Gefundene Abholscheine: 0
+[2026-04-10 15:31:09] Gefundene Rechnungen: 1
+[2026-04-10 15:31:09] Drucke Rechnung: RFLU26-0001 / Kunde: Mustermann GmbH / Anzahl: 4 / Preis: 15€
+[2026-04-10 15:31:09] Starte Druck Rechnung: RFLU26-0001
+[2026-04-10 15:31:09] Druck Rechnung abgeschlossen: RFLU26-0001
+[2026-04-10 15:31:09] Markiere Rechnung RFLU26-0001 als gedruckt
+[2026-04-10 15:31:09] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:31:09] -------------------------------------------------------------------------------------------
+[2026-04-10 15:31:14] Timer gestartet - prüfe API...
+[2026-04-10 15:31:14] Gefundene Etiketten: 0
+[2026-04-10 15:31:14] Gefundene Abholscheine: 0
+[2026-04-10 15:31:14] Gefundene Rechnungen: 0
+[2026-04-10 15:31:14] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-10 15:31:14] -------------------------------------------------------------------------------------------

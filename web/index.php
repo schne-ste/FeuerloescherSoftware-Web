@@ -18,9 +18,9 @@ if (isset($_GET['logout'])) {
 // Reset durchführen
 if (isset($_POST['reset_db'])) {
 
-    if (!isset($_POST['reset_password']) || $_POST['reset_password'] !== PASSWORD) {
-        die("Falsches Passwort!");
-    }
+    if (!isset($_POST['reset_password']) || $_POST['reset_password'] !== RESET_PASSWORD) {
+    $errorMessage = "Falsches Passwort!";
+    } else {
 
     $backupDir = 'backups';
     if (!is_dir($backupDir)) {
@@ -75,8 +75,11 @@ if (isset($_POST['reset_db'])) {
     require 'init_db.php';
 
     $successMessage = "Datenbank wurde zurückgesetzt! Backup DB: $backupFile, Backup Rechnungen: $zipFile";
+    }
 }
 ?>
+
+
 <!doctype html>
 <html lang="de">
 <head>
@@ -107,6 +110,14 @@ if (isset($_POST['reset_db'])) {
 </nav>
 
 <div class="container mt-5">
+    <h1>&#128293; Feuerlöscher Software</h1>
+    <br>
+
+    <?php if(isset($errorMessage)): ?>
+        <div class="alert alert-danger">
+            <?php echo $errorMessage; ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Erfolgsmeldung -->
     <?php if(isset($successMessage)): ?>
@@ -180,26 +191,52 @@ if (isset($_POST['reset_db'])) {
 
     </div>
 
-    <!-- DATENBANK -->
     <div class="mt-5">
-        <div class="card border-danger shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title text-danger">⚠ Datenbank zurücksetzen</h5>
-                <p class="card-text">
-                    Alle Daten werden gelöscht. Ein Backup wird automatisch erstellt.
-                </p>
+    <div class="row g-4">
 
-                <form id="resetForm" method="post">
-                    <input type="hidden" name="reset_db" value="1">
-                    <input type="hidden" name="reset_password" id="reset_password">
+        <!-- SCHILDER -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📁 Schilder</h5>
+                    <p class="card-text">Dokumente öffnen oder herunterladen</p>
 
-                    <button type="button" class="btn btn-danger" onclick="confirmReset()">
-                        Datenbank zurücksetzen
-                    </button>
-                </form>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <a href="./data/Schilder.pdf" target="_blank" class="btn btn-outline-danger">
+                            PDF öffnen
+                        </a>
+
+                        <a href="./data/Schilder.pptx" target="_blank" class="btn btn-outline-primary">
+                            Powerpoint öffnen
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- DATENBANK RESET -->
+        <div class="col-md-6">
+            <div class="card border-danger shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-danger">⚠ Datenbank zurücksetzen</h5>
+                    <p class="card-text">
+                        Alle Daten werden gelöscht. Backup wird automatisch erstellt.
+                    </p>
+
+                    <form id="resetForm" method="post">
+                        <input type="hidden" name="reset_db" value="1">
+                        <input type="hidden" name="reset_password" id="reset_password">
+
+                        <button type="button" class="btn btn-danger" onclick="confirmReset()">
+                            Datenbank zurücksetzen
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
+</div>
 
 </div>
 
@@ -243,5 +280,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<footer class="bg-light text-center text-muted py-1 mt-5 small border-top">
+    &copy; Freiwillige Feuerwehr Wallern - Stefan Schneebauer <?php echo date('Y'); ?>
+</footer>
 </body>
 </html>

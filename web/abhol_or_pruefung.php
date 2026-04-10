@@ -292,45 +292,48 @@ body.flash-warning { background-color: #fff3cd !important; }
         <br>
 
 		<h4 class="d-flex mb-2">
-		    <span class="me-2" style="width:160px;">Prüfstatus:</span>
-		    <?php
-		        // Status 1
-		        if ($eintrag['geprueft']) {
-		            if (!empty($eintrag['defekt'])) {
-		                // Geprüft + DEFEKT → Status1 als Outline
-		                $status1 = '<span class="badge border border-success text-success bg-transparent">Geprüft</span>';
-		            } else {
-		                // Geprüft + OK → normal
-		                $status1 = '<span class="badge bg-success">Geprüft</span>';
-		            }
-		        } else {
-		            // Nicht geprüft → normal gelb
-		            $status1 = '<span class="badge bg-warning text-dark">Nicht geprüft</span>';
-		        }
-		
-		        // Status 2
-		        $status2 = empty($eintrag['defekt'])
-		            ? '<span class="badge bg-success">OK</span>'
-		            : '<span class="badge bg-danger">DEFEKT</span>';
-		
-		        // Ausgabe
-		        if ($eintrag['geprueft']) {
-		            echo $status1 . ' &nbsp;-&nbsp; ' . $status2;
-		        } else {
-		            echo $status1;
-		        }
-		    ?>
-		</h4>
+            <span class="me-2" style="width:160px;">Löscherstatus:</span>
+
+            <span id="pruefStatusBox">
+            <?php
+                if ($eintrag['geprueft']) {
+                    if (!empty($eintrag['defekt'])) {
+                        $status1 = '<span class="badge border border-success text-success bg-transparent">Geprüft</span>';
+                    } else {
+                        $status1 = '<span class="badge bg-success">Geprüft</span>';
+                    }
+                } else {
+                    $status1 = '<span class="badge bg-warning text-dark">Nicht geprüft</span>';
+                }
+
+                $status2 = empty($eintrag['defekt'])
+                    ? '<span class="badge bg-success">OK</span>'
+                    : '<span class="badge bg-danger">DEFEKT</span>';
+
+                if ($eintrag['geprueft']) {
+                    echo $status1 . '&nbsp;-&nbsp;' . $status2;
+                } else {
+                    echo $status1;
+                }
+            ?>
+            </span>
+        </h4>
+
+        <br>
+        <span id="loescherStatusBox" style="display:none;"></span>
 		<br>
-		<h4 class="d-flex mb-2">
-		    <span class="me-2" style="width:160px;">Abholstatus:</span>
-		    <?= $eintrag['abgeholt']
-		        ? '<span class="badge bg-success">Abgeholt</span>'
-		        : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
-		</h4>
+
+        <h4 class="d-flex mb-2">
+            <span class="me-2" style="width:160px;">Abholstatus:</span>
+
+            <span id="lagerStatusBox">
+                <?= $eintrag['abgeholt']
+                    ? '<span class="badge bg-success">Abgeholt</span>'
+                    : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
+            </span>
+        </h4>
 
 		<hr>
-
         <div id="infoBox">
         <?php if (!empty($eintrag['info'])): ?>
             <div class="alert alert-warning mt-3">
@@ -353,12 +356,14 @@ body.flash-warning { background-color: #fff3cd !important; }
                         <strong>&#9888; Schaummittel tauschen</strong>
                     </button>
                 </form>
+        <?php endif; ?>
+        <?php if ($modus === "pruefen" && $eintrag['geprueft']): ?>
                 <form method="post" class="mt-3 col">
                     <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
                     <input type="hidden" name="modus" value="<?= $modus ?>">
                     <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
-                    <button type="submit" name="setDefekt"
+                    <button id="defektBtn" type="submit" name="setDefekt"
                         class="btn w-100 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
                         
                          <strong><?= $eintrag['defekt'] 
@@ -376,10 +381,23 @@ body.flash-warning { background-color: #fff3cd !important; }
             <input type="hidden" name="modus" value="<?= $modus ?>">
             <input type="hidden" name="bedienmodus" value="manuell">
 
-            <button type="submit" name="aktion" value="1"
-                class="btn btn-success w-100"
+            <button id="actionBtn" type="submit" name="aktion" value="1"
+                class="btn btn-success btn-lg w-100"
+                style="font-size: 1.5rem; padding: 1rem;"
                 <?= (!$eintrag['active'] || ($modus === "abholen" && !$eintrag['bezahlt'] && !$eintrag['defekt'])) ? 'disabled' : '' ?>>
-                <strong>&#128260; Status umschalten</strong>
+                
+                <div>
+                    <strong>
+                        &#128260;
+                        <?= $modus === "pruefen" 
+                            ? "Prüfstatus ändern" 
+                            : "Abholstatus ändern" ?>
+                    </strong>
+                </div>
+
+                <div style="font-size: 0.9rem; opacity: 0.85;">
+                    (oder Leertaste drücken)
+                </div>
             </button>
         </form>
         <?php endif; ?>
@@ -413,6 +431,9 @@ body.flash-warning { background-color: #fff3cd !important; }
 
     input.addEventListener("input", function () {
         this.value = this.value.replace(/\D/g, '');
+        /*if (this.value !== "") {
+            this.value = this.value.padStart(3, '0');
+        }*/
     });
 
     input.addEventListener("keypress", function(e) {
@@ -441,24 +462,40 @@ body.flash-warning { background-color: #fff3cd !important; }
     }
 
     document.addEventListener("keydown", function(e) {
+
+        // =====================
+        // ESC = Formular leeren + Fokus
+        // =====================
         if (e.key === "Escape") {
+            e.preventDefault();
+
+            // gleich wie "Formular leeren"-Button
             input.value = "";
+
+            // Fokus + Auswahl direkt setzen
+            input.focus();
+            input.select();
+
             form.submit();
         }
 
+        // =====================
+        // SPACE = Aktion
+        // =====================
         if (e.code === "Space") {
-        e.preventDefault(); // verhindert Scrollen!
-        if (input.value.trim() === "") return;
+            e.preventDefault(); // verhindert Scrollen!
+            if (input.value.trim() === "") return;
 
-        let hidden = document.createElement("input");
-        hidden.type = "hidden";
-        hidden.name = "aktion";
-        hidden.value = "1";
-        form.appendChild(hidden);
+            let hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = "aktion";
+            hidden.value = "1";
+            form.appendChild(hidden);
 
-        form.submit();
-    }
+            form.submit();
+        }
     });
+
 
     const number = <?= isset($nummerSafe) ? $nummerSafe : 'null' ?>;
 
@@ -532,11 +569,31 @@ body.flash-warning { background-color: #fff3cd !important; }
     // alle 2 Sekunden aktualisieren
     setInterval(loadStatus, 2000);
 
-   function updateUI(data) {
-        // Prüfstatus (geprüft)
+    function updateUI(data) {
+
+        // =====================
+        // PRÜFSTATUS
+        // =====================
+        let status1 = "";
+        let status2 = "";
+
+        if (data.geprueft == 1) {
+            if (data.defekt == 1) {
+                status1 = '<span class="badge border border-success text-success bg-transparent">Geprüft</span>';
+            } else {
+                status1 = '<span class="badge bg-success">Geprüft</span>';
+            }
+        } else {
+            status1 = '<span class="badge bg-warning text-dark">Nicht geprüft</span>';
+        }
+
+        status2 = data.defekt == 1
+            ? '<span class="badge bg-danger">DEFEKT</span>'
+            : '<span class="badge bg-success">OK</span>';
+
         let pruefStatusHTML = data.geprueft == 1
-            ? '<span class="badge bg-success">Geprüft</span>'
-            : '<span class="badge bg-warning text-dark">Nicht geprüft</span>';
+            ? status1 + '&nbsp;-&nbsp;' + status2
+            : status1;
 
         const pruefStatusBox = document.getElementById("pruefStatusBox");
         if (pruefStatusBox) {
@@ -544,18 +601,18 @@ body.flash-warning { background-color: #fff3cd !important; }
         }
 
 
-        //Löscherstatus (defekt / ok)
-        let loescherHTML = data.defekt == 1
-            ? '<span class="badge bg-danger">DEFEKT</span>'
-            : '<span class="badge bg-success">OK</span>';
-
+        // =====================
+        // LÖSCHERSTATUS (intern)
+        // =====================
         const loescherBox = document.getElementById("loescherStatusBox");
         if (loescherBox) {
-            loescherBox.innerHTML = loescherHTML;
+            loescherBox.innerHTML = status2;
         }
 
 
-        // Lagerstatus (abgeholt)
+        // =====================
+        // ABHOLSTATUS
+        // =====================
         let lagerHTML = data.abgeholt == 1
             ? '<span class="badge bg-success">Abgeholt</span>'
             : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>';
@@ -565,31 +622,83 @@ body.flash-warning { background-color: #fff3cd !important; }
             lagerBox.innerHTML = lagerHTML;
         }
 
+
+        // =====================
+        // PAYMENT BOX
+        // =====================
         const paymentBox = document.getElementById("paymentStatusBox");
         if (paymentBox) {
             let paymentHTML = '';
-            // Logik: Aktiv UND nicht bezahlt UND nicht defekt
+
             if (data.active == 1 && data.bezahlt == 0 && data.defekt == 0) {
                 paymentHTML = '<div class="alert alert-danger"><h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4></div>';
-            } 
-            // Logik: Aktiv UND bezahlt UND defekt
-            else if (data.active == 1 && data.bezahlt == 1 && data.defekt == 1) {
+            } else if (data.active == 1 && data.bezahlt == 1 && data.defekt == 1) {
                 paymentHTML = '<div class="alert alert-warning"><h4>&#9888; Defekt – Geld retour!</h4></div>';
             }
+
             paymentBox.innerHTML = paymentHTML;
         }
 
 
-        // Info/Hinweis
+        // =====================
+        // INFO
+        // =====================
         const infoBox = document.getElementById("infoBox");
         if (infoBox) {
             if (data.info) {
-                // .replace(/\n/g, '<br>') wandelt die Umbrüche für HTML um
-                let formattedInfo = data.info.replace(/\n/g, '<br>'); 
-                infoBox.innerHTML = '<div class="alert alert-warning mt-3"><strong>Hinweis:</strong><br><h4>' + formattedInfo + '</h4></div>';
+                let formattedInfo = data.info.replace(/\n/g, '<br>');
+                infoBox.innerHTML =
+                    '<div class="alert alert-warning mt-3"><strong>Hinweis:</strong><br><h4>' +
+                    formattedInfo +
+                    '</h4></div>';
             } else {
                 infoBox.innerHTML = '';
             }
+        }
+
+        // =====================
+        // BUTTONS UPDATE
+        // =====================
+
+        // Defekt-Button
+        const defektBtn = document.getElementById("defektBtn");
+        if (defektBtn) {
+
+            if (data.defekt == 1) {
+                defektBtn.classList.remove("btn-danger");
+                defektBtn.classList.add("btn-secondary");
+                defektBtn.innerHTML = "<strong>&#128295; Defekt zurücksetzen</strong>";
+            } else {
+                defektBtn.classList.remove("btn-secondary");
+                defektBtn.classList.add("btn-danger");
+                defektBtn.innerHTML = "<strong>&#9940; Löscher defekt</strong>";
+            }
+        }
+        if (defektBtn) {
+            if (data.geprueft == 1) {
+                defektBtn.closest("form").style.display = "block";
+            } else {
+                defektBtn.closest("form").style.display = "none";
+            }
+        }
+
+
+        // Status-Button (Abholen / Prüfen)
+        const actionBtn = document.getElementById("actionBtn");
+        if (actionBtn) {
+
+            let disable = false;
+
+            // gleiche Logik wie PHP!
+            if (data.active == 0) {
+                disable = true;
+            }
+
+            if (data.active == 1 && data.bezahlt == 0 && data.defekt == 0 && "<?= $modus ?>" === "abholen") {
+                disable = true;
+            }
+
+            actionBtn.disabled = disable;
         }
     }
     // ALLE Meldungen (Erfolg, Warnung und Fehler) nach x Sekunden schließen

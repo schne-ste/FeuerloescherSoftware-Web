@@ -595,7 +595,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     </div>
 
     <div class="mb-3">
-        <label class="form-label">&#128290; Anzahl gleiche Löscher</label>
+        <label class="form-label">&#128290; Anzahl Löscher</label>
         <input type="number" name="anzahl" class="form-control highlight" value="1" min="1">
     </div>
 
