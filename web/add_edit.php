@@ -223,6 +223,8 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     $editEntry = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $nummer")->fetchArray(SQLITE3_ASSOC);
 }
 
+$isActive = ($editEntry['active'] ?? 0) == 1;
+
 ?>
 
 <!DOCTYPE html>
@@ -423,6 +425,12 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
         <input type="hidden" name="edit_id" value="<?= $editEntry['id'] ?>">
         <input type="hidden" name="nummer" value="<?= $editEntry['nummer'] ?>">
 
+        <?php if (!$isActive): ?>
+            <div class="alert alert-danger">
+                &#128465; Dieser Datensatz ist deaktiviert und kann nicht bearbeitet werden.
+            </div>
+        <?php endif; ?>
+
         <div class="row">
             <div class="col-md-6 border-end">
                 <div class="mb-3">
@@ -432,12 +440,12 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 
                 <div class="mb-3">
                     <label class="form-label">&#128100; Name</label>
-                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($editEntry['name']) ?>" required>
+                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($editEntry['name']) ?>" required <?= !$isActive ? 'disabled' : '' ?>>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">&#128176; Preis je Löscher</label>
-                    <select name="typ" class="form-select mb-1" id="editTypSelect">
+                    <select name="typ" class="form-select mb-1" id="editTypSelect" <?= !$isActive ? 'disabled' : '' ?>>
                         <?php foreach ($preise as $k => $v): ?>
                         <option value="<?= $k ?>" <?= ($editEntry['typ'] == $k) ? 'selected' : '' ?>><?= $k ?></option>
                         <?php endforeach; ?>
@@ -460,6 +468,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
                         class="form-control" 
                         style="resize:none; overflow:hidden;"
                         rows="<?= $rowCount ?>"
+                        <?= !$isActive ? 'disabled' : '' ?>
                     ><?= htmlspecialchars($infoText) ?></textarea>
                 </div>
             </div>
@@ -470,17 +479,17 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
                         <label class="form-label fw-bold small text-uppercase text-muted mb-3">Statusübersicht</label>
                         
                         <div class="form-check mb-2">
-                            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="bezahlt" class="form-check-input" id="bezahltCheck" <?= $editEntry['bezahlt'] ? 'checked' : '' ?>>
+                            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="bezahlt" class="form-check-input" id="bezahltCheck" <?= $editEntry['bezahlt'] ? 'checked' : '' ?> <?= !$isActive ? 'disabled' : '' ?>>
                             <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
                         </div>
 
                         <div class="form-check mb-2">
-                            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $editEntry['geprueft'] ? 'checked' : '' ?>>
+                            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $editEntry['geprueft'] ? 'checked' : '' ?> <?= !$isActive ? 'disabled' : '' ?>>
                             <label class="form-check-label" for="geprueftCheck">&#129514; Geprüft</label>
                         </div>
 
                         <div class="form-check mb-2">
-                            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $editEntry['abgeholt'] ? 'checked' : '' ?>>
+                            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $editEntry['abgeholt'] ? 'checked' : '' ?> <?= !$isActive ? 'disabled' : '' ?>>
                             <label class="form-check-label" for="abgeholtCheck">&#128230; Abgeholt</label>
                         </div>
                     
@@ -492,7 +501,8 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 						           name="defekt" 
 						           class="form-check-input" 
 						           id="defektCheck" 
-						           <?= ($editEntry['defekt'] == 1) ? 'checked' : '' ?>>
+						           <?= ($editEntry['defekt'] == 1) ? 'checked' : '' ?>
+                                   <?= !$isActive ? 'disabled' : '' ?>>
 						    <label class="form-check-label text-danger" for="defektCheck">
 						        &#9940; Defekt <?= ($editEntry['defekt'] == -1) ? '<small class="text-muted">(noch ungeprüft)</small>' : '' ?>
 						    </label>
@@ -515,7 +525,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 						        </span>
 						    </div>
 						
-						    <button type="submit" name="redruck_etikett" class="btn btn-outline-secondary btn-sm w-100">
+						    <button type="submit" name="redruck_etikett" class="btn btn-outline-secondary btn-sm w-100" <?= !$isActive ? 'disabled' : '' ?>>
 						        &#127991; Nachdrucken
 						    </button>
 						</div>
@@ -533,7 +543,7 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
 						        </span>
 						    </div>
 						
-						    <button type="submit" name="redruck_abholschein" class="btn btn-outline-secondary btn-sm w-100">
+						    <button type="submit" name="redruck_abholschein" class="btn btn-outline-secondary btn-sm w-100" <?= !$isActive ? 'disabled' : '' ?>>
 						        &#129534; Nachdrucken
 						    </button>
 						</div>
@@ -550,11 +560,11 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
             </div>
             <div class="d-flex gap-2">
                 <?php if ($editEntry['bezahlt'] && $editEntry['defekt']): ?>
-                    <button type="submit" class="btn btn-warning" name="geld_retour">
+                    <button type="submit" class="btn btn-warning" name="geld_retour" <?= !$isActive ? 'disabled' : '' ?>>
                          &#128176; Geld retour gegeben
                     </button>
                 <?php endif; ?>
-                <button type="submit" class="btn btn-success px-4" name="edit_id">&#128190;  Speichern</button>
+                <button type="submit" class="btn btn-success px-4" name="edit_id" <?= !$isActive ? 'disabled' : '' ?>>&#128190;  Speichern</button>
             </div>
         </div>
     </form>

@@ -6,11 +6,14 @@ if (!isset($_SESSION['logged_in'])) {
     exit;
 }
 
-$db = getDB();
+// Logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: login.php");
+    exit;
+}
 
-// =====================
-// FILTER - Nur verrechenbare
-// =====================
+$db = getDB();
 
 // =====================
 // DATEN LADEN

@@ -30,50 +30,65 @@ if (isset($_GET['logout'])) {
 if (isset($_POST['aktion']) && $nummer) {
     $nummerSafe = (int)$nummer;
 
-    if ($modus === "abholen") {
-        $check = $db->query("
-            SELECT bezahlt, defekt, active FROM loescher 
-            WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
-        ");
-        $row = $check->fetchArray();
+    
+    $check = $db->query("
+        SELECT bezahlt, defekt, active 
+        FROM loescher 
+        WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
+    ");
+    $row = $check->fetchArray();
 
-        if (!$row) {
-            $message = "&#10060; Nicht gefunden!";
-            $statusType = "error";
-            $soundType = "error";
-        } elseif ($row['active'] && !$row['bezahlt'] && !$row['defekt']) {
-            $message = "&#128176; Nicht bezahlt – zuerst kassieren!";
-            $statusType = "error";
-            $soundType = "warning";
-        } else {
-            // Status umschalten, egal ob defekt
-            $db->exec("
-                UPDATE loescher 
-                SET abgeholt = CASE WHEN abgeholt = 1 THEN 0 ELSE 1 END
+    if (!$row || $row['active'] != 1) {
+        $message = "&#128465; Gelöscht - keine Aktion möglich!";
+        $statusType = "error";
+        $soundType = "error";
+    } else {
+
+        if ($modus === "abholen") {
+            $check = $db->query("
+                SELECT bezahlt, defekt, active FROM loescher 
                 WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
             ");
+            $row = $check->fetchArray();
 
-            if ($row['defekt']) {
-                $message = "&#9888; Löscher defekt – Status trotzdem geändert!";
-                $statusType = "warning";
+            if (!$row) {
+                $message = "&#10060; Nicht gefunden!";
+                $statusType = "error";
+                $soundType = "error";
+            } elseif ($row['active'] && !$row['bezahlt'] && !$row['defekt']) {
+                $message = "&#128176; Nicht bezahlt – zuerst kassieren!";
+                $statusType = "error";
                 $soundType = "warning";
             } else {
-                $message = "&#9989; Abholung erfolgreich!";
-                $statusType = "success";
-                $soundType = "success";
+                // Status umschalten, egal ob defekt
+                $db->exec("
+                    UPDATE loescher 
+                    SET abgeholt = CASE WHEN abgeholt = 1 THEN 0 ELSE 1 END
+                    WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
+                ");
+
+                if ($row['defekt']) {
+                    $message = "&#9888; Löscher defekt – Status trotzdem geändert!";
+                    $statusType = "warning";
+                    $soundType = "warning";
+                } else {
+                    $message = "&#9989; Abholung erfolgreich!";
+                    $statusType = "success";
+                    $soundType = "success";
+                }
             }
         }
-    }
 
-    if ($modus === "pruefen") {
-        $db->exec("
-            UPDATE loescher 
-            SET geprueft = CASE WHEN geprueft = 1 THEN 0 ELSE 1 END
-            WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
-        ");
-        $message = "&#9989; Prüfung erledigt!";
-        $statusType = "success";
-        $soundType = "success";
+        if ($modus === "pruefen") {
+            $db->exec("
+                UPDATE loescher 
+                SET geprueft = CASE WHEN geprueft = 1 THEN 0 ELSE 1 END
+                WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
+            ");
+            $message = "&#9989; Prüfung erledigt!";
+            $statusType = "success";
+            $soundType = "success";
+        }
     }
 }
 
@@ -102,11 +117,19 @@ if ($nummer) {
 if (isset($_POST['setInfo']) && $nummer) {
     $nummerSafe = (int)$nummer;
 
-    $db->exec("
+    $stmt = $db->prepare("
         UPDATE loescher 
-        SET info = 'Schaummittel muss getauscht werden'
-        WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
+        SET info = 
+            CASE 
+                WHEN info IS NULL OR info = '' 
+                THEN :text
+                ELSE info || :text
+            END
+        WHERE CAST(nummer AS INTEGER) = :nummer
     ");
+    $stmt->bindValue(':text', "\nSchaummittel muss getauscht werden");
+    $stmt->bindValue(':nummer', $nummerSafe);
+    $stmt->execute();
 
     $result = $db->query("
         SELECT * FROM loescher 
@@ -265,7 +288,16 @@ body.flash-warning { background-color: #fff3cd !important; }
     <?php if ($eintrag && $modus): ?>
     <div class="card p-4">
 
-        <h3 class="mb-3">Details - <strong> <?= htmlspecialchars($eintrag['nummer']) ?></strong></h3>
+        <h3 class="mb-3">
+            Details - <strong><?= htmlspecialchars($eintrag['nummer']) ?></strong>
+
+            <?php if (!$eintrag['active']): ?>
+                <span class="badge bg-danger ms-2">&#128465; GELÖSCHT - KEINE ÄNDERUNG MÖGLICH</span>
+            <?php endif; ?>
+            <?php if ($modus === "abholen" && !$eintrag['bezahlt'] && !$eintrag['defekt'] && $eintrag['active']): ?>
+                <span class="badge bg-danger ms-2">&#128176; NICHT BEZAHLT → Zur Kassa</span>
+            <?php endif; ?>
+        </h3>
 
         <h5><strong>Name:</strong> <?= htmlspecialchars($eintrag['name']) ?></h5>
 
@@ -279,135 +311,137 @@ body.flash-warning { background-color: #fff3cd !important; }
         <hr>
 
         <div id="paymentStatusBox">
-            <?php if ($eintrag['active'] && !$eintrag['bezahlt'] && !$eintrag['defekt']): ?>
+            <?php if ($modus === "abholen" && $eintrag['active'] && !$eintrag['bezahlt'] && !$eintrag['defekt']): ?>
                 <div class="alert alert-danger">
-                    <h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4>
+                    <h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4><div>Als OK geprüft, muss somit bezahlt werden!</div>
                 </div>
-            <?php elseif ($eintrag['active'] && $eintrag['bezahlt'] && $eintrag['defekt']): ?>
+            <?php elseif ($modus === "abholen" && $eintrag['active'] && $eintrag['bezahlt'] && $eintrag['defekt']): ?>
                 <div class="alert alert-warning">
                     <h4>&#9888; Defekt – Geld retour!</h4>
                 </div>
             <?php endif; ?>
         </div>
         <br>
+        <? if ($eintrag['active']): ?>
+            <h4 class="d-flex mb-2">
+                <span class="me-2" style="width:160px;">Löscherstatus:</span>
 
-		<h4 class="d-flex mb-2">
-            <span class="me-2" style="width:160px;">Löscherstatus:</span>
-
-            <span id="pruefStatusBox">
-            <?php
-                if ($eintrag['geprueft']) {
-                    if (!empty($eintrag['defekt'])) {
-                        $status1 = '<span class="badge border border-success text-success bg-transparent">Geprüft</span>';
+                <span id="pruefStatusBox">
+                <?php
+                    if ($eintrag['geprueft']) {
+                        if (!empty($eintrag['defekt'])) {
+                            $status1 = '<span class="badge border border-success text-success bg-transparent">Geprüft</span>';
+                        } else {
+                            $status1 = '<span class="badge bg-success">Geprüft</span>';
+                        }
                     } else {
-                        $status1 = '<span class="badge bg-success">Geprüft</span>';
+                        $status1 = '<span class="badge bg-warning text-dark">Nicht geprüft</span>';
                     }
-                } else {
-                    $status1 = '<span class="badge bg-warning text-dark">Nicht geprüft</span>';
-                }
 
-                $status2 = empty($eintrag['defekt'])
-                    ? '<span class="badge bg-success">OK</span>'
-                    : '<span class="badge bg-danger">DEFEKT</span>';
+                    $status2 = empty($eintrag['defekt'])
+                        ? '<span class="badge bg-success">OK</span>'
+                        : '<span class="badge bg-danger">DEFEKT</span>';
 
-                if ($eintrag['geprueft']) {
-                    echo $status1 . '&nbsp;-&nbsp;' . $status2;
-                } else {
-                    echo $status1;
-                }
-            ?>
-            </span>
-        </h4>
+                    if ($eintrag['geprueft']) {
+                        echo $status1 . '&nbsp;-&nbsp;' . $status2;
+                    } else {
+                        echo $status1;
+                    }
+                ?>
+                </span>
+            </h4>
 
-        <br>
-        <span id="loescherStatusBox" style="display:none;"></span>
-		<br>
+            <br>
+            <span id="loescherStatusBox" style="display:none;"></span>
+            <br>
 
-        <h4 class="d-flex mb-2">
-            <span class="me-2" style="width:160px;">Abholstatus:</span>
+            <h4 class="d-flex mb-2">
+                <span class="me-2" style="width:160px;">Abholstatus:</span>
 
-            <span id="lagerStatusBox">
-                <?= $eintrag['abgeholt']
-                    ? '<span class="badge bg-success">Abgeholt</span>'
-                    : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
-            </span>
-        </h4>
+                <span id="lagerStatusBox">
+                    <?= $eintrag['abgeholt']
+                        ? '<span class="badge bg-success">Abgeholt</span>'
+                        : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
+                </span>
+            </h4>
 
-		<hr>
-        <div id="infoBox">
-        <?php if (!empty($eintrag['info'])): ?>
-            <div class="alert alert-warning mt-3">
-                <strong>Hinweis:</strong><br>
-                <h4><?= nl2br(htmlspecialchars($eintrag['info'])) ?></h4>
+            <hr>
+            <div id="infoBox">
+            <?php if (!empty($eintrag['info'])): ?>
+                <div class="alert alert-warning mt-3">
+                    <strong>Hinweis:</strong><br>
+                    <h4><?= nl2br(htmlspecialchars($eintrag['info'])) ?></h4>
+                </div>
+            <?php endif; ?>
             </div>
-        <?php endif; ?>
-        </div>
 
 
-        <!--  BUTTONS -->
-        <?php if ($modus === "pruefen"): ?>
-            <div class="row gap-1">
-                <form method="post" class="mt-3 col">
+            <!--  BUTTONS -->
+            <?php if ($modus === "pruefen"): ?>
+                <div class="row gap-1">
+                    <form method="post" class="mt-3 col">
+                        <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                        <input type="hidden" name="modus" value="<?= $modus ?>">
+                        <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+
+                        <button type="submit" name="setInfo" class="btn btn-warning w-100">
+                            <strong>&#9888; Schaummittel tauschen</strong>
+                        </button>
+                    </form>
+            <?php endif; ?>
+            <?php if ($modus === "pruefen" && $eintrag['geprueft']): ?>
+                    <form method="post" class="mt-3 col">
+                        <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                        <input type="hidden" name="modus" value="<?= $modus ?>">
+                        <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+
+                        <button id="defektBtn" type="submit" name="setDefekt"
+                            class="btn w-100 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
+                            
+                            <strong><?= $eintrag['defekt'] 
+                                ? '&#128295; Defekt zurücksetzen'
+                                : '&#9940; Löscher defekt' ?></strong> 
+                        </button>
+                    </form>
+                </div>
+            <?php endif; ?>
+
+
+            <?php if ($bedienmodus === "manuell"): ?>
+                <form method="post" class="mt-3">
                     <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
                     <input type="hidden" name="modus" value="<?= $modus ?>">
-                    <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+                    <input type="hidden" name="bedienmodus" value="manuell">
 
-                    <button type="submit" name="setInfo" class="btn btn-warning w-100">
-                        <strong>&#9888; Schaummittel tauschen</strong>
-                    </button>
-                </form>
-        <?php endif; ?>
-        <?php if ($modus === "pruefen" && $eintrag['geprueft']): ?>
-                <form method="post" class="mt-3 col">
-                    <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
-                    <input type="hidden" name="modus" value="<?= $modus ?>">
-                    <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
-
-                    <button id="defektBtn" type="submit" name="setDefekt"
-                        class="btn w-100 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
+                    <button id="actionBtn" type="submit" name="aktion" value="1"
+                        class="btn btn-success btn-lg w-100"
+                        style="font-size: 1.5rem; padding: 1rem;"
+                        <?= (!$eintrag['active'] || ($modus === "abholen" && !$eintrag['bezahlt'] && !$eintrag['defekt'])) ? 'disabled' : '' ?>>
                         
-                         <strong><?= $eintrag['defekt'] 
-                            ? '&#128295; Defekt zurücksetzen'
-                            : '&#9940; Löscher defekt' ?></strong> 
+                        <div>
+                            <strong>
+                                &#128260;
+                                <?= $modus === "pruefen" 
+                                    ? "Prüfstatus ändern" 
+                                    : "Abholstatus ändern" ?>
+                            </strong>
+                        </div>
+
+                        <div style="font-size: 0.9rem; opacity: 0.85;">
+                            (oder Leertaste drücken)
+                        </div>
                     </button>
                 </form>
-            </div>
+            <?php endif; ?>
         <?php endif; ?>
-
-
-        <?php if ($bedienmodus === "manuell"): ?>
-        <form method="post" class="mt-3">
-            <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
-            <input type="hidden" name="modus" value="<?= $modus ?>">
-            <input type="hidden" name="bedienmodus" value="manuell">
-
-            <button id="actionBtn" type="submit" name="aktion" value="1"
-                class="btn btn-success btn-lg w-100"
-                style="font-size: 1.5rem; padding: 1rem;"
-                <?= (!$eintrag['active'] || ($modus === "abholen" && !$eintrag['bezahlt'] && !$eintrag['defekt'])) ? 'disabled' : '' ?>>
-                
-                <div>
-                    <strong>
-                        &#128260;
-                        <?= $modus === "pruefen" 
-                            ? "Prüfstatus ändern" 
-                            : "Abholstatus ändern" ?>
-                    </strong>
-                </div>
-
-                <div style="font-size: 0.9rem; opacity: 0.85;">
-                    (oder Leertaste drücken)
-                </div>
-            </button>
-        </form>
-        <?php endif; ?>
-
     </div>
+
     <?php endif; ?>
 
     </div>
 
 </div>
+
 
 <script>
     const input = document.getElementById("nummerInput");
@@ -627,11 +661,11 @@ body.flash-warning { background-color: #fff3cd !important; }
         // PAYMENT BOX
         // =====================
         const paymentBox = document.getElementById("paymentStatusBox");
-        if (paymentBox) {
+        if (paymentBox && "<?= $modus ?>" === "abholen") {
             let paymentHTML = '';
 
             if (data.active == 1 && data.bezahlt == 0 && data.defekt == 0) {
-                paymentHTML = '<div class="alert alert-danger"><h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4></div>';
+                paymentHTML = '<div class="alert alert-danger"><h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4><div>Als OK geprüft, muss somit bezahlt werden!</div></div>';
             } else if (data.active == 1 && data.bezahlt == 1 && data.defekt == 1) {
                 paymentHTML = '<div class="alert alert-warning"><h4>&#9888; Defekt – Geld retour!</h4></div>';
             }

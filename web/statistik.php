@@ -6,6 +6,13 @@ if (!isset($_SESSION['logged_in'])) {
     exit;
 }
 
+// Logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: login.php");
+    exit;
+}
+
 $db = getDB();
 
 // =====================

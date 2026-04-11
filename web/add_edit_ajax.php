@@ -44,6 +44,9 @@ if ($result) {
         die("not found");
     }
 }
+
+$isActive = ($entry['active'] ?? 0) == 1;
+
 ?>
 <?php if($module == "print") { ?>
     <div class="col-md-6" id="print">
@@ -62,7 +65,7 @@ if ($result) {
 	            <?= $entry['etikett_gedruckt'] == 1 ? '&#9989;' : '&#10060;' ?>
 	        </span>
 	    </div>
-	    <button type="submit" name="redruck_etikett" class="btn btn-outline-secondary btn-sm w-100">
+	    <button type="submit" name="redruck_etikett" class="btn btn-outline-secondary btn-sm w-100" <?= !$isActive ? 'disabled' : '' ?>>
 	        &#127991; Nachdrucken
 	    </button>
 	</div>
@@ -80,7 +83,7 @@ if ($result) {
 	            <?= $entry['abholschein_gedruckt'] == 1 ? '&#9989;' : '&#10060;' ?>
 	        </span>
 	    </div>
-	    <button type="submit" name="redruck_abholschein" class="btn btn-outline-secondary btn-sm w-100">
+	    <button type="submit" name="redruck_abholschein" class="btn btn-outline-secondary btn-sm w-100" <?= !$isActive ? 'disabled' : '' ?>>
 	        &#129534; Nachdrucken
 	    </button>
 	</div>
@@ -91,17 +94,17 @@ if ($result) {
         <label class="form-label fw-bold small text-uppercase text-muted mb-3">Statusübersicht</label>
         
         <div class="form-check mb-2">
-            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="bezahlt" class="form-check-input" id="bezahltCheck" <?= $entry['bezahlt'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="bezahlt" class="form-check-input" id="bezahltCheck" <?= $entry['bezahlt'] ? 'checked' : '' ?> <?= !$isActive ? 'disabled' : '' ?>>
             <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
         </div>
 
         <div class="form-check mb-2">
-            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $entry['geprueft'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="geprueft" class="form-check-input" id="geprueftCheck" <?= $entry['geprueft'] ? 'checked' : '' ?> <?= !$isActive ? 'disabled' : '' ?>>
             <label class="form-check-label" for="geprueftCheck">&#129514; Geprüft</label>
         </div>
 
         <div class="form-check mb-2">
-            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $entry['abgeholt'] ? 'checked' : '' ?>>
+            <input type="checkbox" onfocus="pausePolling()" onblur="resumePolling()" oninput="markDirty()" name="abgeholt" class="form-check-input" id="abgeholtCheck" <?= $entry['abgeholt'] ? 'checked' : '' ?> <?= !$isActive ? 'disabled' : '' ?>>
             <label class="form-check-label" for="abgeholtCheck">&#128230; Abgeholt</label>
         </div>
         
@@ -113,7 +116,8 @@ if ($result) {
 		           name="defekt" 
 		           class="form-check-input" 
 		           id="defektCheck" 
-		           <?= ($entry['defekt'] == 1) ? 'checked' : '' ?>>
+		           <?= ($entry['defekt'] == 1) ? 'checked' : '' ?>
+                   <?= !$isActive ? 'disabled' : '' ?>>
 		    <label class="form-check-label text-danger" for="defektCheck">
 		        &#9940; Defekt <?= ($entry['defekt'] == -1) ? '<small class="text-muted">(noch ungeprüft)</small>' : '' ?>
 		    </label>
@@ -135,7 +139,8 @@ if ($result) {
             onblur="resumePolling()" 
             oninput="markDirty(); this.rows = (this.value.split('\n').length || 1);" 
             style="resize:none; overflow:hidden;"
-            rows="<?= $rows ?>"
+            rows="<?= $rows ?>" 
+            <?= !$isActive ? 'disabled' : '' ?>
         ><?= htmlspecialchars($infoText) ?></textarea>
     </div>
 <?php } ?>

@@ -77,6 +77,50 @@ if (isset($_POST['reset_db'])) {
     $successMessage = "Datenbank wurde zurückgesetzt! Backup DB: $backupFile, Backup Rechnungen: $zipFile";
     }
 }
+
+// Einstellungen speichern
+if (isset($_POST['save_settings'])) {
+
+    if ($_POST['settings_password'] !== RESET_PASSWORD) {
+        $errorMessage = "Falsches Passwort!";
+    } else {
+
+        $configFile = 'config.php';
+        $configContent = file_get_contents($configFile);
+
+        function replaceDefine($content, $key, $value) {
+            $value = addslashes($value);
+            return preg_replace(
+                "/define\('$key',\s*.*?\);/",
+                "define('$key', '$value');",
+                $content
+            );
+        }
+
+        function replaceDefineNumber($content, $key, $value) {
+            return preg_replace(
+                "/define\('$key',\s*.*?\);/",
+                "define('$key', " . floatval($value) . ");",
+                $content
+            );
+        }
+
+        // Preise
+        $configContent = replaceDefineNumber($configContent, 'PREIS_STANDARD', $_POST['preis_standard']);
+        $configContent = replaceDefineNumber($configContent, 'PREIS_RABATT', $_POST['preis_rabatt']);
+        $configContent = replaceDefineNumber($configContent, 'PREIS_GRATIS', $_POST['preis_gratis']);
+
+        // Firma
+        $configContent = replaceDefine($configContent, 'FIRMA_NAME', $_POST['firma_name']);
+        $configContent = replaceDefine($configContent, 'FIRMA_ADRESSE', $_POST['firma_adresse']);
+        $configContent = replaceDefine($configContent, 'FIRMA_PLZORT', $_POST['firma_plzort']);
+        $configContent = replaceDefine($configContent, 'FIRMA_WEB', $_POST['firma_web']);
+
+        file_put_contents($configFile, $configContent);
+
+        $successMessage = "Einstellungen gespeichert!";
+    }
+}
 ?>
 
 
@@ -109,7 +153,7 @@ if (isset($_POST['reset_db'])) {
     </div>
 </nav>
 
-<div class="container mt-5">
+<div class="container mt-5 flex-grow-1">
     <h1>&#128293; Feuerlöscher Software</h1>
     <br>
 
@@ -192,52 +236,122 @@ if (isset($_POST['reset_db'])) {
     </div>
 
     <div class="mt-5">
-    <div class="row g-4">
+    <div class="card shadow-sm">
 
-        <!-- SCHILDER -->
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-body text-center">
-                    <h5 class="card-title">📁 Schilder</h5>
-                    <p class="card-text">Dokumente öffnen oder herunterladen</p>
-
-                    <div class="d-flex justify-content-center gap-2 flex-wrap">
-                        <a href="./data/Schilder.pdf" target="_blank" class="btn btn-outline-danger">
-                            PDF öffnen
-                        </a>
-
-                        <a href="./data/Schilder.pptx" target="_blank" class="btn btn-outline-primary">
-                            Powerpoint öffnen
-                        </a>
-                    </div>
-                </div>
-            </div>
+        <div class="card-body text-center">
+            <button class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#settingsAll">
+                ⚙️ Einstellungen
+            </button>
         </div>
 
-        <!-- DATENBANK RESET -->
-        <div class="col-md-6">
-            <div class="card border-danger shadow-sm h-100">
-                <div class="card-body text-center">
-                    <h5 class="card-title text-danger">⚠ Datenbank zurücksetzen</h5>
-                    <p class="card-text">
-                        Alle Daten werden gelöscht. Backup wird automatisch erstellt.
-                    </p>
+        <div id="settingsAll" class="collapse">
+            <div class="card-body">
 
-                    <form id="resetForm" method="post">
-                        <input type="hidden" name="reset_db" value="1">
-                        <input type="hidden" name="reset_password" id="reset_password">
+                <div class="row g-4">
 
-                        <button type="button" class="btn btn-danger" onclick="confirmReset()">
-                            Datenbank zurücksetzen
-                        </button>
-                    </form>
+                    <!-- SCHILDER -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body text-center">
+                                <h5>📁 Schilder</h5>
+
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <a href="./data/Schilder.pdf" target="_blank" class="btn btn-outline-danger">
+                                        PDF
+                                    </a>
+
+                                    <a href="./data/Schilder.pptx" target="_blank" class="btn btn-outline-primary">
+                                        PowerPoint
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RESET -->
+                    <div class="col-md-4">
+                        <div class="card border-danger shadow-sm h-100">
+                            <div class="card-body text-center">
+                                <h5 class="text-danger">⚠ Datenbank zurücksetzen</h5>
+
+                                <p class="card-text small">
+                                    Alle Daten werden gelöscht.<br>
+                                    Ein Backup wird automatisch erstellt.
+                                </p>
+
+                                <form id="resetForm" method="post">
+                                    <input type="hidden" name="reset_db" value="1">
+                                    <input type="hidden" name="reset_password" id="reset_password">
+
+                                    <button type="button" class="btn btn-danger w-100" onclick="confirmReset()">
+                                        Datenbank zurücksetzen
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EINSTELLUNGEN -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body">
+
+                                <form id="settingsForm" method="post">
+                                    <input type="hidden" name="save_settings" value="1">
+                                    <input type="hidden" name="settings_password" id="settings_password">
+
+                                    <h5 class="text-center">⚙️ Preise</h5>
+
+                                    <label>Standard</label>
+                                    <input type="number" step="0.01" name="preis_standard"
+                                           value="<?php echo PREIS_STANDARD; ?>"
+                                           class="form-control mb-2" required>
+
+                                    <label>Rabatt</label>
+                                    <input type="number" step="0.01" name="preis_rabatt"
+                                           value="<?php echo PREIS_RABATT; ?>"
+                                           class="form-control mb-2" required>
+
+                                    <label>Gratis</label>
+                                    <input type="number" step="0.01" name="preis_gratis"
+                                           value="<?php echo PREIS_GRATIS; ?>"
+                                           class="form-control mb-3" required>
+
+                                    <h5 class="text-center">🏢 Feuerwehr Daten</h5>
+
+                                    <input type="text" name="firma_name"
+                                           value="<?php echo FIRMA_NAME; ?>"
+                                           class="form-control mb-2" placeholder="Name" required>
+
+                                    <input type="text" name="firma_adresse"
+                                           value="<?php echo FIRMA_ADRESSE; ?>"
+                                           class="form-control mb-2" placeholder="Adresse" required>
+
+                                    <input type="text" name="firma_plzort"
+                                           value="<?php echo FIRMA_PLZORT; ?>"
+                                           class="form-control mb-2" placeholder="PLZ Ort" required>
+
+                                    <input type="text" name="firma_web"
+                                           value="<?php echo FIRMA_WEB; ?>"
+                                           class="form-control mb-3" placeholder="Website" required>
+
+                                    <button type="button" class="btn btn-success w-100" onclick="confirmSettingsSave()">
+                                        💾 Speichern
+                                    </button>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+
             </div>
         </div>
 
     </div>
 </div>
-
+    
 </div>
 
 <script>
@@ -277,11 +391,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 });
+
+function confirmSettingsSave() {
+    if (!confirm("Einstellungen wirklich speichern?")) return;
+
+    const pwd = prompt("Admin-Passwort eingeben:");
+    if (!pwd) {
+        alert("Passwort erforderlich!");
+        return;
+    }
+
+    document.getElementById("settings_password").value = pwd;
+    document.getElementById("settingsForm").submit();
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<footer class="bg-light text-center text-muted py-1 mt-5 small border-top">
+<!--<footer class="bg-light text-center text-muted py-2 small border-top fixed-bottom">
     &copy; Freiwillige Feuerwehr Wallern - Stefan Schneebauer <?php echo date('Y'); ?>
-</footer>
+</footer>-->
 </body>
 </html>

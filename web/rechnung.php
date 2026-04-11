@@ -303,7 +303,7 @@ if (isset($_POST['save_rechnung'])) {
 
     $pdf->writeHTML($headerTable, true, false, true, false, '');
 
-    // --- 3. TITEL ---
+    // --- TITEL ---
     $pdf->Ln(15);
     $pdf->SetFont('helvetica', 'B', 18);
     $pdf->Cell(0, 10, "Rechnung", 0, 1, 'L');
@@ -311,7 +311,7 @@ if (isset($_POST['save_rechnung'])) {
     //$pdf->Cell(0, 5, "über die Feuerlöscherüberprüfung", 0, 1, 'L');
     $pdf->Ln(10);
 
-    // --- 4. LEISTUNGSTABELLE ---
+    // --- LEISTUNGSTABELLE ---
     $anzahl = (int)$_POST['anzahl'];
     $einzelpreis = floatval($preis);
     $gesamtpreis = $anzahl * $einzelpreis;
@@ -348,15 +348,25 @@ if (isset($_POST['save_rechnung'])) {
 
     $pdf->writeHTML($tbl, true, false, true, false, '');
 
-    // --- 5. MWST-HINWEIS ---
+    // --- MWST-HINWEIS ---
     $pdf->Ln(10);
     $pdf->SetFont('helvetica', 'I', 9);
 
     $hinweis = "Hinweis: Als Körperschaft öffentlichen Rechts ist die Freiwillige Feuerwehr gemäß § 2 Abs. 5 UStG nicht umsatzsteuerpflichtig. Der ausgewiesene Betrag entspricht dem Bruttobetrag (0% MwSt).";
-
     $pdf->MultiCell(0, 5, $hinweis, 0, 'L');
 
-    // --- 6. DATEI SPEICHERN ---
+    // --- ZAHLUNGSINFORMATIONEN ---
+    $pdf->Ln(8);
+    $pdf->SetFont('helvetica', 'B', 11);
+    $pdf->Cell(0, 6, 'Zahlungsinformation', 0, 1, 'L');
+    $pdf->SetFont('helvetica', '', 10);
+    $zahlungsHinweis = "Bei Überweisung verwenden Sie bitte die Rechnungsnummer als Verwendungszweck.\n"
+        . "Empfänger: " . BANK_EMPFAENGER . "\n"
+        . "Bank: " . BANK_NAME . "\n"
+        . "IBAN: " . BANK_IBAN;
+    $pdf->MultiCell(0, 5, $zahlungsHinweis, 0, 'L');
+
+    // ---DATEI SPEICHERN ---
     $folder = __DIR__ . '/_Rechnungen';
     if (!is_dir($folder)) mkdir($folder, 0777, true);
 

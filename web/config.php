@@ -2,7 +2,7 @@
 session_start();
 
 define('DB_FILE', 'feuerloescher.db');
-define('PASSWORD', 'admin'); // ändern!
+define('PASSWORD', '123'); // ändern!
 define('RESET_PASSWORD', '47Wallern02'); // ändern!
 define('API_TOKEN', '123'); // ändern!
 
@@ -16,6 +16,11 @@ define('FIRMA_NAME', 'Freiwillige Feuerwehr Wallern');
 define('FIRMA_ADRESSE', 'Kienzlstraße 10');
 define('FIRMA_PLZORT', '4702 Wallern an der Trattnach');
 define('FIRMA_WEB', 'https://feuerwehr-wallern.at');
+
+define('BANK_NAME', 'Raiffeisenbank Wallern');
+define('BANK_IBAN', 'AT1234567890123456');
+define('BANK_EMPFAENGER', 'Feuerwehr Wallern');
+
 
 
 

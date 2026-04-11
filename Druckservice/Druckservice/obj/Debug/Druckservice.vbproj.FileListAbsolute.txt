@@ -35,8 +35,6 @@ C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckser
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Interop.bpac.dll
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\QL-800 Treiber.exe
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Treiber.exe
-C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FeuerlöscherSchild.ico
-C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern_500px.bmp
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Logo.png
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher.lbx
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Brother QL Serie\Feuerloescher1.lbx
@@ -93,3 +91,5 @@ C:\Users\User\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservi
 C:\Users\User\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.pdb
 C:\Users\User\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Feuerlöscher.ico
 C:\Users\User\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern.bmp
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\Feuerlöscher.ico
+C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern.bmp

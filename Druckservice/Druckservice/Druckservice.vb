@@ -442,9 +442,11 @@ Public Class Druckservice
             p.WriteLine("-".PadRight(42, "-"))
             p.WriteLine()
 
-            p.SetFontSize(1, 1)
-            p.WriteLine(info)
-            p.SetFontSize(0, 0)
+            If info <> "" Then
+                p.SetFontSize(1, 1)
+                p.WriteLine(info)
+                p.SetFontSize(0, 0)
+            End If
 
             p.WriteLine()
             p.WriteLine("=".PadRight(42, "="))
@@ -508,21 +510,22 @@ Public Class Druckservice
 
             p.SetAlignment(EscPosPrinter.Alignment.Left)
             p.SetBold(True)
-            p.Write("      Rechnungsnummer: ")
+            p.Write("   Rechnungsnummer: ")
             p.SetBold(False)
             p.WriteLine(CStr(rnummer))
 
             p.SetBold(True)
-            p.Write("      Kunde: ")
+            p.Write("   Kunde: ")
             p.SetBold(False)
             p.WriteLine(name)
 
             If adresse <> "" Then
                 p.SetBold(True)
-                p.Write("      Adresse: ")
+                p.Write("   Adresse: ")
                 p.SetBold(False)
                 p.WriteLine(adresse)
-                p.Write("      Ort: ")
+                p.SetBold(True)
+                p.Write("   Ort: ")
                 p.SetBold(False)
                 p.WriteLine(plzort)
             End If
