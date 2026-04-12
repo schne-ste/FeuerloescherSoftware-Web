@@ -39,6 +39,8 @@ if (isset($_POST['status_aendern'])) {
 
             $successMessage = "&#9989; Status für Löscher $start bis $ende erfolgreich gesetzt!";
             $messageType = "success";
+            //POST-Daten zurücksetzen
+$_POST = [];
         } else {
             $successMessage = "&#10060; Bitte mindestens einen Status auswählen!";
             $messageType = "danger";
@@ -46,8 +48,9 @@ if (isset($_POST['status_aendern'])) {
     }
 }
 
+//Daten leeren
 if (isset($_POST['daten_leeren'])) {
-    unset($_POST['start_nummer'], $_POST['end_nummer'], $_POST['bezahlt'], $_POST['geprueft'], $_POST['abgeholt']);
+    unset($_POST['start_nummer'], $_POST['end_nummer'], $_POST['bezahlt'], $_POST['geprueft'], $_POST['abgeholt'], $_POST['info']);
 }
 ?>
 
@@ -65,7 +68,7 @@ if (isset($_POST['daten_leeren'])) {
   <div class="accordion-item">
     <h2 class="accordion-header" id="headingOne">
       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMassen" aria-expanded="false" aria-controls="collapseMassen">
-        ⚙️ Massenverwaltung Feuerlöscher
+        &#9881; Massenverwaltung Feuerlöscher
       </button>
     </h2>
     <div id="collapseMassen" class="accordion-collapse collapse">
@@ -111,7 +114,7 @@ if (isset($_POST['daten_leeren'])) {
           </div>
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label class="form-label">📝 Info</label>
+              <label class="form-label">&#128161; Info</label>
               <input type="text" name="info" class="form-control"
                     value="<?= htmlspecialchars($_POST['info'] ?? '') ?>">
             </div>
@@ -119,7 +122,7 @@ if (isset($_POST['daten_leeren'])) {
 
           <div class="row g-3">
             <div class="col-md-2">
-              <button type="submit" name="status_aendern" class="btn btn-primary w-100" onclick="return confirm('&#9888; Sind Sie sicher, dass die ausgewählten Status gesetzt werden sollen?');">&#128190; Status ändern</button>
+              <button type="submit" name="status_aendern" class="btn btn-primary w-100" onclick="return confirm('&#9888; Sind Sie sicher, dass die ausgewählten Status/Info gesetzt werden sollen?');">&#128190; Speichern</button>
             </div>
             <div class="col-md-2">
               <button type="submit" name="daten_leeren" class="btn btn-secondary w-100">&#128465; Daten leeren</button>

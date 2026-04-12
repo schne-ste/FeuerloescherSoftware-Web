@@ -108,13 +108,6 @@ if (isset($_POST['save_settings'])) {
         // Preise
         $configContent = replaceDefineNumber($configContent, 'PREIS_STANDARD', $_POST['preis_standard']);
         $configContent = replaceDefineNumber($configContent, 'PREIS_RABATT', $_POST['preis_rabatt']);
-        $configContent = replaceDefineNumber($configContent, 'PREIS_GRATIS', $_POST['preis_gratis']);
-
-        // Firma
-        $configContent = replaceDefine($configContent, 'FIRMA_NAME', $_POST['firma_name']);
-        $configContent = replaceDefine($configContent, 'FIRMA_ADRESSE', $_POST['firma_adresse']);
-        $configContent = replaceDefine($configContent, 'FIRMA_PLZORT', $_POST['firma_plzort']);
-        $configContent = replaceDefine($configContent, 'FIRMA_WEB', $_POST['firma_web']);
 
         file_put_contents($configFile, $configContent);
 
@@ -165,7 +158,7 @@ if (isset($_POST['save_settings'])) {
 
     <!-- Erfolgsmeldung -->
     <?php if(isset($successMessage)): ?>
-        <div class="alert alert-danger">
+        <div class="alert alert-success">
             <?php echo $successMessage; ?>
         </div>
     <?php endif; ?>
@@ -240,7 +233,7 @@ if (isset($_POST['save_settings'])) {
 
         <div class="card-body text-center">
             <button class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#settingsAll">
-                ⚙️ Einstellungen
+                &#9881; Einstellungen
             </button>
         </div>
 
@@ -253,7 +246,7 @@ if (isset($_POST['save_settings'])) {
                     <div class="col-md-4">
                         <div class="card shadow-sm h-100">
                             <div class="card-body text-center">
-                                <h5>📁 Schilder</h5>
+                                <h5>&#128193; Schilder</h5>
 
                                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                                     <a href="./data/Schilder.pdf" target="_blank" class="btn btn-outline-danger">
@@ -300,7 +293,7 @@ if (isset($_POST['save_settings'])) {
                                     <input type="hidden" name="save_settings" value="1">
                                     <input type="hidden" name="settings_password" id="settings_password">
 
-                                    <h5 class="text-center">⚙️ Preise</h5>
+                                    <h5 class="text-center">&#9881; Preise</h5>
 
                                     <label>Standard</label>
                                     <input type="number" step="0.01" name="preis_standard"
@@ -312,31 +305,8 @@ if (isset($_POST['save_settings'])) {
                                            value="<?php echo PREIS_RABATT; ?>"
                                            class="form-control mb-2" required>
 
-                                    <label>Gratis</label>
-                                    <input type="number" step="0.01" name="preis_gratis"
-                                           value="<?php echo PREIS_GRATIS; ?>"
-                                           class="form-control mb-3" required>
-
-                                    <!--<h5 class="text-center">🏢 Feuerwehr Daten</h5>
-
-                                    <input type="text" name="firma_name"
-                                           value="<?php echo FIRMA_NAME; ?>"
-                                           class="form-control mb-2" placeholder="Name" required>
-
-                                    <input type="text" name="firma_adresse"
-                                           value="<?php echo FIRMA_ADRESSE; ?>"
-                                           class="form-control mb-2" placeholder="Adresse" required>
-
-                                    <input type="text" name="firma_plzort"
-                                           value="<?php echo FIRMA_PLZORT; ?>"
-                                           class="form-control mb-2" placeholder="PLZ Ort" required>
-
-                                    <input type="text" name="firma_web"
-                                           value="<?php echo FIRMA_WEB; ?>"
-                                           class="form-control mb-3" placeholder="Website" required>-->
-
                                     <button type="button" class="btn btn-success w-100" onclick="confirmSettingsSave()">
-                                        💾 Speichern
+                                        &#128190; Speichern
                                     </button>
                                 </form>
 
@@ -370,7 +340,7 @@ function confirmReset() {
 
 // Logik zum Ausblenden der Meldung
 document.addEventListener('DOMContentLoaded', function() {
-    const alert = document.querySelector('.alert-danger'); // Wir wählen die rote Alert-Box
+    const alert = document.querySelector('.alert'); // Wir wählen die rote Alert-Box
     
     if (alert) {
         // Starte Timer für 3 Sekunden (3000ms)
