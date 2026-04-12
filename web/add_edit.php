@@ -147,9 +147,10 @@ if (!$editEntry && isset($_POST['add_loscher'])) {
     $typ = $_POST['typ'] ?? '';
     $preis = $preise[$typ] ?? 0;
     $anzahl = max(1, (int)($_POST['anzahl'] ?? 1));
-
+    $nummern = [];
     for ($i = 0; $i < $anzahl; $i++) {
         $nummer = generateNummer($db);
+        $nummern[] = $nummer;
         $stmt = $db->prepare("
             INSERT INTO loescher (
                 nummer, name, typ, preis, loeschertyp,
@@ -172,11 +173,11 @@ if (!$editEntry && isset($_POST['add_loscher'])) {
         $stmt->bindValue(':info', $_POST['info'] ?? '');
         $stmt->bindValue(':zeitstempel', $zeitstempel);
         
-        $stmt->execute();
+        $result = $stmt->execute();
     }
 
     // Erfolg in Session speichern
-    $_SESSION['success_msg'] = "&#9989; $anzahl Löscher erfolgreich hinzugefügt!";
+    $_SESSION['success_msg'] = "&#9989; $anzahl Löscher erfolgreich hinzugefügt! [" . implode(", ", $nummern) . "]";
     $_SESSION['msg_type'] = "success";
 
     // Seite komplett neu laden (Dropdown wird dadurch frisch befüllt)

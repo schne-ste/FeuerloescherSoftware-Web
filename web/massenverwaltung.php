@@ -20,9 +20,22 @@ if (isset($_POST['status_aendern'])) {
         if ($geprueft !== '') $updates[] = "geprueft = " . ((int)$geprueft);
         if ($abgeholt !== '') $updates[] = "abgeholt = " . ((int)$abgeholt);
 
+        $info = $_POST['info'] ?? '';
+
+        if ($info !== '') {
+            $escapedInfo = SQLite3::escapeString($info);
+            $updates[] = "info = CASE
+              WHEN info IS NULL OR info = '' THEN '$escapedInfo'
+              ELSE info || char(10) || '$escapedInfo'
+            END";
+        }
+
         if (count($updates) > 0) {
             $sql = implode(", ", $updates);
-            $db->exec("UPDATE loescher SET $sql WHERE CAST(nummer AS INTEGER) BETWEEN $start AND $ende");
+            $stmt = $db->prepare("UPDATE loescher SET $sql WHERE CAST(nummer AS INTEGER) BETWEEN :start AND :ende");
+            $stmt->bindValue(':start', $start, SQLITE3_INTEGER);
+            $stmt->bindValue(':ende', $ende, SQLITE3_INTEGER);
+            $stmt->execute();
 
             $successMessage = "&#9989; Status für Löscher $start bis $ende erfolgreich gesetzt!";
             $messageType = "success";
@@ -94,6 +107,13 @@ if (isset($_POST['daten_leeren'])) {
                 <option value="1" <?= (($_POST['abgeholt'] ?? '') === '1') ? 'selected' : '' ?>>&#9989; Ja</option>
                 <option value="0" <?= (($_POST['abgeholt'] ?? '') === '0') ? 'selected' : '' ?>>&#10060; Nein</option>
               </select>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">📝 Info</label>
+              <input type="text" name="info" class="form-control"
+                    value="<?= htmlspecialchars($_POST['info'] ?? '') ?>">
             </div>
           </div>
 

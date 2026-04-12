@@ -317,7 +317,7 @@ if (isset($_POST['save_settings'])) {
                                            value="<?php echo PREIS_GRATIS; ?>"
                                            class="form-control mb-3" required>
 
-                                    <h5 class="text-center">🏢 Feuerwehr Daten</h5>
+                                    <!--<h5 class="text-center">🏢 Feuerwehr Daten</h5>
 
                                     <input type="text" name="firma_name"
                                            value="<?php echo FIRMA_NAME; ?>"
@@ -333,7 +333,7 @@ if (isset($_POST['save_settings'])) {
 
                                     <input type="text" name="firma_web"
                                            value="<?php echo FIRMA_WEB; ?>"
-                                           class="form-control mb-3" placeholder="Website" required>
+                                           class="form-control mb-3" placeholder="Website" required>-->
 
                                     <button type="button" class="btn btn-success w-100" onclick="confirmSettingsSave()">
                                         💾 Speichern
@@ -407,8 +407,9 @@ function confirmSettingsSave() {
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<!--<footer class="bg-light text-center text-muted py-2 small border-top fixed-bottom">
+<div class="small d-hidden p-4"></div>
+<footer class="bg-light text-center text-muted py-2 small border-top fixed-bottom">
     &copy; Freiwillige Feuerwehr Wallern - Stefan Schneebauer <?php echo date('Y'); ?>
-</footer>-->
+</footer>
 </body>
 </html>
