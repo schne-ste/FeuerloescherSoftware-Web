@@ -200,7 +200,7 @@ if (isset($_POST['save_settings'])) {
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
                     <h5 class="card-title">&#128179; Rechnung</h5>
-                    <p class="card-text">Rechnungen erstellen oder earbeiten</p>
+                    <p class="card-text">Rechnungen erstellen oder bearbeiten</p>
                     <a href="rechnung.php" class="btn btn-primary w-100">Öffnen</a>
                 </div>
             </div>

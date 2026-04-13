@@ -12,10 +12,10 @@ define('PREIS_GRATIS', 0);
 
 define('RECHNUNGS_PREFIX', 'RFLU26-'); // Prefix für Rechnungsnummern
 
-define('FIRMA_NAME', 'Freiwillige Feuerwehr Wallern');
-define('FIRMA_ADRESSE', 'Kienzlstraße 10');
-define('FIRMA_PLZORT', '4702 Wallern an der Trattnach');
-define('FIRMA_WEB', 'https://feuerwehr-wallern.at');
+define('FIRMA_NAME', '');
+define('FIRMA_ADRESSE', '');
+define('FIRMA_PLZORT', '');
+define('FIRMA_WEB', '');
 
 define('BANK_NAME', 'Raiffeisenbank Wallern');
 define('BANK_IBAN', 'AT1234567890123456');

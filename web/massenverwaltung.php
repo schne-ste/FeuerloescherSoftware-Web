@@ -114,7 +114,7 @@ if (isset($_POST['daten_leeren'])) {
           </div>
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label class="form-label">&#128161; Info</label>
+              <label class="form-label">&#128161; Info hinzufügen</label>
               <input type="text" name="info" class="form-control"
                     value="<?= htmlspecialchars($_POST['info'] ?? '') ?>">
             </div>
@@ -122,7 +122,7 @@ if (isset($_POST['daten_leeren'])) {
 
           <div class="row g-3">
             <div class="col-md-2">
-              <button type="submit" name="status_aendern" class="btn btn-primary w-100" onclick="return confirm('&#9888; Sind Sie sicher, dass die ausgewählten Status/Info gesetzt werden sollen?');">&#128190; Speichern</button>
+              <button type="submit" name="status_aendern" class="btn btn-primary w-100" onclick="return confirm('&#9888; Sind Sie sicher, dass die ausgewählten Status/Infos gesetzt werden sollen?');">&#128190; Speichern</button>
             </div>
             <div class="col-md-2">
               <button type="submit" name="daten_leeren" class="btn btn-secondary w-100">&#128465; Daten leeren</button>

@@ -85,7 +85,7 @@ if (isset($_POST['select_entry'])) {
 }
 
 // Alle verfügbaren Löscher für die Autocomplete-Vorschlagsliste laden
-$allEntriesResult = $db->query("SELECT nummer, name FROM loescher WHERE active = 1 ORDER BY nummer ASC");
+$allEntriesResult = $db->query("SELECT nummer, name FROM loescher WHERE active = 1 ORDER BY nummer DESC");
 $allEntries = [];
 if ($allEntriesResult) {
     while ($row = $allEntriesResult->fetchArray(SQLITE3_ASSOC)) {
@@ -367,13 +367,33 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 </div>
 <?php endif; ?>
 
+
+<!--Überschrift-->
+<?php if (isset($editEntry) && $editEntry): ?>
+    <h3>&#9998; Bearbeiten</h3>
+<?php else: ?>
+    <h3>&#10010; Neu Anlegen</h3>
+<?php endif; ?>
+
+
+<!-- Suchformular -->
 <form method="post" class="card shadow p-3 mb-4" id="searchForm">
     <div class="row g-2">
         <div class="col-md-6">
             <label class="form-label">&#128269; Nummer oder Name suchen</label>
-            
-            <input type="text" name="suchfeld" id="suchfeld" list="loescherListe" class="form-control" placeholder="Nummer oder Name" required value="<?= htmlspecialchars($_POST['suchfeld'] ?? '') ?>" autocomplete="off">
-            
+
+            <div class="input-group">
+                <input type="text" 
+                    name="suchfeld" 
+                    id="suchfeld" 
+                    list="loescherListe" 
+                    class="form-control" 
+                    placeholder="Nummer oder Name" 
+                    required 
+                    value="<?= htmlspecialchars($_POST['suchfeld'] ?? ($editEntry['nummer'] ?? '')) ?>" 
+                    autocomplete="off">
+            </div>
+
             <datalist id="loescherListe">
                 <?php foreach ($allEntries as $entry): ?>
                     <?php 
@@ -383,11 +403,12 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     <option value="<?= $val ?>"><?= $label ?></option>
                 <?php endforeach; ?>
             </datalist>
-
         </div>
+
         <div class="col-md-2 align-self-end">
             <button type="submit" name="suche_nummer" class="btn btn-primary w-100">Suchen</button>
         </div>
+
     </div>
 </form>
 
@@ -565,6 +586,8 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                          &#128176; Geld retour gegeben
                     </button>
                 <?php endif; ?>
+                <button type="button" id="prevBtn" class="btn btn-outline-secondary" title="Vorheriger">&#11013;</button>
+                <button type="button" id="nextBtn" class="btn btn-outline-secondary" title="Nächster">&#10145;</button>
                 <button type="submit" class="btn btn-success px-4" name="edit_id" <?= !$isActive ? 'disabled' : '' ?>>&#128190;  Speichern</button>
             </div>
         </div>
@@ -648,14 +671,18 @@ document.addEventListener("keydown", function(e){
     if(e.key === "Escape"){
         document.getElementById('suchfeld').value = '';
         document.getElementById('editForm')?.remove();
-        document.getElementById('editButtons')?.remove(); // NEU: Buttons entfernen
+        document.getElementById('editButtons')?.remove();
         document.getElementById('multiSelectForm')?.remove();
-        
+      
+        // Überschrift zurücksetzen
+        document.querySelector('h3').innerHTML = "&#10010; Neu Anlegen"; // Überschrift "Erstellen"
+
         const addForm = document.getElementById('addForm');
         if(addForm) {
             addForm.style.display = 'block';
             addForm.querySelector('input[name="name"]')?.focus();
         }
+        
         removePolling();
     }
 });
@@ -663,7 +690,7 @@ document.addEventListener("keydown", function(e){
 // BUTTON: Zurück zum Add-Modus (Klick auf "Neuer Eintrag")
 document.getElementById('backToAdd')?.addEventListener('click', () => {
     document.getElementById('editForm')?.remove();
-    document.getElementById('editButtons')?.remove(); // NEU: Buttons entfernen
+    document.getElementById('editButtons')?.remove(); 
     document.getElementById('multiSelectForm')?.remove();
 
     // Add-Form anzeigen
@@ -672,12 +699,16 @@ document.getElementById('backToAdd')?.addEventListener('click', () => {
         addForm.style.display = 'block';
         addForm.querySelector('input[name="name"]')?.focus();
     }
+    // Überschrift zurücksetzen
+    document.querySelector('h3').innerHTML = "&#10010; Neu Anlegen"; // Überschrift "Erstellen"
 
     // Suchfeld zurücksetzen
     const searchField = document.getElementById('suchfeld');
     if(searchField) searchField.value = '';
 
     removePolling();
+
+
 });
 
 /*document.getElementById('searchForm')?.addEventListener('submit', function(e) {
@@ -696,6 +727,72 @@ document.addEventListener('DOMContentLoaded', function() {
             let bsAlert = new bootstrap.Alert(alert);
             bsAlert.close();
         }, 3000); 
+    });
+});
+
+//Vor und Zurück Button
+document.addEventListener('DOMContentLoaded', function() {
+    let suchfeld = document.getElementById('suchfeld');
+    let prevBtn = document.getElementById('prevBtn');
+    let nextBtn = document.getElementById('nextBtn');
+    let currentNumberInput = document.querySelector('.form-control.bg-light'); // disabled input with current number
+    let searchForm = document.getElementById('searchForm'); // Form reference
+    let searchButton = document.querySelector('button[name="suche_nummer"]');  // Suchen-Button
+
+    // Event-Listener für "Nächster"
+    nextBtn?.addEventListener('click', function() {
+        let currentNumber = parseInt(currentNumberInput.value.trim());  // Aktuelle Nummer auslesen
+
+        // Überprüfen, ob die Eingabe eine gültige Zahl ist
+        if (isNaN(currentNumber)) {
+            alert("Bitte eine gültige Nummer eingeben.");
+            return;  // Beende die Funktion, wenn keine gültige Zahl eingegeben wurde
+        }
+
+        // Berechne die nächste Nummer
+        let nextNumber = currentNumber + 1;
+        suchfeld.value = nextNumber;  // Neue Nummer ins Suchfeld schreiben
+
+        // Simuliere das Drücken der Enter-Taste
+        let event = new KeyboardEvent('keydown', {
+            bubbles: true,
+            cancelable: true,
+            key: 'Enter'
+        });
+        suchfeld.dispatchEvent(event);  // Dispatch das Event
+    });
+
+    // Event-Listener für "Vorheriger"
+    prevBtn?.addEventListener('click', function() {
+        let currentNumber = parseInt(currentNumberInput.value.trim());  // Aktuelle Nummer auslesen
+
+        // Überprüfen, ob die Eingabe eine gültige Zahl ist
+        if (isNaN(currentNumber)) {
+            alert("Bitte eine gültige Nummer eingeben.");
+            return;  // Beende die Funktion, wenn keine gültige Zahl eingegeben wurde
+        }
+
+        // Berechne die vorherige Nummer
+        let prevNumber = currentNumber - 1;
+        suchfeld.value = prevNumber;  // Neue Nummer ins Suchfeld schreiben
+
+        // Simuliere das Drücken der Enter-Taste
+        let event = new KeyboardEvent('keydown', {
+            bubbles: true,
+            cancelable: true,
+            key: 'Enter'
+        });
+        suchfeld.dispatchEvent(event);  // Dispatch das Event
+    });
+
+    // Optional: Simuliere den Klick auf den "Suchen"-Button, falls Enter nicht funktioniert
+    suchfeld.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            // Wenn Enter gedrückt wird, simulieren wir den Klick auf den "Suchen"-Button
+            if (searchButton) {
+                searchButton.click();  // Klick auf den Button auslösen
+            }
+        }
     });
 });
 </script>

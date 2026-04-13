@@ -78,7 +78,11 @@ if (isset($_POST['ajax_update'])) {
             $stmt = $db->prepare("
                 UPDATE loescher 
                 SET active = 0, 
-                    info = COALESCE(info, '') || '\nGelöscht' 
+                    info = 
+                        CASE 
+                            WHEN info IS NULL OR info = '' THEN 'Gelöscht' 
+                            ELSE COALESCE(info, '') || '\nGelöscht' 
+                        END
                 WHERE id = :id
             ");
             $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
@@ -89,7 +93,7 @@ if (isset($_POST['ajax_update'])) {
             $stmt = $db->prepare("
                 UPDATE loescher 
                 SET active = 1,
-                    info = TRIM(REPLACE(info, '\nGelöscht', ''))
+                    info = TRIM(REPLACE(info, 'Gelöscht', ''))
                 WHERE id = :id
             ");
             $stmt->bindValue(':id', $id, SQLITE3_INTEGER);

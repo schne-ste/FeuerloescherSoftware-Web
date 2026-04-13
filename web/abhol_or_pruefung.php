@@ -52,7 +52,7 @@ if (isset($_POST['aktion']) && $nummer) {
             $row = $check->fetchArray();
 
             if (!$row) {
-                $message = "&#10060; Nicht gefunden!";
+                $message = "&#10060; Nummer nicht gefunden!";
                 $statusType = "error";
                 $soundType = "error";
             } elseif ($row['active'] && !$row['bezahlt'] && !$row['defekt']) {
@@ -105,7 +105,7 @@ if ($nummer) {
     $eintrag = $result->fetchArray();
 
     if (!$eintrag) {
-        $message = "&#10060; Nicht gefunden!";
+        $message = "&#10060; Nummer nicht gefunden!";
         $statusType = "error";
         $soundType = "error";
     }
@@ -324,7 +324,7 @@ body.flash-warning { background-color: #fff3cd !important; }
         <br>
         <? if ($eintrag['active']): ?>
             <h4 class="d-flex mb-2">
-                <span class="me-2" style="width:160px;">Löscherstatus:</span>
+                <span class="me-2" style="width:160px;">Prüfstatus:</span>
 
                 <span id="pruefStatusBox">
                 <?php
