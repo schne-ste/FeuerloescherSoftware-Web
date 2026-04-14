@@ -767,6 +767,11 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
     </div>
 
     <div class="mb-3">
+        <label class="form-label">&#128290; Anzahl Löscher</label>
+        <input type="number" name="anzahl" class="form-control highlight" value="1" min="1">
+    </div>
+
+    <div class="mb-3">
         <label class="form-label">&#128176; Preis je Löscher</label>
         <select name="typ" class="form-select" id="addTypSelect">
             <?php foreach ($preise as $k => $v): ?>
@@ -790,11 +795,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
     <div class="form-check mb-3">
         <input type="checkbox" name="bezahlt" class="form-check-input" id="addBezahltCheck" checked>
         <label class="form-check-label" for="addBezahltCheck">&#128176; Bezahlt</label>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">&#128290; Anzahl Löscher</label>
-        <input type="number" name="anzahl" class="form-control highlight" value="1" min="1">
     </div>
 
     <div class="text-start">

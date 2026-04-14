@@ -317,7 +317,7 @@ body.flash-warning { background-color: #fff3cd !important; }
                 </div>
             <?php elseif ($modus === "abholen" && $eintrag['active'] && $eintrag['bezahlt'] && $eintrag['defekt']): ?>
                 <div class="alert alert-warning">
-                    <h4>&#9888; Defekt – Geld retour!</h4>
+                    <h4>&#9888; Defekt – Kunde bekommt Geld retour (Kassa)!</h4>
                 </div>
             <?php endif; ?>
         </div>
@@ -665,7 +665,7 @@ body.flash-warning { background-color: #fff3cd !important; }
             if (data.active == 1 && data.bezahlt == 0 && data.defekt == 0) {
                 paymentHTML = '<div class="alert alert-danger"><h4>&#128176; NICHT BEZAHLT → Zur Kassa</h4><div>Als OK geprüft, muss somit bezahlt werden!</div></div>';
             } else if (data.active == 1 && data.bezahlt == 1 && data.defekt == 1) {
-                paymentHTML = '<div class="alert alert-warning"><h4>&#9888; Defekt – Geld retour!</h4></div>';
+                paymentHTML = '<div class="alert alert-warning"><h4>&#9888; Defekt – Kunde bekommt Geld retour (Kassa)!</h4></div>';
             }
 
             paymentBox.innerHTML = paymentHTML;
