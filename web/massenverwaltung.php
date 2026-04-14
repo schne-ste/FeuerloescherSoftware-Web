@@ -37,7 +37,7 @@ if (isset($_POST['status_aendern'])) {
             $stmt->bindValue(':ende', $ende, SQLITE3_INTEGER);
             $stmt->execute();
 
-            $successMessage = "&#9989; Status für Löscher $start bis $ende erfolgreich gesetzt!";
+            $successMessage = "&#9989; Status/Info für Löscher $start bis $ende erfolgreich gesetzt!";
             $messageType = "success";
             //POST-Daten zurücksetzen
 $_POST = [];

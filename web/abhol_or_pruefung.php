@@ -350,8 +350,6 @@ body.flash-warning { background-color: #fff3cd !important; }
                 ?>
                 </span>
             </h4>
-
-            <br>
             <span id="loescherStatusBox" style="display:none;"></span>
             <br>
 
@@ -369,7 +367,7 @@ body.flash-warning { background-color: #fff3cd !important; }
             <div id="infoBox">
             <?php if (!empty($eintrag['info'])): ?>
                 <div class="alert alert-warning mt-3">
-                    <strong>Hinweis:</strong><br>
+                    <strong>&#9888; Hinweis:</strong><br>
                     <h4><?= nl2br(htmlspecialchars($eintrag['info'])) ?></h4>
                 </div>
             <?php endif; ?>
@@ -682,7 +680,7 @@ body.flash-warning { background-color: #fff3cd !important; }
             if (data.info) {
                 let formattedInfo = data.info.replace(/\n/g, '<br>');
                 infoBox.innerHTML =
-                    '<div class="alert alert-warning mt-3"><strong>Hinweis:</strong><br><h4>' +
+                    '<div class="alert alert-warning mt-3"><strong>&#9888; Hinweis:</strong><br><h4>' +
                     formattedInfo +
                     '</h4></div>';
             } else {

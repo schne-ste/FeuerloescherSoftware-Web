@@ -11,6 +11,20 @@ if (!isset($_SESSION['logged_in'])) {
     exit;
 }
 
+// =====================
+// MODE BESTIMMEN (via URL Parameters oder POST)
+// =====================
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? 'add'; // default = add
+
+if ($mode !== 'add' && $mode !== 'edit') {
+    $mode = 'add';
+}
+
+// Beim Absenden im Edit-Modus ohne Query-String weiter auf edit bleiben
+if ($mode === 'add' && isset($_POST['edit_id'])) {
+    $mode = 'edit';
+}
+
 // Nachricht aus Session abholen (falls vorhanden)
 $successMessage = $_SESSION['success_msg'] ?? '';
 $messageType = $_SESSION['msg_type'] ?? 'success';
@@ -30,8 +44,21 @@ if (!isset($successMessage) || $successMessage === '') {
     $messageType = 'success';
 }
 
+// =====================
+// EDIT-EINTRAG LADEN (wenn mode=edit)
+// =====================
 $editEntry = null;
-$searchResults = [];
+if ($mode === 'edit') {
+    // Versuche die ID aus URL zu laden
+    $editId = $_GET['id'] ?? null;
+    if ($editId) {
+        $editEntry = $db->querySingle("SELECT * FROM loescher WHERE id = " . (int)$editId, true);
+    }
+    // Falls nicht gefunden oder keine ID, fallback auf add mode
+    if (!$editEntry) {
+        $mode = 'add';
+    }
+}
 
 // =====================
 // PREISE
@@ -47,6 +74,7 @@ $zeitstempel = date('Y-m-d H:i:s');
 // =====================
 // DATENSATZ LADEN (SUCHEN)
 // =====================
+$searchResults = [];
 if (isset($_POST['suche_nummer'])) {
     $input = trim($_POST['suchfeld'] ?? '');
     if ($input !== '') {
@@ -64,8 +92,9 @@ if (isset($_POST['suche_nummer'])) {
                 $rows[] = $row;
             }
             if (count($rows) === 1) {
-                $editEntry = $rows[0];
-                $_POST['suchfeld'] = '';
+                // Direkt zu edit mode navigieren
+                header("Location: ?mode=edit&id=" . $rows[0]['id']);
+                exit;
             } elseif (count($rows) > 1) {
                 $searchResults = $rows;
             } else {
@@ -81,7 +110,9 @@ if (isset($_POST['suche_nummer'])) {
 // =====================
 if (isset($_POST['select_entry'])) {
     $selectedId = (int)$_POST['selected_entry'];
-    $editEntry = $db->query("SELECT * FROM loescher WHERE id = $selectedId")->fetchArray(SQLITE3_ASSOC);
+    // Navigiere zu edit mode mit der ID
+    header("Location: ?mode=edit&id=" . $selectedId);
+    exit;
 }
 
 // Alle verfügbaren Löscher für die Autocomplete-Vorschlagsliste laden
@@ -94,14 +125,9 @@ if ($allEntriesResult) {
 }
 
 // =====================
-// DATENSATZ BEARBEITEN
+// DATENSATZ BEARBEITEN (nur im edit mode)
 // =====================
-if (isset($_POST['refresh_entry'])) {
-    $nummer = (int)$_POST['nummer'];
-    $editEntry = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $nummer")->fetchArray(SQLITE3_ASSOC);
-    $successMessage = "&#128260; Datensatz neu geladen!";
-    $messageType = "info";
-} elseif (isset($_POST['edit_id'])) {
+if ($mode === 'edit' && isset($_POST['save_entry']) && isset($_POST['edit_id'])) {
     $nummer = (int)$_POST['nummer'];
     $typ = $_POST['typ'] ?? '';
     $preis = $preise[$typ] ?? 0;
@@ -136,14 +162,28 @@ if (isset($_POST['refresh_entry'])) {
     $stmt->bindValue(':defekt', isset($_POST['defekt']) ? 1 : 0);
 
     $stmt->execute();
-    $successMessage = "&#9989; Datensatz ".sprintf("%03d", $nummer)." erfolgreich aktualisiert!";
-    $editEntry = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $nummer")->fetchArray(SQLITE3_ASSOC);
+    
+    // Erfolgsmeldung in Session speichern und zur gleichen Edit-Seite navigieren
+    $_SESSION['success_msg'] = "&#9989; Datensatz ".sprintf("%03d", $nummer)." erfolgreich aktualisiert!";
+    $_SESSION['msg_type'] = "success";
+    header("Location: ?mode=edit&id=" . (int)$_POST['edit_id']);
+    exit;
 }
 
 // =====================
-// NEUE LÖSCHER HINZUFÜGEN
+// DATENSATZ NEU LADEN (im edit mode)
 // =====================
-if (!$editEntry && isset($_POST['add_loscher'])) {
+if ($mode === 'edit' && isset($_POST['refresh_entry'])) {
+    $nummer = (int)$_POST['nummer'];
+    $editEntry = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $nummer")->fetchArray(SQLITE3_ASSOC);
+    $successMessage = "&#128260; Datensatz neu geladen!";
+    $messageType = "info";
+}
+
+// =====================
+// NEUE LÖSCHER HINZUFÜGEN (nur im add mode)
+// =====================
+if ($mode === 'add' && isset($_POST['add_loscher'])) {
     $typ = $_POST['typ'] ?? '';
     $preis = $preise[$typ] ?? 0;
     $anzahl = max(1, (int)($_POST['anzahl'] ?? 1));
@@ -179,33 +219,54 @@ if (!$editEntry && isset($_POST['add_loscher'])) {
     // Erfolg in Session speichern
     $_SESSION['success_msg'] = "&#9989; $anzahl Löscher erfolgreich hinzugefügt! [" . implode(", ", $nummern) . "]";
     $_SESSION['msg_type'] = "success";
+    $_SESSION['focus_suchfeld'] = true;
 
-    // Seite komplett neu laden (Dropdown wird dadurch frisch befüllt)
-    header("Location: " . $_SERVER['PHP_SELF']);
+    // Zurück zum add mode
+    header("Location: ?mode=add");
     exit;
 }
 
 // =====================
-// ETIKETTE / ABHOLSCHIEN NACHDRUCK
+// ETIKETTE / ABHOLSCHEIN NACHDRUCK (nur im edit mode)
 // =====================
-if (isset($_POST['redruck_etikett'])) {
+if ($mode === 'edit' && isset($_POST['redruck_etikett'])) {
     $nummer = (int)$_POST['nummer'];
-    $db->exec("UPDATE loescher SET etikett_gedruckt = 0 WHERE CAST(nummer AS INTEGER) = $nummer");
-    $successMessage = "&#9989; Etikette für Datensatz ".sprintf("%03d", $nummer)." zum Nachdrucken freigegeben!";
-    $editEntry = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $nummer")->fetchArray(SQLITE3_ASSOC);
+    $editId = (int)($_POST['edit_id'] ?? 0);
+    $result = $db->exec("UPDATE loescher SET etikett_gedruckt = 0 WHERE CAST(nummer AS INTEGER) = $nummer");
+    if ($result) {
+        $_SESSION['success_msg'] = "&#9989; Etikette für Datensatz ".sprintf("%03d", $nummer)." zum Nachdrucken freigegeben!";
+        $_SESSION['msg_type'] = "success";
+        header("Location: ?mode=edit&id=" . $editId);
+        exit;
+    } else {
+        $_SESSION['success_msg'] = "&#10060; Fehler beim Zurücksetzen der Etikette: " . $db->lastErrorMsg();
+        $_SESSION['msg_type'] = "danger";
+        header("Location: ?mode=edit&id=" . $editId);
+        exit;
+    }
 }
 
-if (isset($_POST['redruck_abholschein'])) {
+if ($mode === 'edit' && isset($_POST['redruck_abholschein'])) {
     $nummer = (int)$_POST['nummer'];
-    $db->exec("UPDATE loescher SET abholschein_gedruckt = 0 WHERE CAST(nummer AS INTEGER) = $nummer");
-    $successMessage = "&#9989; Abholschein für Datensatz ".sprintf("%03d", $nummer)." zum Nachdrucken freigegeben!";
-    $editEntry = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $nummer")->fetchArray(SQLITE3_ASSOC);
+    $editId = (int)($_POST['edit_id'] ?? 0);
+    $result = $db->exec("UPDATE loescher SET abholschein_gedruckt = 0 WHERE CAST(nummer AS INTEGER) = $nummer");
+    if ($result) {
+        $_SESSION['success_msg'] = "&#9989; Abholschein für Datensatz ".sprintf("%03d", $nummer)." zum Nachdrucken freigegeben!";
+        $_SESSION['msg_type'] = "success";
+        header("Location: ?mode=edit&id=" . $editId);
+        exit;
+    } else {
+        $_SESSION['success_msg'] = "&#10060; Fehler beim Zurücksetzen des Abholscheins: " . $db->lastErrorMsg();
+        $_SESSION['msg_type'] = "danger";
+        header("Location: ?mode=edit&id=" . $editId);
+        exit;
+    }
 }
 
 // =====================
-// GELD RETOUR BUTTON AKTION
+// GELD RETOUR BUTTON AKTION (nur im edit mode)
 // =====================
-if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
+if ($mode === 'edit' && isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     $nummer = (int)$_POST['nummer'];
     $zeitstempelNow = date('d.m.Y H:i:s');
 
@@ -219,9 +280,10 @@ if (isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     $stmt->bindValue(':nummer', $nummer);
     $stmt->execute();
 
-    $successMessage = "&#9989; Geld retour gebucht!";
-    $messageType = "warning";
-    $editEntry = $db->query("SELECT * FROM loescher WHERE CAST(nummer AS INTEGER) = $nummer")->fetchArray(SQLITE3_ASSOC);
+    $_SESSION['success_msg'] = "&#9989; Geld retour gebucht!";
+    $_SESSION['msg_type'] = "warning";
+    header("Location: ?mode=edit&id=" . (int)$_POST['edit_id']);
+    exit;
 }
 
 $isActive = ($editEntry['active'] ?? 0) == 1;
@@ -269,8 +331,49 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         let num = getCurrentNumber();
         if (!num) return;
 
-        let response = await fetch(`./add_edit_ajax.php?number=${num}&module=print`);
-        document.getElementById("print").outerHTML = await response.text();
+        try {
+            let response = await fetch(`./add_edit_ajax.php?nummer=${num}`, { cache: 'no-store' });
+            let data = await response.json();
+            if (!data || data.error) return;
+
+            // Update Etikette und Abholschein anhand des sichtbaren Labels
+            let printContainer = document.getElementById('print');
+            if (printContainer) {
+                let printDivs = Array.from(printContainer.querySelectorAll('.mb-3'));
+
+                const getPrintItem = (keyword) => {
+                    return printDivs.find(div => {
+                        let label = div.querySelector('.small.text-muted');
+                        return label && label.textContent.toLowerCase().includes(keyword);
+                    });
+                };
+
+                const updateItem = (div, value) => {
+                    if (!div) return;
+                    let badge = div.querySelector('.badge');
+                    let icon = div.querySelector('.print-icon');
+                    if (badge) {
+                        if (value == 1) {
+                            badge.classList.remove('bg-danger');
+                            badge.classList.add('bg-success');
+                            badge.textContent = 'Gedruckt';
+                        } else {
+                            badge.classList.remove('bg-success');
+                            badge.classList.add('bg-danger');
+                            badge.textContent = 'Offen';
+                        }
+                    }
+                    if (icon) {
+                        icon.innerHTML = value == 1 ? '&#9989;' : '&#10060;';
+                    }
+                };
+
+                updateItem(getPrintItem('etikette'), data.etikett_gedruckt);
+                updateItem(getPrintItem('abholschein'), data.abholschein_gedruckt);
+            }
+        } catch (err) {
+            console.error('loadPrintStatus error:', err);
+        }
     }
 
 
@@ -280,9 +383,34 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         let num = getCurrentNumber();
         if (!num) return;
 
-        let response = await fetch(`./add_edit_ajax.php?number=${num}&module=status`);
-        let content = await response.text();
-        document.getElementById("status").outerHTML = content;
+        try {
+            let response = await fetch(`./add_edit_ajax.php?nummer=${num}`, { cache: 'no-store' });
+            let data = await response.json();
+            if (!data || data.error) return;
+
+            // Update Checkboxen
+            let bezahltCheck = document.getElementById('bezahltCheck');
+            if (bezahltCheck) {
+                bezahltCheck.checked = data.bezahlt == 1;
+            }
+
+            let geprueftCheck = document.getElementById('geprueftCheck');
+            if (geprueftCheck) {
+                geprueftCheck.checked = data.geprueft == 1;
+            }
+
+            let abgeholtCheck = document.getElementById('abgeholtCheck');
+            if (abgeholtCheck) {
+                abgeholtCheck.checked = data.abgeholt == 1;
+            }
+
+            let defektCheck = document.getElementById('defektCheck');
+            if (defektCheck) {
+                defektCheck.checked = data.defekt == 1;
+            }
+        } catch (err) {
+            console.error('loadStatus error:', err);
+        }
     }
 
     
@@ -292,8 +420,20 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         let num = getCurrentNumber();
         if (!num) return;
 
-        let response = await fetch(`./add_edit_ajax.php?number=${num}&module=infotext`);
-        document.getElementById("infotext").outerHTML = await response.text();
+        try {
+            let response = await fetch(`./add_edit_ajax.php?nummer=${num}`, { cache: 'no-store' });
+            let data = await response.json();
+            if (!data || data.error) return;
+
+            // Update Info-Textarea
+            let infoTextarea = document.querySelector('#infotext textarea');
+            if (infoTextarea) {
+                infoTextarea.value = data.info || '';
+                infoTextarea.rows = (data.info.split('\n').length || 1);
+            }
+        } catch (err) {
+            console.error('loadInfo error:', err);
+        }
     }
 
 
@@ -334,6 +474,27 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
     window.onload = setupPolling; 
 
+    // ESC-Taste: Fokus auf Suchfeld setzen
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const suchfeld = document.getElementById('suchfeld');
+            if (suchfeld) {
+                suchfeld.focus();
+                suchfeld.select();
+            }
+        }
+    });
+
+    // Beim Laden im add-Modus: Suchfeld fokussieren und selektieren
+    window.addEventListener('load', function() {
+        <?php if ($mode === 'add'): ?>
+        const suchfeld = document.getElementById('suchfeld');
+        if (suchfeld) {
+            suchfeld.focus();
+            suchfeld.select();
+        }
+        <?php endif; ?>
+    });
 
 </script>
 </head>
@@ -368,14 +529,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 <?php endif; ?>
 
 
-<!--Überschrift-->
-<?php if (isset($editEntry) && $editEntry): ?>
-    <h3>&#9998; Bearbeiten</h3>
-<?php else: ?>
-    <h3>&#10010; Neu Anlegen</h3>
-<?php endif; ?>
-
-
 <!-- Suchformular -->
 <form method="post" class="card shadow p-3 mb-4" id="searchForm">
     <div class="row g-2">
@@ -390,7 +543,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     class="form-control" 
                     placeholder="Nummer oder Name" 
                     required 
-                    value="<?= htmlspecialchars($_POST['suchfeld'] ?? ($editEntry['nummer'] ?? '')) ?>" 
+                    value="<?= htmlspecialchars($_POST['suchfeld'] ?? '') ?>" 
                     autocomplete="off">
             </div>
 
@@ -422,18 +575,16 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 	    </select>
 	    <button type="submit" name="select_entry" class="btn btn-primary">Datensatz laden</button>
 	</form>
-<?php endif; ?>
-
-<?php if ($editEntry): ?>
+<?php endif; ?><!-- Edit-Buttons (nur wenn mode=edit und editEntry existiert) -->
+<?php if ($mode === 'edit' && $editEntry): ?>
 	<div class="row g-2 mb-3" id="editButtons">
 	    <div class="col-6">
-	        <button type="button" class="btn btn-secondary w-100" id="backToAdd">
+	        <a href="?mode=add" class="btn btn-secondary w-100">
 	            &#10010; Neuer Eintrag
-	        </button>
+	        </a>
 	    </div>
 	    <div class="col-6">
-	        <form method="post" class="m-0">
-	            <input type="hidden" name="nummer" value="<?= $editEntry['nummer'] ?>">
+	        <form method="post" class="m-0">            <input type="hidden" name="mode" value="edit">	            <input type="hidden" name="nummer" value="<?= $editEntry['nummer'] ?>">
 	            <button type="submit" name="refresh_entry" class="btn btn-info w-100">
 	                &#128260; Neu laden
 	            </button>
@@ -442,10 +593,17 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 	</div>
 <?php endif; ?>
 
-<?php if ($editEntry): ?>
+<!-- Edit-Formular (nur wenn mode=edit und editEntry existiert) -->
+<?php if ($mode === 'edit' && $editEntry): ?>
     <form method="post" class="card shadow p-3 mb-4" id="editForm">
+        <input type="hidden" name="mode" value="edit">
         <input type="hidden" name="edit_id" value="<?= $editEntry['id'] ?>">
         <input type="hidden" name="nummer" value="<?= $editEntry['nummer'] ?>">
+
+        <!--Überschrift-->
+        <h3 id="pageTitle">&#9999; Bearbeiten</h3>
+        <hr>
+
 
         <?php if (!$isActive): ?>
             <div class="alert alert-danger">
@@ -542,7 +700,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 						                <?= $editEntry['etikett_gedruckt'] == 1 ? 'Gedruckt' : 'Offen' ?>
 						            </span>
 						        </span>
-						        <span>
+						        <span class="print-icon">
 						            <?= $editEntry['etikett_gedruckt'] == 1 ? '&#9989;' : '&#10060;' ?>
 						        </span>
 						    </div>
@@ -560,7 +718,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 						                <?= $editEntry['abholschein_gedruckt'] == 1 ? 'Gedruckt' : 'Offen' ?>
 						            </span>
 						        </span>
-						        <span>
+						        <span class="print-icon">
 						            <?= $editEntry['abholschein_gedruckt'] == 1 ? '&#9989;' : '&#10060;' ?>
 						        </span>
 						    </div>
@@ -588,15 +746,21 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 <?php endif; ?>
                 <button type="button" id="prevBtn" class="btn btn-outline-secondary" title="Vorheriger">&#11013;</button>
                 <button type="button" id="nextBtn" class="btn btn-outline-secondary" title="Nächster">&#10145;</button>
-                <button type="submit" class="btn btn-success px-4" name="edit_id" <?= !$isActive ? 'disabled' : '' ?>>&#128190;  Speichern</button>
+                <button type="submit" class="btn btn-success px-4" name="save_entry" <?= !$isActive ? 'disabled' : '' ?>>&#128190;  Speichern</button>
             </div>
         </div>
     </form>
 <?php endif; ?>
 
 
-<!-- Add-Formular wird nur angezeigt, wenn kein Eintrag zur Bearbeitung geladen ist -->
-<form method="post" class="card shadow p-3 mb-4" id="addForm" style="<?= $editEntry ? 'display:none;' : 'display:block;' ?>">
+<!-- Add-Formular (nur wenn mode=add) -->
+<?php if ($mode === 'add'): ?>
+<form method="post" class="card shadow p-3 mb-4" id="addForm">
+    <!--Überschrift-->
+    <h3 id="pageTitle">&#10133; Neu Anlegen</h3>
+    <hr>
+
+    
     <div class="mb-3">
         <label class="form-label">&#128100; Name</label>
         <input type="text" name="name" class="form-control highlight" required>
@@ -633,8 +797,12 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         <input type="number" name="anzahl" class="form-control highlight" value="1" min="1">
     </div>
 
-    <button type="submit" class="btn btn-success" name="add_loscher">&#128190;  Speichern</button>
+    <div class="text-start">
+        <button type="submit" class="btn btn-success px-2" name="add_loscher">&#128190;  Speichern</button>
+    </div>
 </form>
+<?php endif; ?>
+
 <?php include 'massenverwaltung.php'; ?>
 </div>
 
@@ -666,58 +834,22 @@ document.getElementById('addTypSelect')?.addEventListener('change',()=>{
     document.getElementById('addPreisField').value = preisString;
 });
 
-// ESC: Bearbeitung zurücksetzen, Add anzeigen
+// Escape-Taste überwachen, um zum Add-Modus zu wechseln
 document.addEventListener("keydown", function(e){
-    if(e.key === "Escape"){
-        document.getElementById('suchfeld').value = '';
-        document.getElementById('editForm')?.remove();
-        document.getElementById('editButtons')?.remove();
-        document.getElementById('multiSelectForm')?.remove();
-      
-        // Überschrift zurücksetzen
-        document.querySelector('h3').innerHTML = "&#10010; Neu Anlegen"; // Überschrift "Erstellen"
-
-        const addForm = document.getElementById('addForm');
-        if(addForm) {
-            addForm.style.display = 'block';
-            addForm.querySelector('input[name="name"]')?.focus();
-        }
-        
-        removePolling();
+    if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = "?mode=add";
     }
-});
+}, true);
 
-// BUTTON: Zurück zum Add-Modus (Klick auf "Neuer Eintrag")
-document.getElementById('backToAdd')?.addEventListener('click', () => {
-    document.getElementById('editForm')?.remove();
-    document.getElementById('editButtons')?.remove(); 
-    document.getElementById('multiSelectForm')?.remove();
-
-    // Add-Form anzeigen
-    const addForm = document.getElementById('addForm');
-    if(addForm) {
-        addForm.style.display = 'block';
-        addForm.querySelector('input[name="name"]')?.focus();
-    }
-    // Überschrift zurücksetzen
-    document.querySelector('h3').innerHTML = "&#10010; Neu Anlegen"; // Überschrift "Erstellen"
-
-    // Suchfeld zurücksetzen
-    const searchField = document.getElementById('suchfeld');
-    if(searchField) searchField.value = '';
-
-    removePolling();
-
-
-});
-
-/*document.getElementById('searchForm')?.addEventListener('submit', function(e) {
+document.getElementById('searchForm')?.addEventListener('submit', function(e) {
     // Nach dem Absenden das Feld leeren
     setTimeout(() => {
         const searchField = document.getElementById('suchfeld');
         if(searchField) searchField.value = '';
     }, 50); // kleine Verzögerung, damit das Formular noch gesendet wird
-});*/
+});
 
 // Automatisch Erfolgsmeldungen nach 3 Sekunden schließen
 document.addEventListener('DOMContentLoaded', function() {
@@ -730,70 +862,64 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-//Vor und Zurück Button
+// Vor und Zurück Button für Edit-Modus
 document.addEventListener('DOMContentLoaded', function() {
-    let suchfeld = document.getElementById('suchfeld');
     let prevBtn = document.getElementById('prevBtn');
     let nextBtn = document.getElementById('nextBtn');
     let currentNumberInput = document.querySelector('.form-control.bg-light'); // disabled input with current number
-    let searchForm = document.getElementById('searchForm'); // Form reference
-    let searchButton = document.querySelector('button[name="suche_nummer"]');  // Suchen-Button
+    let suchfeld = document.getElementById('suchfeld');
 
     // Event-Listener für "Nächster"
     nextBtn?.addEventListener('click', function() {
-        let currentNumber = parseInt(currentNumberInput.value.trim());  // Aktuelle Nummer auslesen
+        let currentNumber = parseInt(currentNumberInput.value.trim());
 
-        // Überprüfen, ob die Eingabe eine gültige Zahl ist
         if (isNaN(currentNumber)) {
             alert("Bitte eine gültige Nummer eingeben.");
-            return;  // Beende die Funktion, wenn keine gültige Zahl eingegeben wurde
+            return;
         }
 
-        // Berechne die nächste Nummer
         let nextNumber = currentNumber + 1;
-        suchfeld.value = nextNumber;  // Neue Nummer ins Suchfeld schreiben
-
-        // Simuliere das Drücken der Enter-Taste
-        let event = new KeyboardEvent('keydown', {
-            bubbles: true,
-            cancelable: true,
-            key: 'Enter'
-        });
-        suchfeld.dispatchEvent(event);  // Dispatch das Event
+        suchfeld.value = nextNumber;
+        
+        // Suche simulieren
+        if (document.querySelector('button[name="suche_nummer"]')) {
+            document.querySelector('button[name="suche_nummer"]').click();
+        }
     });
 
     // Event-Listener für "Vorheriger"
     prevBtn?.addEventListener('click', function() {
-        let currentNumber = parseInt(currentNumberInput.value.trim());  // Aktuelle Nummer auslesen
+        let currentNumber = parseInt(currentNumberInput.value.trim());
 
-        // Überprüfen, ob die Eingabe eine gültige Zahl ist
         if (isNaN(currentNumber)) {
             alert("Bitte eine gültige Nummer eingeben.");
-            return;  // Beende die Funktion, wenn keine gültige Zahl eingegeben wurde
+            return;
         }
 
-        // Berechne die vorherige Nummer
         let prevNumber = currentNumber - 1;
-        suchfeld.value = prevNumber;  // Neue Nummer ins Suchfeld schreiben
-
-        // Simuliere das Drücken der Enter-Taste
-        let event = new KeyboardEvent('keydown', {
-            bubbles: true,
-            cancelable: true,
-            key: 'Enter'
-        });
-        suchfeld.dispatchEvent(event);  // Dispatch das Event
+        suchfeld.value = prevNumber;
+        
+        // Suche simulieren
+        if (document.querySelector('button[name="suche_nummer"]')) {
+            document.querySelector('button[name="suche_nummer"]').click();
+        }
     });
 
-    // Optional: Simuliere den Klick auf den "Suchen"-Button, falls Enter nicht funktioniert
-    suchfeld.addEventListener('keydown', function(e) {
+    // Optional: Simuliere den Klick auf den "Suchen"-Button bei Enter
+    suchfeld?.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
-            // Wenn Enter gedrückt wird, simulieren wir den Klick auf den "Suchen"-Button
-            if (searchButton) {
-                searchButton.click();  // Klick auf den Button auslösen
+            if (document.querySelector('button[name="suche_nummer"]')) {
+                document.querySelector('button[name="suche_nummer"]').click();
             }
         }
     });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!empty($_SESSION['focus_suchfeld'])): ?>
+        document.getElementById('suchfeld')?.focus();
+        document.getElementById('suchfeld')?.select();
+    <?php unset($_SESSION['focus_suchfeld']); endif; ?>
 });
 </script>
 </body>
