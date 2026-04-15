@@ -18,6 +18,17 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
 
 // ================================================================
 
+define('API_MODE', true);
+require_once __DIR__ . '/../config.php';
+
+// API Token Überprüfung
+$token = $_GET['token'] ?? $_SERVER['HTTP_X_API_TOKEN'] ?? '';
+if ($token !== API_TOKEN) {
+    http_response_code(401);
+    echo json_encode(["error" => "Unauthorized"]);
+    exit;
+}
+
 require_once __DIR__ . '/helpers/Router.php';
 require_once __DIR__ . '/helpers/Response.php';
 require_once __DIR__ . '/helpers/Input.php';
@@ -48,6 +59,9 @@ $router->patch('/rechnungen/{nummer}', 'RechnungenController@patch');
 
 // Druckservice
 $router->put('/rechnungen/{nummer}/gedruckt', 'PrintController@rechnungGedruckt');
+
+// ===== CONFIG =====
+$router->get('/config', 'ConfigController@defines');
 
 // Route ausführen
 $route = $_GET['route'] ?? '/';

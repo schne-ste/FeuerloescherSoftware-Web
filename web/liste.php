@@ -24,6 +24,49 @@ if (!function_exists('percent')) {
     }
 }
 
+function renderRow($row) {
+    $rowClass = !$row['geprueft'] ? "table-warning" : (!$row['abgeholt'] ? "table-warning" : "table-info");
+    if ($row['geprueft'] && $row['abgeholt'] && $row['bezahlt'] && !$row['defekt']) $rowClass = "table-success";
+    if ($row['defekt']) $rowClass = "table-danger";
+    $disabled = ($row['active'] == 0) ? 'disabled' : '';
+
+    ob_start();
+    ?>
+    <tr data-id="<?= $row['id'] ?>" class="<?= $rowClass ?> <?= !$row['active'] ? 'row-inactive' : '' ?>">
+        <td><?= htmlspecialchars($row['nummer']) ?></td>
+        <td><?= htmlspecialchars($row['name']) ?></td>
+        <td>
+            <select class="form-select typ-select" <?= $disabled ?>>
+                <option value="Standard" <?= $row['typ'] == "Standard" ? "selected" : "" ?>>Standard (<?= PREIS_STANDARD ?> €)</option>
+                <option value="Rabatt" <?= $row['typ'] == "Rabatt" ? "selected" : "" ?>>Rabatt (<?= PREIS_RABATT ?> €)</option>
+                <option value="Gratis" <?= $row['typ'] == "Gratis" ? "selected" : "" ?>>Gratis (<?= PREIS_GRATIS ?> €)</option>
+            </select>
+        </td>
+        <td><input type="checkbox" class="cb-bezahlt" <?= $row['bezahlt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
+        <td><input type="checkbox" class="cb-defekt" <?= $row['defekt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
+        <td><input type="checkbox" class="cb-geprueft" <?= $row['geprueft'] ? 'checked' : '' ?> <?= $disabled ?>></td>
+        <td><input type="checkbox" class="cb-abgeholt" <?= $row['abgeholt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
+        <td><?= nl2br(htmlspecialchars($row['info'])) ?></td>
+        <td>
+            <?php if ($row['active']): ?>
+                <button class="btn btn-sm btn-danger btn-delete">Löschen</button>
+            <?php else: ?>
+                <span class="badge bg-secondary">Gelöscht</span>
+            <?php endif; ?>
+        </td>
+    </tr>
+    <?php
+    return ob_get_clean();
+}
+
+function renderRows($result) {
+    $html = '';
+    while ($row = $result->fetchArray()) {
+        $html .= renderRow($row);
+    }
+    return $html;
+}
+
 function getStats($db) {
     $stats = [];
     // Nur aktive Löscher zählen
@@ -38,8 +81,10 @@ function getStats($db) {
     $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1");
     $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1");
     
-    $stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND defekt = 0 AND active = 1");
+    $stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 0 AND active = 1");
     $stats['defekt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 1 AND active = 1");
+
+    
     
     // Prozente basierend auf den neuen aktiven Zahlen berechnen
     $stats['p_defekt'] = percent($stats['defekt'], $stats['gesamt']);
@@ -108,6 +153,7 @@ if (isset($_POST['ajax_update'])) {
 
     }
 
+    header('Content-Type: application/json; charset=UTF-8');
     echo json_encode(['status'=>'ok', 'stats'=>getStats($db)]);
     exit;
 }
@@ -115,8 +161,6 @@ if (isset($_POST['ajax_update'])) {
 // =====================
 // INITIALE DATEN
 // =====================
-$stats = getStats($db);
-
 $where = [];
 if (!empty($_GET['suche'])) {
     $suche = SQLite3::escapeString($_GET['suche']);
@@ -129,6 +173,15 @@ if (isset($_GET['defekt'])) $where[] = "defekt = 1";
 
 $whereSQL = count($where) ? "WHERE " . implode(" AND ", $where) : "";
 $result = $db->query("SELECT * FROM loescher $whereSQL ORDER BY id DESC");
+
+if (isset($_GET['ajax_refresh'])) {
+    header('Content-Type: application/json; charset=UTF-8');
+    $stats = getStats($db);
+    echo json_encode(['status'=>'ok', 'html' => renderRows($result), 'stats' => $stats]);
+    exit;
+}
+
+$stats = getStats($db);
 ?>
 
 <!DOCTYPE html>
@@ -257,38 +310,7 @@ $result = $db->query("SELECT * FROM loescher $whereSQL ORDER BY id DESC");
         <tr><th>ID</th><th>Name</th><th>Typ</th><th>Bezahlt</th><th>Defekt</th><th>Geprüft</th><th>Abgeholt</th><th>Info</th><th>Aktion</th></tr>
     </thead>
     <tbody>
-    <?php while ($row = $result->fetchArray()): 
-        $rowClass = !$row['geprueft'] ? "table-warning" : (!$row['abgeholt'] ? "table-warning" : "table-info");
-        if ($row['geprueft'] && $row['abgeholt'] && $row['bezahlt'] && !$row['defekt']) $rowClass="table-success";
-        if ($row['defekt']) $rowClass="table-danger";
-        
-        // Prüfen ob deaktiviert
-        $disabled = ($row['active'] == 0) ? 'disabled' : '';
-    ?>
-    <tr data-id="<?= $row['id'] ?>" class="<?= $rowClass ?> <?= !$row['active']?'row-inactive':'' ?>">
-        <td><?= htmlspecialchars($row['nummer']) ?></td>
-        <td><?= htmlspecialchars($row['name']) ?></td>
-        <td>
-            <select class="form-select typ-select" <?= $disabled ?>>
-                <option value="Standard" <?= $row['typ']=="Standard"?"selected":"" ?>>Standard (<?= PREIS_STANDARD ?> €)</option>
-                <option value="Rabatt" <?= $row['typ']=="Rabatt"?"selected":"" ?>>Rabatt (<?= PREIS_RABATT ?> €)</option>
-                <option value="Gratis" <?= $row['typ']=="Gratis"?"selected":"" ?>>Gratis (<?= PREIS_GRATIS ?> €)</option>
-            </select>
-        </td>
-        <td><input type="checkbox" class="cb-bezahlt" <?= $row['bezahlt']?'checked':'' ?> <?= $disabled ?>></td>
-        <td><input type="checkbox" class="cb-defekt" <?= $row['defekt']?'checked':'' ?> <?= $disabled ?>></td>
-        <td><input type="checkbox" class="cb-geprueft" <?= $row['geprueft']?'checked':'' ?> <?= $disabled ?>></td>
-        <td><input type="checkbox" class="cb-abgeholt" <?= $row['abgeholt']?'checked':'' ?> <?= $disabled ?>></td>
-        <td><?= nl2br(htmlspecialchars($row['info'])) ?></td>
-        <td>
-            <?php if ($row['active']): ?>
-                <button class="btn btn-sm btn-danger btn-delete">Löschen</button>
-            <?php else: ?>
-                <span class="badge bg-secondary">Gelöscht</span>
-            <?php endif; ?>
-        </td>
-    </tr>
-    <?php endwhile; ?>
+        <tr><td colspan="9" class="text-center">Liste wird geladen...</td></tr>
     </tbody>
     </table>
 
@@ -337,13 +359,27 @@ function updateStatsDOM(stats){
     document.getElementById('label-p-defekt').innerText = stats.p_defekt;
 }
 
-// AJAX LIVE UPDATE
-document.querySelectorAll('tbody tr').forEach(row=>{
+function ajaxUpdate(id, field, value){
+    const params = new URLSearchParams({
+        ajax_update: 1,
+        id: id,
+        field: field,
+        value: value
+    });
+    return fetch('liste.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+        body: params.toString(),
+        cache: 'no-store'
+    }).then(res=>res.json());
+}
+
+function bindRowEvents(row){
     row.querySelectorAll('input[type="checkbox"], select').forEach(el=>{
         el.addEventListener('change', ()=>{
             const id = row.dataset.id;
             let field = '';
-            
+
             if(el.classList.contains('cb-bezahlt')) field = 'bezahlt';
             else if(el.classList.contains('cb-defekt')) field = 'defekt';
             else if(el.classList.contains('cb-geprueft')) field = 'geprueft';
@@ -351,89 +387,121 @@ document.querySelectorAll('tbody tr').forEach(row=>{
             else if(el.classList.contains('typ-select')) field = 'typ';
 
             if(!field) return;
+            const value = el.type==='checkbox' ? (el.checked?1:0) : el.value;
 
-            let value = el.type==='checkbox' ? (el.checked?1:0) : el.value;
-
-            fetch('liste.php', {
-                method:'POST',
-                headers:{'Content-Type':'application/x-www-form-urlencoded'},
-                body:`ajax_update=1&id=${id}&field=${field}&value=${encodeURIComponent(value)}`
-            })
-            .then(res=>res.json())
+            ajaxUpdate(id, field, value)
             .then(data=>{
                 if(data.status==='ok'){
                     updateRowClass(row);
                     updateStatsDOM(data.stats);
                 }
             })
-            .catch(err => console.error("Update fehlgeschlagen:", err));
+            .catch(err => console.error('Update fehlgeschlagen:', err));
         });
     });
-});
 
-// DELETE BUTTON
-document.querySelectorAll('.btn-delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (!confirm('Wirklich löschen?')) return;
+    const deleteBtn = row.querySelector('.btn-delete');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            if (!confirm('Wirklich löschen?')) return;
+            const id = row.dataset.id;
 
-        const row = btn.closest('tr');
-        const id = row.dataset.id;
-
-        fetch('liste.php', {
-            method:'POST',
-            headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            body:`ajax_update=1&id=${id}&field=active&value=0`
-        })
-        .then(res=>res.json())
-        .then(data=>{
-            if(data.status==='ok'){
-                row.classList.add('table-secondary');
-                row.querySelectorAll('input, select, button').forEach(el => el.disabled = true);
-
-                // Info setzen
-                row.querySelector('td:nth-child(8)').innerText = "Gelöscht";
-
-                // Button ersetzen
-                btn.outerHTML = '<button class="btn btn-sm btn-outline-success btn-restore">Wiederherstellen</button>';
-
-                updateStatsDOM(data.stats);
-            }
+            ajaxUpdate(id, 'active', 0)
+            .then(data=>{
+                if(data.status==='ok'){
+                    row.classList.add('table-secondary');
+                    row.querySelectorAll('input, select, button').forEach(el => el.disabled = true);
+                    row.querySelector('td:nth-child(8)').innerText = 'Gelöscht';
+                    deleteBtn.outerHTML = '<button class="btn btn-sm btn-outline-success btn-restore">Wiederherstellen</button>';
+                    updateStatsDOM(data.stats);
+                }
+            })
+            .catch(err => console.error('Löschen fehlgeschlagen:', err));
         });
-    });
+    }
+}
+
+function bindAllRows(){
+    document.querySelectorAll('tbody tr').forEach(bindRowEvents);
+}
+
+let pollInterval = null;
+function startPolling(form){
+    if (!form) return;
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => {
+        const params = new URLSearchParams(new FormData(form));
+        params.set('ajax_refresh', '1');
+        refreshTable('liste.php?' + params.toString());
+    }, 3000);
+}
+
+function refreshTable(url){
+    fetch(url, {headers:{'Accept':'application/json'}, cache:'no-store'})
+    .then(res=>{
+        if (!res.ok) throw new Error('Server antwortete nicht OK');
+        return res.json();
+    })
+    .then(data=>{
+        if(data.status==='ok'){
+            document.querySelector('tbody').innerHTML = data.html;
+            updateStatsDOM(data.stats);
+            bindAllRows();
+        }
+    })
+    .catch(err => console.error('Liste laden fehlgeschlagen:', err));
+}
+
+window.addEventListener('DOMContentLoaded', function(){
+    const filterForm = document.querySelector('form');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e){
+            e.preventDefault();
+            const params = new URLSearchParams(new FormData(filterForm));
+            params.set('ajax_refresh', '1');
+            refreshTable('liste.php?' + params.toString());
+            startPolling(filterForm);
+        });
+    }
+
+    const resetLink = document.querySelector('a[href="liste.php"]');
+    if (resetLink && filterForm) {
+        resetLink.addEventListener('click', function(e){
+            e.preventDefault();
+            filterForm.reset();
+            refreshTable('liste.php?ajax_refresh=1');
+            startPolling(filterForm);
+        });
+    }
+
+    if (filterForm) {
+        refreshTable('liste.php?ajax_refresh=1&' + new URLSearchParams(new FormData(filterForm)).toString());
+        startPolling(filterForm);
+    }
 });
 
-// RESTORE BUTTON
 document.addEventListener('click', function(e){
-    if(e.target.classList.contains('btn-restore')){
-
+    if (e.target.classList.contains('btn-restore')) {
         const row = e.target.closest('tr');
         const id = row.dataset.id;
 
-        fetch('liste.php', {
-            method:'POST',
-            headers:{'Content-Type':'application/x-www-form-urlencoded'},
-            body:`ajax_update=1&id=${id}&field=active&value=1`
-        })
-        .then(res=>res.json())
+        ajaxUpdate(id, 'active', 1)
         .then(data=>{
             if(data.status==='ok'){
-
                 row.classList.remove('table-secondary');
                 row.querySelectorAll('input, select').forEach(el => el.disabled = false);
-
-                // Info bereinigen
-                let infoCell = row.querySelector('td:nth-child(8)');
+                const infoCell = row.querySelector('td:nth-child(8)');
                 infoCell.innerText = infoCell.innerText.replace('Gelöscht','').replace('|','').trim();
-
-                // Button zurück
                 e.target.outerHTML = '<button class="btn btn-sm btn-danger btn-delete">Löschen</button>';
-
                 updateRowClass(row);
                 updateStatsDOM(data.stats);
             }
-        });
+        })
+        .catch(err => console.error('Wiederherstellung fehlgeschlagen:', err));
     }
 });
+
+bindAllRows();
 </script>
 
 </body>

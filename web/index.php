@@ -226,6 +226,16 @@ if (isset($_POST['save_settings'])) {
             </div>
         </div>
 
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">&#128421; Liveticker</h5>
+                    <p class="card-text">Live Übersicht für TV Monitor</p>
+                    <a href="viewer.php" target="_blank" rel="noopener noreferrer" class="btn btn-primary w-100">Öffnen</a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="mt-5">
