@@ -43,8 +43,15 @@ function renderRow($row) {
             </select>
         </td>
         <td><input type="checkbox" class="cb-bezahlt" <?= $row['bezahlt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
-        <td><input type="checkbox" class="cb-defekt" <?= $row['defekt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
         <td><input type="checkbox" class="cb-geprueft" <?= $row['geprueft'] ? 'checked' : '' ?> <?= $disabled ?>></td>
+        <td><input type="checkbox" class="cb-defekt" <?= $row['defekt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
+        <!--<td>
+            <?php if ($row['geprueft']): ?>
+                <input type="checkbox" class="cb-defekt" <?= $row['defekt'] ? 'checked' : '' ?> <?= $disabled ?>>
+            <?php else: ?>
+                <span class="text-muted">—</span>
+            <?php endif; ?>
+        </td>-->
         <td><input type="checkbox" class="cb-abgeholt" <?= $row['abgeholt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
         <td><?= nl2br(htmlspecialchars($row['info'])) ?></td>
         <td>
@@ -72,25 +79,27 @@ function getStats($db) {
     // Nur aktive Löscher zählen
     $stats['gesamt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE active = 1");
     
-    $stats['geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND active = 1");
-    $stats['nicht_geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 0 AND active = 1");
-    
-    $stats['abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 1 AND active = 1");
-    $stats['nicht_abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 0 AND active = 1");
-    
-    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1");
-    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1");
-    
+     $stats['geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND active = 1 AND defekt = 0");
+    $stats['nicht_geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 0 AND active = 1 AND defekt = 0");
+
+    $stats['abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 1 AND active = 1 AND defekt = 0");
+    $stats['nicht_abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 0 AND active = 1 AND defekt = 0");
+
+    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1 AND defekt = 0");
+    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1 AND defekt = 0");
+
     $stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 0 AND active = 1");
     $stats['defekt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 1 AND active = 1");
 
     
     
     // Prozente basierend auf den neuen aktiven Zahlen berechnen
+    $stats['gesamt_ok'] = $stats['gesamt'] - $stats['defekt'];
+
     $stats['p_defekt'] = percent($stats['defekt'], $stats['gesamt']);
-    $stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt']);
-    $stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt']);
-    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt']);
+    $stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt_ok']);
+    $stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt_ok']);
+    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt_ok']);
     
     return $stats;
 }
@@ -231,8 +240,24 @@ $stats = getStats($db);
     <div class="col-6 col-md-2">
         <div class="card text-center bg-warning mb-2">
             <div class="card-body p-2">
+                <h6 class="mb-1"><strong>Bezahlt</strong></h6>
+                <small id="stat-bezahlt">✅ <?= $stats['bezahlt'] ?> | ❌ <?= $stats['nicht_bezahlt'] ?></small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-center bg-warning mb-2">
+            <div class="card-body p-2">
                 <h6 class="mb-1"><strong>Geprüft</strong></h6>
                 <small id="stat-geprueft">✅ <?= $stats['geprueft'] ?> | ❌ <?= $stats['nicht_geprueft'] ?></small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-center bg-success text-white mb-2">
+            <div class="card-body p-2">
+                <h6 class="mb-1"><strong>OK | DEFEKT</strong></h6>
+                <small id="stat-ok">✅ <?= $stats['ok'] ?> | ❌ <?= $stats['defekt'] ?></small>
             </div>
         </div>
     </div>
@@ -244,36 +269,21 @@ $stats = getStats($db);
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center bg-warning mb-2">
-            <div class="card-body p-2">
-                <h6 class="mb-1"><strong>Bezahlt</strong></h6>
-                <small id="stat-bezahlt">✅ <?= $stats['bezahlt'] ?> | ❌ <?= $stats['nicht_bezahlt'] ?></small>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center bg-success text-white mb-2">
-            <div class="card-body p-2">
-                <h6 class="mb-1"><strong>OK/DEFEKT</strong></h6>
-                <small id="stat-ok">✅ <?= $stats['ok'] ?> | ❌ <?= $stats['defekt'] ?></small>
-            </div>
-        </div>
-    </div>
 </div>
 
 <div class="mb-4">
-    <label>Geprüft (<span id="label-p-geprueft"><?= $stats['p_geprueft'] ?></span>%)</label>
-    <div class="progress mb-2"><div class="progress-bar bg-success" id="bar-geprueft" style="width: <?= $stats['p_geprueft'] ?>%"></div></div>
-
-    <label>Abgeholt (<span id="label-p-abgeholt"><?= $stats['p_abgeholt'] ?></span>%)</label>
-    <div class="progress mb-2"><div class="progress-bar bg-info" id="bar-abgeholt" style="width: <?= $stats['p_abgeholt'] ?>%"></div></div>
-
     <label>Bezahlt (<span id="label-p-bezahlt"><?= $stats['p_bezahlt'] ?></span>%)</label>
-    <div class="progress mb-2"><div class="progress-bar bg-dark" id="bar-bezahlt" style="width: <?= $stats['p_bezahlt'] ?>%"></div></div>
+    <div class="progress mb-2"><div class="progress-bar bg-success" id="bar-bezahlt" style="width: <?= $stats['p_bezahlt'] ?>%"></div></div>
+
+    <label>Geprüft (<span id="label-p-geprueft"><?= $stats['p_geprueft'] ?></span>%)</label>
+    <div class="progress mb-2"><div class="progress-bar" id="bar-geprueft" style="width: <?= $stats['p_geprueft'] ?>%"></div></div>
 
     <label>Defekt (<span id="label-p-defekt"><?= $stats['p_defekt'] ?></span>%)</label>
     <div class="progress mb-2"><div class="progress-bar bg-danger" id="bar-defekt" style="width: <?= $stats['p_defekt'] ?>%"></div></div>
+
+    <label>Abgeholt (<span id="label-p-abgeholt"><?= $stats['p_abgeholt'] ?></span>%)</label>
+    <div class="progress mb-2"><div class="progress-bar" id="bar-abgeholt" style="width: <?= $stats['p_abgeholt'] ?>%"></div></div>
+
 </div>
 
 <form method="get" class="row g-1 mb-3 align-items-center">
@@ -307,7 +317,17 @@ $stats = getStats($db);
 
 <table class="table table-bordered table-striped align-middle">
     <thead>
-        <tr><th>ID</th><th>Name</th><th>Typ</th><th>Bezahlt</th><th>Defekt</th><th>Geprüft</th><th>Abgeholt</th><th>Info</th><th>Aktion</th></tr>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Typ</th>
+            <th>Bezahlt</th>
+            <th>Geprüft</th>
+            <th>Defekt</th>
+            <th>Abgeholt</th>
+            <th>Info</th>
+            <th>Aktion</th>
+        </tr>
     </thead>
     <tbody>
         <tr><td colspan="9" class="text-center">Liste wird geladen...</td></tr>
@@ -322,7 +342,7 @@ function updateRowClass(row){
     const geprueft = row.querySelector('.cb-geprueft').checked;
     const abgeholt = row.querySelector('.cb-abgeholt').checked;
     const bezahlt = row.querySelector('.cb-bezahlt').checked;
-    const defekt = row.querySelector('.cb-defekt').checked;
+    const defekt = row.querySelector('.cb-defekt')?.checked ?? false;
 
     row.classList.remove('table-danger','table-warning','table-info','table-success');
 
@@ -433,7 +453,7 @@ function startPolling(form){
         const params = new URLSearchParams(new FormData(form));
         params.set('ajax_refresh', '1');
         refreshTable('liste.php?' + params.toString());
-    }, 3000);
+    }, 2000);
 }
 
 function refreshTable(url){
