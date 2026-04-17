@@ -51,7 +51,11 @@ CREATE TABLE rechnungen (
     zeitstempel_erstellung TEXT,
     rechnung_gedruckt INTEGER DEFAULT 0,
     zeitstempel_gedruckt TEXT,
-    rechnungsnummer TEXT
+    rechnungsnummer TEXT,
+    zahlungsart TEXT DEFAULT 'Barzahlung',  -- Barzahlung, Kartenzahlung, SumUp
+    bezahlt INTEGER DEFAULT 0 ,            -- 0 = nicht bezahlt, 1 = bezahlt
+    sumup_transaction_id TEXT,
+    sumup_status TEXT
 );
 ");
 

@@ -15,7 +15,6 @@ if (isset($_GET['logout'])) {
 
 $db = getDB();
 $successMessage = '';
-$errorMessage = '';
 if (isset($_GET['success'])) {
     $successMessage = "&#9989; Rechnung gespeichert und PDF generiert!";
 }
@@ -73,14 +72,6 @@ $nextRechnungsnummer = RECHNUNGS_PREFIX . str_pad($number, 4, '0', STR_PAD_LEFT)
 if (isset($_GET['action']) && $_GET['action'] === 'reload_data' && isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     $row = $db->query("SELECT * FROM rechnungen WHERE id = $id")->fetchArray(SQLITE3_ASSOC);
-    
-    // Wir bereiten die Antwort vor
-    if ($row) {
-        $row['status_html'] = ($row['rechnung_gedruckt'] == 1) ? '&#9989;' : '&#10060;';
-        // Dateiname für den Link generieren
-        $row['pdf_url'] = '_Rechnungen/Rechnung_' . preg_replace('/[^a-zA-Z0-9_-]/', '', $row['rechnungsnummer']) . '.pdf';
-    }
-    
     header('Content-Type: application/json');
     echo json_encode($row);
     exit;
@@ -94,17 +85,9 @@ if (isset($_POST['reprint_rechnung']) && !empty($_POST['edit_id'])) {
     $stmt = $db->prepare("UPDATE rechnungen SET rechnung_gedruckt = 0, zeitstempel_gedruckt = NULL WHERE id = :id");
     $stmt->bindValue(':id', $id);
     $stmt->execute();
-    $successMessage = "&#128424; Rechnung wird erneut gedruckt (BON)!";
+    $successMessage = "&#128424; Rechnung zurückgesetzt – jetzt erneut drucken möglich!";
     
     // Eintrag für Bearbeitung neu laden
-    $editEntry = $db->query("SELECT * FROM rechnungen WHERE id = $id")->fetchArray(SQLITE3_ASSOC);
-}
-
-// =====================
-// AUTOMATISCHES LADEN NACH SPEICHERN
-// =====================
-if (isset($_GET['id']) && empty($editEntry)) {
-    $id = (int)$_GET['id'];
     $editEntry = $db->query("SELECT * FROM rechnungen WHERE id = $id")->fetchArray(SQLITE3_ASSOC);
 }
 
@@ -143,7 +126,7 @@ if (isset($_POST['suche'])) {
         } elseif (count($rows) > 1) {
             $searchResults = $rows;
         } else {
-            $errorMessage = "❌ Keine Rechnung gefunden!";
+            $successMessage = "❌ Keine Rechnung gefunden!";
         }
     }
 }
@@ -173,26 +156,6 @@ if (isset($_POST['save_rechnung'])) {
 
     if (!empty($_POST['edit_id'])) {
         // UPDATE
-        $lastId = (int)$_POST['edit_id'];
-        
-        // 1. Holen wir uns den aktuellen Stand aus der DB zum Vergleich
-        $currentData = $db->query("SELECT * FROM rechnungen WHERE id = $lastId")->fetchArray(SQLITE3_ASSOC);
-        
-        // 2. Definieren, was eine kritische Änderung ist
-        // Wir vergleichen: Anzahl, gewählter Preis-Typ (über den Preis) und die Rechnungsnummer
-        $typ = $_POST['typ'] ?? '';
-        $neuerPreis = $preise[$typ] ?? 0;
-        
-        $hatKritischeAenderung = (
-            (int)$_POST['anzahl'] !== (int)$currentData['anzahl_loescher'] ||
-            (float)$neuerPreis !== (float)$currentData['preis_pro_loescher'] ||
-            $_POST['rechnungsnummer'] !== $currentData['rechnungsnummer']
-        );
-
-        // 3. Status nur zurücksetzen, wenn kritisch geändert ODER wenn wir manuell "Nachdrucken" gedrückt haben
-        $resetDruck = $hatKritischeAenderung ? 0 : $currentData['rechnung_gedruckt'];
-        $resetZeit  = $hatKritischeAenderung ? NULL : $currentData['zeitstempel_gedruckt'];
-
         $stmt = $db->prepare("
             UPDATE rechnungen SET
                 anrede = :anrede,
@@ -203,32 +166,22 @@ if (isset($_POST['save_rechnung'])) {
                 anzahl_loescher = :anzahl,
                 preis_pro_loescher = :preis,
                 rechnungsnummer = :rnr,
-                zahlungsart = :zahlungsart,
-                bezahlt = :bezahlt,
-                rechnung_gedruckt = :gedruckt,
-                zeitstempel_gedruckt = :z_gedruckt
+                rechnung_gedruckt = 0,
+                zeitstempel_gedruckt = NULL
             WHERE id = :id
         ");
-        
-        $stmt->bindValue(':id', $lastId);
-        $stmt->bindValue(':gedruckt', $resetDruck);
-        $stmt->bindValue(':z_gedruckt', $resetZeit);
-        
-        if ($hatKritischeAenderung) {
-            $successMessage = "&#9989; Rechnung aktualisiert (Preise geändert -> Druckstatus zurückgesetzt)!";
-        } else {
-            $successMessage = "&#9989; Rechnung aktualisiert (Druckstatus beibehalten).";
-        }
+        $stmt->bindValue(':id', (int)$_POST['edit_id']);
+        $successMessage = "&#9989; Rechnung aktualisiert (Druckstatus zurückgesetzt)!";
     } else {
         // INSERT
         $stmt = $db->prepare("
             INSERT INTO rechnungen (
                 anrede, name, adresse, plz, ort,
                 anzahl_loescher, preis_pro_loescher,
-                zeitstempel_erstellung, rechnungsnummer, zahlungsart, bezahlt
+                zeitstempel_erstellung, rechnungsnummer
             ) VALUES (
                 :anrede, :name, :adresse, :plz, :ort,
-                :anzahl, :preis, :zeit, :rnr, :zahlungsart, :bezahlt
+                :anzahl, :preis, :zeit, :rnr
             )
         ");
         $stmt->bindValue(':zeit', date('Y-m-d H:i:s'));
@@ -243,13 +196,7 @@ if (isset($_POST['save_rechnung'])) {
     $stmt->bindValue(':anzahl', (int)$_POST['anzahl']);
     $stmt->bindValue(':preis', $preis);
     $stmt->bindValue(':rnr', $rechnungsnummer);
-    $stmt->bindValue(':zahlungsart', $_POST['zahlungsart'] ?? 'Barzahlung');
-    $stmt->bindValue(':bezahlt', isset($_POST['bezahlt']) ? 1 : 0);
     $stmt->execute();
-
-    if (empty($_POST['edit_id'])) {
-        $lastId = $db->lastInsertRowID(); // die neue ID holen
-    }
 
     // =====================
     // TCPDF PDF GENERIEREN
@@ -408,26 +355,16 @@ if (isset($_POST['save_rechnung'])) {
     $hinweis = "Hinweis: Als Körperschaft öffentlichen Rechts ist die Freiwillige Feuerwehr gemäß § 2 Abs. 5 UStG nicht umsatzsteuerpflichtig. Der ausgewiesene Betrag entspricht dem Bruttobetrag (0% MwSt).";
     $pdf->MultiCell(0, 5, $hinweis, 0, 'L');
 
-
     // --- ZAHLUNGSINFORMATIONEN ---
-    $pdf->Ln(5);
-    $zahlungsart = $_POST['zahlungsart'] ?? 'Barzahlung';
-    // Header für Zahlungsart
-    $pdf->SetFont('helvetica', 'B', 10);
-    $pdf->Cell(0, 6, 'Zahlungsart: ' . $zahlungsart, 0, 1, 'L');
-    // Spezifischer Text je nach Zahlungsart
+    $pdf->Ln(8);
+    $pdf->SetFont('helvetica', 'B', 11);
+    $pdf->Cell(0, 6, 'Zahlungsinformation', 0, 1, 'L');
     $pdf->SetFont('helvetica', '', 10);
-    if ($zahlungsart === 'Barzahlung') {
-        $pdf->Cell(0, 6, 'Betrag dankend in Bar erhalten.', 0, 1, 'L');
-    } elseif ($zahlungsart === 'SumUp' || $zahlungsart === 'Kartenzahlung') {
-        $pdf->Cell(0, 6, 'Betrag dankend erhalten.', 0, 1, 'L');
-    } else {
-        // Standardfall: Überweisung (oder alles andere)
-        $text = "Bitte überweisen Sie den Betrag innerhalb von 14 Tagen ohne Abzug an folgendes Konto:\n"
-              . "Empfänger: " . BANK_EMPFAENGER . "\n"
-              . "Bank: " . BANK_NAME . " | IBAN: " . BANK_IBAN;
-        $pdf->MultiCell(0, 5, $text, 0, 'L');
-    }
+    $zahlungsHinweis = "Bei Überweisung verwenden Sie bitte die Rechnungsnummer als Verwendungszweck.\n"
+        . "Empfänger: " . BANK_EMPFAENGER . "\n"
+        . "Bank: " . BANK_NAME . "\n"
+        . "IBAN: " . BANK_IBAN;
+    $pdf->MultiCell(0, 5, $zahlungsHinweis, 0, 'L');
 
     // ---DATEI SPEICHERN ---
     $folder = __DIR__ . '/_Rechnungen';
@@ -436,7 +373,7 @@ if (isset($_POST['save_rechnung'])) {
     $filename = $folder.'/Rechnung_'.preg_replace('/[^a-zA-Z0-9_-]/', '', $rechnungsnummer).'.pdf';
     $pdf->Output($filename, 'F');
 
-    header("Location: " . $_SERVER['PHP_SELF'] . "?success=1&id=" . $lastId);
+    header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
     exit;
 }
 
@@ -479,7 +416,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
         </span>
 
         <div class="d-flex gap-2">
-            <a href="rechnungen_anzeigen.php" class="btn btn-outline-info btn-sm">Rechnungsübersicht</a>
             <a href="index.php" class="btn btn-outline-light btn-sm">
                 Zurück
             </a>
@@ -494,9 +430,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
 <?php if ($successMessage): ?>
 <div class="alert alert-success"><?= $successMessage ?></div>
-<?php endif; ?>
-<?php if ($errorMessage): ?>
-<div class="alert alert-danger"><?= $errorMessage ?></div>
 <?php endif; ?>
 
 <!-- SUCHE -->
@@ -594,27 +527,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 </div>
 
 <div class="mb-3">
-    <label class="form-label">&#128179; Zahlungsart</label>
-    <select name="zahlungsart" id="zahlungsartSelect" class="form-select highlight">
-        <option value="Barzahlung" <?= ($editEntry['zahlungsart'] ?? 'Barzahlung')=='Barzahlung'?'selected':'' ?>>Barzahlung</option>
-        <option value="Kartenzahlung" <?= ($editEntry['zahlungsart'] ?? 'Barzahlung')=='Kartenzahlung'?'selected':'' ?>>Kartenzahlung</option>
-        
-        <?php if (defined('SumUp_AVALIABLE') && SumUp_AVALIABLE === 'TRUE'): ?>
-            <option value="SumUp" <?= ($editEntry['zahlungsart'] ?? '')=='SumUp'?'selected':'' ?>>SumUp</option>
-        <?php endif; ?>
-
-        <option value="Überweisung" <?= ($editEntry['zahlungsart'] ?? 'Überweisung')=='Überweisung'?'selected':'' ?>>Überweisung</option>
-    </select>
-</div>
-
-<div class="mb-3 form-check">
-    <input type="checkbox" name="bezahlt" value="1" class="form-check-input" id="bezahltCheck" <?= ($editEntry['bezahlt'] ?? 0) ? 'checked' : '' ?>>
-    <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
-</div>
-
-<hr>    
-
-<div class="mb-3">
     <label class="form-label">&#128196; Rechnungsnummer</label>
     <input type="text" name="rechnungsnummer" class="form-control" 
        value="<?= htmlspecialchars($editEntry['rechnungsnummer'] ?? $nextRechnungsnummer) ?>" 
@@ -624,7 +536,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <?php if (!is_null($editEntry) && $editEntry) { ?>
 
 <p>
-    &#128424; Gedruckt: <span id="druckStatusAnzeige"><?= ($editEntry['rechnung_gedruckt'] ?? 0) ? '&#9989;' : '&#10060;' ?></span>
+    &#128424; Gedruckt: <?= ($editEntry['rechnung_gedruckt'] ?? 0) ? '&#9989;' : '&#10060;' ?>
 </p>
 
 <div class="d-flex gap-2 mb-3 flex-wrap">
@@ -643,12 +555,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
     <button type="button" id="reloadData" class="btn btn-secondary">
         &#128260; Daten neu laden
     </button>
-
-    <?php if (($editEntry['zahlungsart'] ?? '') === 'SumUp' && defined('SumUp_AVALIABLE') && SumUp_AVALIABLE === 'TRUE' && $editEntry['bezahlt'] === 0): ?>
-        <button type="button" id="sumupBtn" class="btn btn-primary">
-            &#128179; SumUp Zahlung starten
-        </button>
-    <?php endif; ?>
 
 </div>
 
@@ -686,125 +592,54 @@ function updatePreis(){
 
 // 3. Hauptlogik beim Laden der Seite
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Dynamisches Anzeigen des SumUp Buttons bei Auswahl ---
-    const zahlungsartSelect = document.getElementById('zahlungsartSelect');
-    zahlungsartSelect.addEventListener('change', function() {
-        const sumupBtn = document.getElementById('sumupBtn');
-        if (this.value === 'SumUp') {
-            // Falls der Button gar nicht im HTML ist (weil PHP ihn nicht gerendert hat),
-            // müsste man ihn hier dynamisch erstellen. 
-            // Einfacher: Erscheint nach dem ersten Speichern mit "SumUp".
-            if(sumupBtn) sumupBtn.style.display = 'block';
-        } else {
-            if(sumupBtn) sumupBtn.style.display = 'none';
-        }
-    });
     
-    // --- PREIS INITIALISIERUNG ---
+    // Event-Listener für Preis-Dropdown
     document.getElementById('typSelect').addEventListener('change', updatePreis);
     updatePreis();
 
-    // --- FORMULAR LEEREN FUNKTION ---
-    const clearBtn = document.getElementById('clearForm');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
-            // Seite einfach neu laden ist die sauberste Lösung, 
-            // um alle PHP-Zustände (Buttons, IDs, etc.) zurückzusetzen
-            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-            window.location.href = cleanUrl;
-        });
-    }
+    // Formular leeren (lädt die Seite ohne Parameter neu)
+    document.getElementById('clearForm').addEventListener('click', () => {
+    window.location.href = window.location.pathname;
+});
 
-    // --- ESC-TASTE ZUM LEEREN ---
-    document.addEventListener('keydown', (e) => {
-        // Nur reagieren, wenn ESC gedrückt wird
-        if (e.key === "Escape" || e.keyCode === 27) {
-            const clearBtn = document.getElementById('clearForm');
-            if (clearBtn) {
-                e.preventDefault(); // Standardverhalten verhindern
-                clearBtn.click();   // Deine "Leeren"-Funktion auslösen
-            }
-        }
-    });
-
-    // --- SUMUP LOGIK ---
-    const sumupBtn = document.getElementById('sumupBtn');
-    if (sumupBtn) {
-        sumupBtn.addEventListener('click', () => {
-            const editId = document.querySelector('[name="edit_id"]').value;
-            if (!editId) return alert("Bitte Rechnung zuerst speichern!");
-
-            // Öffnet das Terminal-Frontend in einem kleinen Pop-up
-            const width = 400;
-            const height = 500;
-            const left = (window.innerWidth / 2) - (width / 2);
-            const top = (window.innerHeight / 2) - (height / 2);
-            
-            window.open(
-                `sumup.php?rechnung_id=${editId}`, 
-                'SumUpTerminal', 
-                `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no`
-            );
-        });
-    }
-
-    // --- RECHNUNG VIA AJAX NACHLADEN ---
+    // --- RECHNUNG NACHLADEN ---
     const reloadBtn = document.getElementById('reloadData');
     if (reloadBtn) {
         reloadBtn.addEventListener('click', () => {
             const editId = document.querySelector('[name="edit_id"]').value;
             if (!editId) return alert('Keine Rechnung ausgewählt!');
-
-            // Button optisch deaktivieren während des Ladevorgangs
-            reloadBtn.disabled = true;
-            reloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Lade...';
-
             fetch(`?action=reload_data&id=${editId}`)
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
-                    if (data) {
-                        // 1. Druckstatus Icon/Text aktualisieren
-                        const statusSpan = document.getElementById('druckStatusAnzeige');
-                        if (statusSpan) statusSpan.innerHTML = data.status_html;
-
-                        // 2. PDF Link aktualisieren (falls sich die Rechnungsnummer geändert hat)
-                        const pdfLink = document.getElementById('openPdf');
-                        if (pdfLink) pdfLink.href = data.pdf_url;
-
-                        // 3. Optional: Weitere Felder aktualisieren, falls sie sich in der DB geändert haben
-                        // document.querySelector('[name="name"]').value = data.name;
-
-                        console.log("Daten erfolgreich via AJAX aktualisiert.");
-                    }
-                })
-                .catch(err => {
-                    console.error("Fehler beim AJAX-Reload:", err);
-                    alert("Fehler beim Laden der Daten.");
-                })
-                .finally(() => {
-                    // Button wieder normal machen
-                    reloadBtn.disabled = false;
-                    reloadBtn.innerHTML = '&#128260; Daten neu laden';
+                    location.reload(); // Einfachste Methode um alles konsistent zu haben
                 });
         });
     }
 
-    // --- ERFOLGSMELDUNG BEREINIGEN ---
+    // --- ERFOLGSMELDUNG & URL BEREINIGEN ---
+    
+    // Sofort die URL bereinigen (entfernt ?success=1 aus der Adresszeile)
     if (window.location.search.includes('success=1')) {
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
     }
 
-    const alertBox = document.querySelector('.alert');
-    if (alertBox) {
+    // Die Meldung nach 2 Sekunden ausblenden
+    const alert = document.querySelector('.alert-success');
+    if (alert) {
         setTimeout(() => {
-            alertBox.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-            alertBox.style.opacity = "0";
-            alertBox.style.transform = "translateY(-20px)";
-            setTimeout(() => alertBox.remove(), 600);
+            alert.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-20px)"; // Schiebt es leicht hoch beim faden
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 600);
         }, 2000);
     }
 });
+
+
 </script>
 
 </body>
