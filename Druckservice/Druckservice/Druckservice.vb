@@ -63,11 +63,19 @@ Public Class Druckservice
         Else
             tb_printerEti.SelectedIndex = 0
         End If
+
+        If Not String.IsNullOrEmpty(My.Settings.EtiDruckerTyp) AndAlso tb_printerEti_typ.Items.Contains(My.Settings.EtiDruckerTyp) Then
+            tb_printerEti_typ.SelectedItem = My.Settings.EtiDruckerTyp
+        Else
+            tb_printerEti_typ.SelectedIndex = 0
+        End If
+
         If Not String.IsNullOrEmpty(My.Settings.BonDrucker) AndAlso tb_printerBon.Items.Contains(My.Settings.BonDrucker) Then
             tb_printerBon.SelectedItem = My.Settings.BonDrucker
         Else
             tb_printerBon.SelectedIndex = 0
         End If
+
 
         tb_apiUrl.Text = My.Settings.apiUrl
         tb_apiToken.Text = My.Settings.apiToken
@@ -263,22 +271,76 @@ Public Class Druckservice
             Exit Sub
         End If
 
-        Dim sPath As String = Application.StartupPath & "\Brother QL Serie\Feuerloescher.lbx"
-        Dim objDoc As bpac.Document = CreateObject("bpac.Document")
-        Dim id As Integer
 
-        If objDoc.Open(sPath) <> False Then
-            objDoc.SetPrinter(druckername, True)
-            objDoc.GetObject("objName").Text = name
-            objDoc.GetObject("objID").Text = If(Integer.TryParse(loescher_id, id), id.ToString("000"), loescher_id)
-            objDoc.GetObject("objBarcode").Text = CStr(loescher_id)
-            objDoc.GetObject("objID").Text = If(Integer.TryParse(loescher_id, id), id.ToString("000"), loescher_id) & " - " & Format(Now, "yy")
-            objDoc.StartPrint("", bpac.PrintOptionConstants.bpoDefault)
-            objDoc.PrintOut(1, bpac.PrintOptionConstants.bpoDefault)
-            objDoc.EndPrint()
-            objDoc.Close()
+        If tb_printerEti_typ.SelectedIndex = 0 Then 'Brother
+            Print_Etikett_Brother(name, loescher_id, druckername)
+
+        ElseIf tb_printerEti_typ.SelectedIndex = 1 Then 'Zebra
+            Print_Etikett_Zebra(name, loescher_id, druckername)
         End If
-        Log($"Etikettendruck abgeschlossen: {loescher_id}")
+    End Sub
+
+    Private Sub Print_Etikett_Brother(name As String, loescher_id As String, druckername As String)
+        Try
+            Dim sPath As String = Application.StartupPath & "\Brother QL Serie\Feuerloescher.lbx"
+            Dim objDoc As bpac.Document = CreateObject("bpac.Document")
+            Dim id As Integer
+
+            If objDoc.Open(sPath) <> False Then
+                objDoc.SetPrinter(druckername, True)
+                objDoc.GetObject("objName").Text = name
+
+                Dim displayID As String = If(Integer.TryParse(loescher_id, id), id.ToString("000"), loescher_id) & " - " & Format(Now, "yy")
+                objDoc.GetObject("objID").Text = displayID
+                objDoc.GetObject("objBarcode").Text = CStr(loescher_id)
+
+                objDoc.StartPrint("", bpac.PrintOptionConstants.bpoDefault)
+                objDoc.PrintOut(1, bpac.PrintOptionConstants.bpoDefault)
+                objDoc.EndPrint()
+                objDoc.Close()
+                Log($"Brother Etikett gedruckt: {loescher_id}")
+            End If
+        Catch ex As Exception
+            Log("FEHLER Brother Druck: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Function mm(ByVal millimeter As Double) As Integer
+        ' 203 DPI / 25.4 mm = 7.9921... also ca. 8 Dots pro mm
+        Return CInt(Math.Round(millimeter * 8))
+    End Function
+
+    Private Sub Print_Etikett_Zebra(name As String, loescher_id As String, druckername As String)
+        Try
+            Dim id As Integer
+            Dim shortID As String = If(Integer.TryParse(loescher_id, id), id.ToString("000"), loescher_id)
+            Dim displayYear As String = shortID & " - " & Format(Now, "yy")
+            Dim zpl As String = ""
+
+            ' ZPL Code für 57x32mm
+            ' Erklärung: GB = Schwarzer Balken, FR = Text invertieren (weiß auf schwarz), FB = Zentrieren
+            zpl = "^XA" &
+            "^CI28" &
+            "^PW" & mm(57) &
+            "^LL" & mm(32) &
+            "^LS0" &
+            "^FO" & mm(2) & "," & mm(2) & "^GB" & mm(53) & "," & mm(10) & "," & mm(10) & "^FS" &
+            "^FO" & mm(2) & "," & mm(3) & "^A0N," & mm(8) & "," & mm(8) & "^FB" & mm(53) & ",1,0,C^FR^FD" & displayYear & "^FS" &
+            "^FO" & mm(2) & "," & mm(14) & "^A0N," & mm(5) & "," & mm(5) & "^FB" & mm(53) & ",1,0,C^FD" & name & "^FS" &
+            "^BY3,3" &
+            "^FO" & mm(0) & "," & mm(21) & "^B3N,N," & mm(8) & ",N,N^FB" & mm(57) & ",1,0,C^FD" & loescher_id & "^FS" &
+            "^XZ"
+
+            ' Senden über die RawPrinterHelper Klasse
+            If ZPLRawPrinterHelper.SendStringToPrinter(druckername, zpl) Then
+                Log($"Zebra Etikett gedruckt (ZPL): {loescher_id}")
+                zpl = ""
+            Else
+                Log("FEHLER: Zebra Druck konnte nicht gestartet werden.")
+            End If
+        Catch ex As Exception
+            Log("FEHLER Zebra Druck: " & ex.Message)
+        End Try
     End Sub
 
     Public Sub Print_Abholschein(name As String, loescher_id As String, typ As String, preis As String, bezahlt As Boolean, defekt As Boolean, zeitstempel As String, druckername As String)
@@ -575,6 +637,12 @@ Public Class Druckservice
     Private Sub tb_printerEti_SelectedIndexChanged(sender As Object, e As EventArgs) Handles tb_printerEti.SelectedIndexChanged
         If tb_printerEti.SelectedItem IsNot Nothing Then
             My.Settings.EtiDrucker = tb_printerEti.SelectedItem.ToString()
+            My.Settings.Save()
+        End If
+    End Sub
+    Private Sub tb_printerEtiTyp_SelectedIndexChanged(sender As Object, e As EventArgs) Handles tb_printerEti_typ.SelectedIndexChanged
+        If tb_printerEti_typ.SelectedItem IsNot Nothing Then
+            My.Settings.EtiDruckerTyp = tb_printerEti_typ.SelectedItem.ToString()
             My.Settings.Save()
         End If
     End Sub

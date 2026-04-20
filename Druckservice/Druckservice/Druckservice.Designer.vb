@@ -36,6 +36,7 @@ Partial Class Druckservice
         Me.bt_restart = New System.Windows.Forms.Button()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.tb_copyright = New System.Windows.Forms.Label()
+        Me.tb_printerEti_typ = New System.Windows.Forms.ComboBox()
         Me.SuspendLayout()
         '
         'tb_debug
@@ -111,10 +112,19 @@ Partial Class Druckservice
         resources.ApplyResources(Me.tb_copyright, "tb_copyright")
         Me.tb_copyright.Name = "tb_copyright"
         '
+        'tb_printerEti_typ
+        '
+        resources.ApplyResources(Me.tb_printerEti_typ, "tb_printerEti_typ")
+        Me.tb_printerEti_typ.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.tb_printerEti_typ.FormattingEnabled = True
+        Me.tb_printerEti_typ.Items.AddRange(New Object() {resources.GetString("tb_printerEti_typ.Items"), resources.GetString("tb_printerEti_typ.Items1")})
+        Me.tb_printerEti_typ.Name = "tb_printerEti_typ"
+        '
         'Druckservice
         '
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.tb_printerEti_typ)
         Me.Controls.Add(Me.tb_copyright)
         Me.Controls.Add(Me.Label5)
         Me.Controls.Add(Me.bt_restart)
@@ -148,4 +158,5 @@ Partial Class Druckservice
     Friend WithEvents bt_restart As Button
     Friend WithEvents Label5 As Label
     Friend WithEvents tb_copyright As Label
+    Friend WithEvents tb_printerEti_typ As ComboBox
 End Class

@@ -316,5 +316,15 @@ Druckservice
  <exception cref="T:System.ComponentModel.Win32Exception">Beim Aufruf 
  einer Win32-API trat ein Fehler auf.</exception>
 </member>
+<member name="M:Druckservice.ZPLRawPrinterHelper.SendStringToPrinter(System.String,System.String)">
+ <summary>
+ Sendet einen ZPL-String direkt an den Drucker.
+ </summary>
+</member>
+<member name="M:Druckservice.ZPLRawPrinterHelper.SendBytesToPrinter(System.String,System.IntPtr,System.Int32)">
+ <summary>
+ Sendet rohe Bytes an den Drucker.
+ </summary>
+</member>
 </members>
 </doc>

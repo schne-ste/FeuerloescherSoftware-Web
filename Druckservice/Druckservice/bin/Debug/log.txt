@@ -6051,3 +6051,1063 @@
 [2026-04-17 14:06:34] Gefundene Rechnungen: 0
 [2026-04-17 14:06:34] Timer beendet - nächster Lauf in 5 Sekunden.
 [2026-04-17 14:06:34] -------------------------------------------------------------------------------------------
+[2026-04-20 15:19:29] DEBUG MODE: True
+[2026-04-20 15:19:29] Printservice gestartet...
+[2026-04-20 15:19:29] -------------------------------------------------------------------------------------------
+[2026-04-20 15:19:34] Timer gestartet - prüfe API...
+[2026-04-20 15:19:34] Gefundene Etiketten: 2
+[2026-04-20 15:19:34] Drucke Etikett: 001 / Kunde: Jonas Altenhofer
+[2026-04-20 15:19:34] Starte Etikettendruck: 001
+[2026-04-20 15:19:34] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-20 15:19:34] Markiere Etikett 001 als gedruckt
+[2026-04-20 15:19:34] Drucke Etikett: 002 / Kunde: Jonas Altenhofer
+[2026-04-20 15:19:34] Starte Etikettendruck: 002
+[2026-04-20 15:19:34] DEBUG: Etikett NICHT gedruckt (Debug Mode aktiv).
+[2026-04-20 15:19:34] Markiere Etikett 002 als gedruckt
+[2026-04-20 15:19:34] Gefundene Abholscheine: 2
+[2026-04-20 15:19:34] Drucke Abholschein: 001 / Kunde: Jonas Altenhofer / Typ: Standard / Preis: 15,00 €€
+[2026-04-20 15:19:34] Starte Druck Abholschein: 001
+[2026-04-20 15:19:34] Logo gefunden, versuche zu drucken: C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern.bmp
+[2026-04-20 15:19:34] DEBUG: Simulation statt echtem Druck.
+[2026-04-20 15:19:34] Druck Abholschein abgeschlossen: 001
+[2026-04-20 15:19:34] Markiere Abholschein 001 als gedruckt
+[2026-04-20 15:19:34] Drucke Abholschein: 002 / Kunde: Jonas Altenhofer / Typ: Standard / Preis: 15,00 €€
+[2026-04-20 15:19:34] Starte Druck Abholschein: 002
+[2026-04-20 15:19:34] Logo gefunden, versuche zu drucken: C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern.bmp
+[2026-04-20 15:19:34] DEBUG: Simulation statt echtem Druck.
+[2026-04-20 15:19:34] Druck Abholschein abgeschlossen: 002
+[2026-04-20 15:19:34] Markiere Abholschein 002 als gedruckt
+[2026-04-20 15:19:34] Gefundene Rechnungen: 1
+[2026-04-20 15:19:34] Drucke Rechnung: RFLU26-0005 / Kunde: Jonas Altenhofer / Anzahl: 1 / Preis: 15€
+[2026-04-20 15:19:34] Starte Druck Rechnung: RFLU26-0005
+[2026-04-20 15:19:34] DEBUG: Simulation statt echtem Druck.
+[2026-04-20 15:19:34] Druck Rechnung abgeschlossen: RFLU26-0005
+[2026-04-20 15:19:34] Markiere Rechnung RFLU26-0005 als gedruckt
+[2026-04-20 15:19:34] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:19:35] -------------------------------------------------------------------------------------------
+[2026-04-20 15:19:40] Timer gestartet - prüfe API...
+[2026-04-20 15:19:40] Gefundene Etiketten: 0
+[2026-04-20 15:19:40] Gefundene Abholscheine: 0
+[2026-04-20 15:19:40] Gefundene Rechnungen: 0
+[2026-04-20 15:19:40] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:19:40] -------------------------------------------------------------------------------------------
+[2026-04-20 15:19:45] Timer gestartet - prüfe API...
+[2026-04-20 15:19:45] Gefundene Etiketten: 0
+[2026-04-20 15:19:45] Gefundene Abholscheine: 0
+[2026-04-20 15:19:45] Gefundene Rechnungen: 0
+[2026-04-20 15:19:45] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:19:45] -------------------------------------------------------------------------------------------
+[2026-04-20 15:19:50] Timer gestartet - prüfe API...
+[2026-04-20 15:19:50] Gefundene Etiketten: 0
+[2026-04-20 15:19:50] Gefundene Abholscheine: 0
+[2026-04-20 15:19:50] Gefundene Rechnungen: 0
+[2026-04-20 15:19:50] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:19:50] -------------------------------------------------------------------------------------------
+[2026-04-20 15:19:55] Timer gestartet - prüfe API...
+[2026-04-20 15:19:55] Gefundene Etiketten: 0
+[2026-04-20 15:19:55] Gefundene Abholscheine: 0
+[2026-04-20 15:19:55] Gefundene Rechnungen: 0
+[2026-04-20 15:19:55] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:19:55] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:00] Timer gestartet - prüfe API...
+[2026-04-20 15:20:00] Gefundene Etiketten: 0
+[2026-04-20 15:20:00] Gefundene Abholscheine: 0
+[2026-04-20 15:20:00] Gefundene Rechnungen: 0
+[2026-04-20 15:20:00] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:00] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:05] Timer gestartet - prüfe API...
+[2026-04-20 15:20:05] Gefundene Etiketten: 0
+[2026-04-20 15:20:05] Gefundene Abholscheine: 0
+[2026-04-20 15:20:05] Gefundene Rechnungen: 0
+[2026-04-20 15:20:05] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:05] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:10] Timer gestartet - prüfe API...
+[2026-04-20 15:20:10] Gefundene Etiketten: 0
+[2026-04-20 15:20:10] Gefundene Abholscheine: 0
+[2026-04-20 15:20:10] Gefundene Rechnungen: 0
+[2026-04-20 15:20:10] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:10] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:15] Timer gestartet - prüfe API...
+[2026-04-20 15:20:15] Gefundene Etiketten: 0
+[2026-04-20 15:20:15] Gefundene Abholscheine: 0
+[2026-04-20 15:20:15] Gefundene Rechnungen: 0
+[2026-04-20 15:20:15] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:15] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:20] Timer gestartet - prüfe API...
+[2026-04-20 15:20:20] Gefundene Etiketten: 0
+[2026-04-20 15:20:20] Gefundene Abholscheine: 0
+[2026-04-20 15:20:20] Gefundene Rechnungen: 0
+[2026-04-20 15:20:20] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:20] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:25] Timer gestartet - prüfe API...
+[2026-04-20 15:20:25] Gefundene Etiketten: 0
+[2026-04-20 15:20:26] Gefundene Abholscheine: 0
+[2026-04-20 15:20:26] Gefundene Rechnungen: 0
+[2026-04-20 15:20:26] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:26] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:31] Timer gestartet - prüfe API...
+[2026-04-20 15:20:31] Gefundene Etiketten: 0
+[2026-04-20 15:20:31] Gefundene Abholscheine: 0
+[2026-04-20 15:20:31] Gefundene Rechnungen: 0
+[2026-04-20 15:20:31] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:31] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:36] Timer gestartet - prüfe API...
+[2026-04-20 15:20:39] Gefundene Etiketten: 0
+[2026-04-20 15:20:40] Gefundene Abholscheine: 1
+[2026-04-20 15:20:40] Drucke Abholschein: 001 / Kunde: Jonas Altenhofer / Typ: Standard / Preis: 15,00 €€
+[2026-04-20 15:20:40] Starte Druck Abholschein: 001
+[2026-04-20 15:20:40] Logo gefunden, versuche zu drucken: C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern.bmp
+[2026-04-20 15:20:40] DEBUG: Simulation statt echtem Druck.
+[2026-04-20 15:20:40] Druck Abholschein abgeschlossen: 001
+[2026-04-20 15:20:40] Markiere Abholschein 001 als gedruckt
+[2026-04-20 15:20:42] Gefundene Rechnungen: 0
+[2026-04-20 15:20:42] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:42] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:47] Timer gestartet - prüfe API...
+[2026-04-20 15:20:47] Gefundene Etiketten: 0
+[2026-04-20 15:20:47] Gefundene Abholscheine: 0
+[2026-04-20 15:20:47] Gefundene Rechnungen: 0
+[2026-04-20 15:20:47] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:47] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:52] Timer gestartet - prüfe API...
+[2026-04-20 15:20:52] Gefundene Etiketten: 0
+[2026-04-20 15:20:52] Gefundene Abholscheine: 0
+[2026-04-20 15:20:52] Gefundene Rechnungen: 0
+[2026-04-20 15:20:52] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:52] -------------------------------------------------------------------------------------------
+[2026-04-20 15:20:57] Timer gestartet - prüfe API...
+[2026-04-20 15:20:57] Gefundene Etiketten: 0
+[2026-04-20 15:20:57] Gefundene Abholscheine: 0
+[2026-04-20 15:20:57] Gefundene Rechnungen: 0
+[2026-04-20 15:20:57] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:20:58] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:02] Timer gestartet - prüfe API...
+[2026-04-20 15:21:03] Gefundene Etiketten: 0
+[2026-04-20 15:21:03] Gefundene Abholscheine: 0
+[2026-04-20 15:21:03] Gefundene Rechnungen: 0
+[2026-04-20 15:21:03] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:03] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:04] DEBUG MODE: False
+[2026-04-20 15:21:04] Printservice gestartet...
+[2026-04-20 15:21:04] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:09] Timer gestartet - prüfe API...
+[2026-04-20 15:21:09] Gefundene Etiketten: 0
+[2026-04-20 15:21:09] Gefundene Abholscheine: 0
+[2026-04-20 15:21:09] Gefundene Rechnungen: 0
+[2026-04-20 15:21:09] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:09] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:14] Timer gestartet - prüfe API...
+[2026-04-20 15:21:14] Gefundene Etiketten: 0
+[2026-04-20 15:21:14] Gefundene Abholscheine: 1
+[2026-04-20 15:21:14] Drucke Abholschein: 001 / Kunde: Jonas Altenhofer / Typ: Standard / Preis: 15,00 €€
+[2026-04-20 15:21:14] Starte Druck Abholschein: 001
+[2026-04-20 15:21:14] Logo gefunden, versuche zu drucken: C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern.bmp
+[2026-04-20 15:21:14] Druck Abholschein abgeschlossen: 001
+[2026-04-20 15:21:14] Markiere Abholschein 001 als gedruckt
+[2026-04-20 15:21:14] Gefundene Rechnungen: 0
+[2026-04-20 15:21:14] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:14] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:19] Timer gestartet - prüfe API...
+[2026-04-20 15:21:19] Gefundene Etiketten: 0
+[2026-04-20 15:21:19] Gefundene Abholscheine: 0
+[2026-04-20 15:21:19] Gefundene Rechnungen: 0
+[2026-04-20 15:21:19] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:19] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:24] Timer gestartet - prüfe API...
+[2026-04-20 15:21:24] Gefundene Etiketten: 0
+[2026-04-20 15:21:24] Gefundene Abholscheine: 0
+[2026-04-20 15:21:24] Gefundene Rechnungen: 0
+[2026-04-20 15:21:24] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:24] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:29] Timer gestartet - prüfe API...
+[2026-04-20 15:21:29] Gefundene Etiketten: 0
+[2026-04-20 15:21:29] Gefundene Abholscheine: 0
+[2026-04-20 15:21:29] Gefundene Rechnungen: 0
+[2026-04-20 15:21:29] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:30] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:35] Timer gestartet - prüfe API...
+[2026-04-20 15:21:35] Gefundene Etiketten: 0
+[2026-04-20 15:21:35] Gefundene Abholscheine: 0
+[2026-04-20 15:21:35] Gefundene Rechnungen: 0
+[2026-04-20 15:21:35] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:35] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:40] Timer gestartet - prüfe API...
+[2026-04-20 15:21:40] Gefundene Etiketten: 0
+[2026-04-20 15:21:40] Gefundene Abholscheine: 0
+[2026-04-20 15:21:40] Gefundene Rechnungen: 0
+[2026-04-20 15:21:40] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:40] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:45] Timer gestartet - prüfe API...
+[2026-04-20 15:21:45] Gefundene Etiketten: 0
+[2026-04-20 15:21:45] Gefundene Abholscheine: 0
+[2026-04-20 15:21:45] Gefundene Rechnungen: 1
+[2026-04-20 15:21:45] Drucke Rechnung: RFLU26-0005 / Kunde: Jonas Altenhofer / Anzahl: 1 / Preis: 15€
+[2026-04-20 15:21:45] Starte Druck Rechnung: RFLU26-0005
+[2026-04-20 15:21:45] Druck Rechnung abgeschlossen: RFLU26-0005
+[2026-04-20 15:21:45] Markiere Rechnung RFLU26-0005 als gedruckt
+[2026-04-20 15:21:45] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:45] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:50] Timer gestartet - prüfe API...
+[2026-04-20 15:21:50] Gefundene Etiketten: 0
+[2026-04-20 15:21:50] Gefundene Abholscheine: 0
+[2026-04-20 15:21:50] Gefundene Rechnungen: 0
+[2026-04-20 15:21:50] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:50] -------------------------------------------------------------------------------------------
+[2026-04-20 15:21:55] Timer gestartet - prüfe API...
+[2026-04-20 15:21:55] Gefundene Etiketten: 0
+[2026-04-20 15:21:55] Gefundene Abholscheine: 0
+[2026-04-20 15:21:55] Gefundene Rechnungen: 0
+[2026-04-20 15:21:55] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:21:55] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:00] Timer gestartet - prüfe API...
+[2026-04-20 15:22:01] Gefundene Etiketten: 0
+[2026-04-20 15:22:01] Gefundene Abholscheine: 0
+[2026-04-20 15:22:01] Gefundene Rechnungen: 0
+[2026-04-20 15:22:01] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:01] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:06] Timer gestartet - prüfe API...
+[2026-04-20 15:22:06] Gefundene Etiketten: 0
+[2026-04-20 15:22:06] Gefundene Abholscheine: 0
+[2026-04-20 15:22:06] Gefundene Rechnungen: 0
+[2026-04-20 15:22:06] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:06] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:11] Timer gestartet - prüfe API...
+[2026-04-20 15:22:11] Gefundene Etiketten: 0
+[2026-04-20 15:22:11] Gefundene Abholscheine: 0
+[2026-04-20 15:22:11] Gefundene Rechnungen: 0
+[2026-04-20 15:22:11] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:11] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:16] Timer gestartet - prüfe API...
+[2026-04-20 15:22:16] Gefundene Etiketten: 0
+[2026-04-20 15:22:16] Gefundene Abholscheine: 0
+[2026-04-20 15:22:16] Gefundene Rechnungen: 0
+[2026-04-20 15:22:16] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:16] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:21] Timer gestartet - prüfe API...
+[2026-04-20 15:22:21] Gefundene Etiketten: 0
+[2026-04-20 15:22:21] Gefundene Abholscheine: 0
+[2026-04-20 15:22:21] Gefundene Rechnungen: 0
+[2026-04-20 15:22:21] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:21] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:26] Timer gestartet - prüfe API...
+[2026-04-20 15:22:26] Gefundene Etiketten: 0
+[2026-04-20 15:22:26] Gefundene Abholscheine: 0
+[2026-04-20 15:22:26] Gefundene Rechnungen: 0
+[2026-04-20 15:22:26] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:26] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:31] Timer gestartet - prüfe API...
+[2026-04-20 15:22:31] Gefundene Etiketten: 0
+[2026-04-20 15:22:31] Gefundene Abholscheine: 0
+[2026-04-20 15:22:31] Gefundene Rechnungen: 0
+[2026-04-20 15:22:31] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:32] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:37] Timer gestartet - prüfe API...
+[2026-04-20 15:22:37] Gefundene Etiketten: 0
+[2026-04-20 15:22:37] Gefundene Abholscheine: 0
+[2026-04-20 15:22:37] Gefundene Rechnungen: 0
+[2026-04-20 15:22:37] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:37] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:42] Timer gestartet - prüfe API...
+[2026-04-20 15:22:42] Gefundene Etiketten: 0
+[2026-04-20 15:22:42] Gefundene Abholscheine: 0
+[2026-04-20 15:22:42] Gefundene Rechnungen: 0
+[2026-04-20 15:22:42] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:42] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:47] Timer gestartet - prüfe API...
+[2026-04-20 15:22:47] Gefundene Etiketten: 0
+[2026-04-20 15:22:47] Gefundene Abholscheine: 0
+[2026-04-20 15:22:47] Gefundene Rechnungen: 0
+[2026-04-20 15:22:47] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:47] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:52] Timer gestartet - prüfe API...
+[2026-04-20 15:22:52] Gefundene Etiketten: 0
+[2026-04-20 15:22:52] Gefundene Abholscheine: 0
+[2026-04-20 15:22:52] Gefundene Rechnungen: 0
+[2026-04-20 15:22:52] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:52] -------------------------------------------------------------------------------------------
+[2026-04-20 15:22:57] Timer gestartet - prüfe API...
+[2026-04-20 15:22:57] Gefundene Etiketten: 0
+[2026-04-20 15:22:57] Gefundene Abholscheine: 0
+[2026-04-20 15:22:57] Gefundene Rechnungen: 0
+[2026-04-20 15:22:57] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:22:57] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:02] Timer gestartet - prüfe API...
+[2026-04-20 15:23:02] Gefundene Etiketten: 0
+[2026-04-20 15:23:02] Gefundene Abholscheine: 0
+[2026-04-20 15:23:02] Gefundene Rechnungen: 0
+[2026-04-20 15:23:02] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:02] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:07] Timer gestartet - prüfe API...
+[2026-04-20 15:23:07] Gefundene Etiketten: 0
+[2026-04-20 15:23:07] Gefundene Abholscheine: 0
+[2026-04-20 15:23:07] Gefundene Rechnungen: 0
+[2026-04-20 15:23:07] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:07] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:12] Timer gestartet - prüfe API...
+[2026-04-20 15:23:13] Gefundene Etiketten: 0
+[2026-04-20 15:23:13] Gefundene Abholscheine: 0
+[2026-04-20 15:23:13] Gefundene Rechnungen: 0
+[2026-04-20 15:23:13] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:13] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:18] Timer gestartet - prüfe API...
+[2026-04-20 15:23:18] Gefundene Etiketten: 0
+[2026-04-20 15:23:18] Gefundene Abholscheine: 0
+[2026-04-20 15:23:18] Gefundene Rechnungen: 0
+[2026-04-20 15:23:18] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:18] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:23] Timer gestartet - prüfe API...
+[2026-04-20 15:23:23] Gefundene Etiketten: 0
+[2026-04-20 15:23:23] Gefundene Abholscheine: 0
+[2026-04-20 15:23:23] Gefundene Rechnungen: 0
+[2026-04-20 15:23:23] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:23] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:28] Timer gestartet - prüfe API...
+[2026-04-20 15:23:28] Gefundene Etiketten: 0
+[2026-04-20 15:23:28] Gefundene Abholscheine: 0
+[2026-04-20 15:23:28] Gefundene Rechnungen: 0
+[2026-04-20 15:23:28] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:28] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:33] Timer gestartet - prüfe API...
+[2026-04-20 15:23:33] Gefundene Etiketten: 0
+[2026-04-20 15:23:33] Gefundene Abholscheine: 0
+[2026-04-20 15:23:33] Gefundene Rechnungen: 0
+[2026-04-20 15:23:33] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:33] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:38] Timer gestartet - prüfe API...
+[2026-04-20 15:23:38] Gefundene Etiketten: 0
+[2026-04-20 15:23:38] Gefundene Abholscheine: 0
+[2026-04-20 15:23:38] Gefundene Rechnungen: 0
+[2026-04-20 15:23:38] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:38] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:43] Timer gestartet - prüfe API...
+[2026-04-20 15:23:44] Gefundene Etiketten: 0
+[2026-04-20 15:23:44] Gefundene Abholscheine: 0
+[2026-04-20 15:23:44] Gefundene Rechnungen: 0
+[2026-04-20 15:23:44] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:44] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:49] Timer gestartet - prüfe API...
+[2026-04-20 15:23:49] Gefundene Etiketten: 0
+[2026-04-20 15:23:49] Gefundene Abholscheine: 0
+[2026-04-20 15:23:49] Gefundene Rechnungen: 0
+[2026-04-20 15:23:49] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:49] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:54] Timer gestartet - prüfe API...
+[2026-04-20 15:23:54] Gefundene Etiketten: 0
+[2026-04-20 15:23:54] Gefundene Abholscheine: 0
+[2026-04-20 15:23:54] Gefundene Rechnungen: 0
+[2026-04-20 15:23:54] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:54] -------------------------------------------------------------------------------------------
+[2026-04-20 15:23:59] Timer gestartet - prüfe API...
+[2026-04-20 15:23:59] Gefundene Etiketten: 0
+[2026-04-20 15:23:59] Gefundene Abholscheine: 0
+[2026-04-20 15:23:59] Gefundene Rechnungen: 0
+[2026-04-20 15:23:59] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:23:59] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:04] Timer gestartet - prüfe API...
+[2026-04-20 15:24:04] Gefundene Etiketten: 0
+[2026-04-20 15:24:04] Gefundene Abholscheine: 0
+[2026-04-20 15:24:04] Gefundene Rechnungen: 0
+[2026-04-20 15:24:04] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:04] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:09] Timer gestartet - prüfe API...
+[2026-04-20 15:24:09] Gefundene Etiketten: 0
+[2026-04-20 15:24:09] Gefundene Abholscheine: 0
+[2026-04-20 15:24:09] Gefundene Rechnungen: 0
+[2026-04-20 15:24:09] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:09] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:14] Timer gestartet - prüfe API...
+[2026-04-20 15:24:14] Gefundene Etiketten: 0
+[2026-04-20 15:24:14] Gefundene Abholscheine: 0
+[2026-04-20 15:24:14] Gefundene Rechnungen: 0
+[2026-04-20 15:24:14] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:14] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:19] Timer gestartet - prüfe API...
+[2026-04-20 15:24:20] Gefundene Etiketten: 0
+[2026-04-20 15:24:20] Gefundene Abholscheine: 0
+[2026-04-20 15:24:20] Gefundene Rechnungen: 0
+[2026-04-20 15:24:20] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:20] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:25] Timer gestartet - prüfe API...
+[2026-04-20 15:24:25] Gefundene Etiketten: 0
+[2026-04-20 15:24:25] Gefundene Abholscheine: 0
+[2026-04-20 15:24:25] Gefundene Rechnungen: 0
+[2026-04-20 15:24:25] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:25] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:30] Timer gestartet - prüfe API...
+[2026-04-20 15:24:30] Gefundene Etiketten: 0
+[2026-04-20 15:24:30] Gefundene Abholscheine: 0
+[2026-04-20 15:24:30] Gefundene Rechnungen: 0
+[2026-04-20 15:24:30] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:30] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:35] Timer gestartet - prüfe API...
+[2026-04-20 15:24:35] Gefundene Etiketten: 0
+[2026-04-20 15:24:35] Gefundene Abholscheine: 0
+[2026-04-20 15:24:35] Gefundene Rechnungen: 0
+[2026-04-20 15:24:35] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:35] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:40] Timer gestartet - prüfe API...
+[2026-04-20 15:24:40] Gefundene Etiketten: 0
+[2026-04-20 15:24:40] Gefundene Abholscheine: 0
+[2026-04-20 15:24:40] Gefundene Rechnungen: 0
+[2026-04-20 15:24:40] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:40] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:45] Timer gestartet - prüfe API...
+[2026-04-20 15:24:45] Gefundene Etiketten: 0
+[2026-04-20 15:24:45] Gefundene Abholscheine: 0
+[2026-04-20 15:24:45] Gefundene Rechnungen: 0
+[2026-04-20 15:24:45] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:45] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:50] Timer gestartet - prüfe API...
+[2026-04-20 15:24:50] Gefundene Etiketten: 0
+[2026-04-20 15:24:50] Gefundene Abholscheine: 0
+[2026-04-20 15:24:50] Gefundene Rechnungen: 0
+[2026-04-20 15:24:50] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:50] -------------------------------------------------------------------------------------------
+[2026-04-20 15:24:56] Timer gestartet - prüfe API...
+[2026-04-20 15:24:56] Gefundene Etiketten: 0
+[2026-04-20 15:24:56] Gefundene Abholscheine: 0
+[2026-04-20 15:24:56] Gefundene Rechnungen: 0
+[2026-04-20 15:24:56] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:24:56] -------------------------------------------------------------------------------------------
+[2026-04-20 15:25:01] Timer gestartet - prüfe API...
+[2026-04-20 15:25:01] Gefundene Etiketten: 0
+[2026-04-20 15:25:01] Gefundene Abholscheine: 0
+[2026-04-20 15:25:01] Gefundene Rechnungen: 0
+[2026-04-20 15:25:01] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:25:01] -------------------------------------------------------------------------------------------
+[2026-04-20 15:25:06] Timer gestartet - prüfe API...
+[2026-04-20 15:25:06] Gefundene Etiketten: 0
+[2026-04-20 15:25:06] Gefundene Abholscheine: 0
+[2026-04-20 15:25:06] Gefundene Rechnungen: 0
+[2026-04-20 15:25:06] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:25:06] -------------------------------------------------------------------------------------------
+[2026-04-20 15:25:11] Timer gestartet - prüfe API...
+[2026-04-20 15:25:11] Gefundene Etiketten: 0
+[2026-04-20 15:25:11] Gefundene Abholscheine: 0
+[2026-04-20 15:25:11] Gefundene Rechnungen: 0
+[2026-04-20 15:25:11] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:25:11] -------------------------------------------------------------------------------------------
+[2026-04-20 15:25:16] Timer gestartet - prüfe API...
+[2026-04-20 15:25:16] Gefundene Etiketten: 0
+[2026-04-20 15:25:16] Gefundene Abholscheine: 0
+[2026-04-20 15:25:16] Gefundene Rechnungen: 0
+[2026-04-20 15:25:16] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:25:16] -------------------------------------------------------------------------------------------
+[2026-04-20 15:25:21] Timer gestartet - prüfe API...
+[2026-04-20 15:25:21] Gefundene Etiketten: 0
+[2026-04-20 15:25:21] Gefundene Abholscheine: 0
+[2026-04-20 15:25:21] Gefundene Rechnungen: 0
+[2026-04-20 15:25:21] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:25:21] -------------------------------------------------------------------------------------------
+[2026-04-20 15:25:26] Timer gestartet - prüfe API...
+[2026-04-20 15:25:26] Gefundene Etiketten: 0
+[2026-04-20 15:25:26] Gefundene Abholscheine: 0
+[2026-04-20 15:25:26] Gefundene Rechnungen: 0
+[2026-04-20 15:25:27] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 15:25:27] -------------------------------------------------------------------------------------------
+[2026-04-20 16:05:12] DEBUG MODE: False
+[2026-04-20 16:05:12] Printservice gestartet...
+[2026-04-20 16:05:12] -------------------------------------------------------------------------------------------
+[2026-04-20 16:05:17] Timer gestartet - prüfe API...
+[2026-04-20 16:05:23] DEBUG MODE: False
+[2026-04-20 16:05:23] Printservice gestartet...
+[2026-04-20 16:05:23] -------------------------------------------------------------------------------------------
+[2026-04-20 16:06:27] DEBUG MODE: False
+[2026-04-20 16:06:27] Printservice gestartet...
+[2026-04-20 16:06:27] -------------------------------------------------------------------------------------------
+[2026-04-20 16:06:31] DEBUG MODE: False
+[2026-04-20 16:06:31] Printservice gestartet...
+[2026-04-20 16:06:31] -------------------------------------------------------------------------------------------
+[2026-04-20 16:06:36] Timer gestartet - prüfe API...
+[2026-04-20 16:06:57] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:06:57] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:06:57] -------------------------------------------------------------------------------------------
+[2026-04-20 16:07:02] Timer gestartet - prüfe API...
+[2026-04-20 16:07:23] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:07:23] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:07:23] -------------------------------------------------------------------------------------------
+[2026-04-20 16:07:28] Timer gestartet - prüfe API...
+[2026-04-20 16:07:49] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:07:49] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:07:49] -------------------------------------------------------------------------------------------
+[2026-04-20 16:07:54] Timer gestartet - prüfe API...
+[2026-04-20 16:08:15] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:08:15] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:08:15] -------------------------------------------------------------------------------------------
+[2026-04-20 16:08:20] Timer gestartet - prüfe API...
+[2026-04-20 16:08:41] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:08:41] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:08:41] -------------------------------------------------------------------------------------------
+[2026-04-20 16:08:46] Timer gestartet - prüfe API...
+[2026-04-20 16:09:07] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:09:07] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:09:07] -------------------------------------------------------------------------------------------
+[2026-04-20 16:09:12] Timer gestartet - prüfe API...
+[2026-04-20 16:09:33] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:09:33] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:09:33] -------------------------------------------------------------------------------------------
+[2026-04-20 16:09:38] Timer gestartet - prüfe API...
+[2026-04-20 16:09:59] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:09:59] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:09:59] -------------------------------------------------------------------------------------------
+[2026-04-20 16:10:04] Timer gestartet - prüfe API...
+[2026-04-20 16:10:26] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:10:26] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:10:26] -------------------------------------------------------------------------------------------
+[2026-04-20 16:10:31] Timer gestartet - prüfe API...
+[2026-04-20 16:10:52] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:10:52] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:10:52] -------------------------------------------------------------------------------------------
+[2026-04-20 16:10:57] Timer gestartet - prüfe API...
+[2026-04-20 16:11:18] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:11:18] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:11:18] -------------------------------------------------------------------------------------------
+[2026-04-20 16:11:23] Timer gestartet - prüfe API...
+[2026-04-20 16:11:44] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:11:44] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:11:44] -------------------------------------------------------------------------------------------
+[2026-04-20 16:11:49] Timer gestartet - prüfe API...
+[2026-04-20 16:12:10] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:12:10] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:12:10] -------------------------------------------------------------------------------------------
+[2026-04-20 16:12:15] Timer gestartet - prüfe API...
+[2026-04-20 16:12:36] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:12:36] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:12:36] -------------------------------------------------------------------------------------------
+[2026-04-20 16:12:41] Timer gestartet - prüfe API...
+[2026-04-20 16:13:02] FEHLER bei API-Abfrage: Die Verbindung mit dem Remoteserver kann nicht hergestellt werden.
+[2026-04-20 16:13:02] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:13:02] -------------------------------------------------------------------------------------------
+[2026-04-20 16:13:07] Timer gestartet - prüfe API...
+[2026-04-20 16:13:48] DEBUG MODE: False
+[2026-04-20 16:13:48] Printservice gestartet...
+[2026-04-20 16:13:48] -------------------------------------------------------------------------------------------
+[2026-04-20 16:13:53] Timer gestartet - prüfe API...
+[2026-04-20 16:13:53] Gefundene Etiketten: 0
+[2026-04-20 16:13:53] Gefundene Abholscheine: 0
+[2026-04-20 16:13:53] Gefundene Rechnungen: 0
+[2026-04-20 16:13:53] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:13:53] -------------------------------------------------------------------------------------------
+[2026-04-20 16:13:58] Timer gestartet - prüfe API...
+[2026-04-20 16:13:58] Gefundene Etiketten: 0
+[2026-04-20 16:13:58] Gefundene Abholscheine: 0
+[2026-04-20 16:13:58] Gefundene Rechnungen: 0
+[2026-04-20 16:13:58] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:13:58] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:03] Timer gestartet - prüfe API...
+[2026-04-20 16:14:03] Gefundene Etiketten: 0
+[2026-04-20 16:14:03] Gefundene Abholscheine: 0
+[2026-04-20 16:14:03] Gefundene Rechnungen: 0
+[2026-04-20 16:14:03] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:03] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:08] Timer gestartet - prüfe API...
+[2026-04-20 16:14:08] Gefundene Etiketten: 0
+[2026-04-20 16:14:08] Gefundene Abholscheine: 0
+[2026-04-20 16:14:09] Gefundene Rechnungen: 0
+[2026-04-20 16:14:09] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:09] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:14] Timer gestartet - prüfe API...
+[2026-04-20 16:14:14] Gefundene Etiketten: 1
+[2026-04-20 16:14:14] Drucke Etikett: 001 / Kunde: Jonas Altenhofer
+[2026-04-20 16:14:14] Starte Etikettendruck: 001
+[2026-04-20 16:14:14] Zebra Etikett gedruckt (ZPL): 001
+[2026-04-20 16:14:14] Markiere Etikett 001 als gedruckt
+[2026-04-20 16:14:14] Gefundene Abholscheine: 0
+[2026-04-20 16:14:14] Gefundene Rechnungen: 0
+[2026-04-20 16:14:14] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:14] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:19] Timer gestartet - prüfe API...
+[2026-04-20 16:14:19] Gefundene Etiketten: 0
+[2026-04-20 16:14:19] Gefundene Abholscheine: 0
+[2026-04-20 16:14:19] Gefundene Rechnungen: 0
+[2026-04-20 16:14:19] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:19] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:24] Timer gestartet - prüfe API...
+[2026-04-20 16:14:24] Gefundene Etiketten: 0
+[2026-04-20 16:14:24] Gefundene Abholscheine: 0
+[2026-04-20 16:14:24] Gefundene Rechnungen: 0
+[2026-04-20 16:14:24] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:24] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:29] Timer gestartet - prüfe API...
+[2026-04-20 16:14:29] Gefundene Etiketten: 0
+[2026-04-20 16:14:29] Gefundene Abholscheine: 0
+[2026-04-20 16:14:29] Gefundene Rechnungen: 0
+[2026-04-20 16:14:29] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:29] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:34] Timer gestartet - prüfe API...
+[2026-04-20 16:14:35] Gefundene Etiketten: 0
+[2026-04-20 16:14:35] Gefundene Abholscheine: 0
+[2026-04-20 16:14:35] Gefundene Rechnungen: 0
+[2026-04-20 16:14:35] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:35] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:40] Timer gestartet - prüfe API...
+[2026-04-20 16:14:40] Gefundene Etiketten: 0
+[2026-04-20 16:14:40] Gefundene Abholscheine: 0
+[2026-04-20 16:14:40] Gefundene Rechnungen: 0
+[2026-04-20 16:14:40] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:40] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:45] Timer gestartet - prüfe API...
+[2026-04-20 16:14:45] Gefundene Etiketten: 0
+[2026-04-20 16:14:45] Gefundene Abholscheine: 0
+[2026-04-20 16:14:45] Gefundene Rechnungen: 0
+[2026-04-20 16:14:45] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:45] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:50] Timer gestartet - prüfe API...
+[2026-04-20 16:14:50] Gefundene Etiketten: 0
+[2026-04-20 16:14:50] Gefundene Abholscheine: 0
+[2026-04-20 16:14:50] Gefundene Rechnungen: 0
+[2026-04-20 16:14:50] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:50] -------------------------------------------------------------------------------------------
+[2026-04-20 16:14:55] Timer gestartet - prüfe API...
+[2026-04-20 16:14:55] Gefundene Etiketten: 0
+[2026-04-20 16:14:55] Gefundene Abholscheine: 0
+[2026-04-20 16:14:55] Gefundene Rechnungen: 0
+[2026-04-20 16:14:55] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:14:55] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:00] Timer gestartet - prüfe API...
+[2026-04-20 16:15:00] Gefundene Etiketten: 0
+[2026-04-20 16:15:00] Gefundene Abholscheine: 0
+[2026-04-20 16:15:00] Gefundene Rechnungen: 0
+[2026-04-20 16:15:00] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:00] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:05] Timer gestartet - prüfe API...
+[2026-04-20 16:15:05] Gefundene Etiketten: 0
+[2026-04-20 16:15:05] Gefundene Abholscheine: 0
+[2026-04-20 16:15:05] Gefundene Rechnungen: 0
+[2026-04-20 16:15:05] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:05] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:10] Timer gestartet - prüfe API...
+[2026-04-20 16:15:11] Gefundene Etiketten: 0
+[2026-04-20 16:15:11] Gefundene Abholscheine: 0
+[2026-04-20 16:15:11] Gefundene Rechnungen: 0
+[2026-04-20 16:15:11] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:11] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:16] Timer gestartet - prüfe API...
+[2026-04-20 16:15:16] Gefundene Etiketten: 0
+[2026-04-20 16:15:16] Gefundene Abholscheine: 0
+[2026-04-20 16:15:16] Gefundene Rechnungen: 0
+[2026-04-20 16:15:16] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:16] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:21] Timer gestartet - prüfe API...
+[2026-04-20 16:15:21] Gefundene Etiketten: 0
+[2026-04-20 16:15:21] Gefundene Abholscheine: 0
+[2026-04-20 16:15:21] Gefundene Rechnungen: 0
+[2026-04-20 16:15:21] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:21] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:26] Timer gestartet - prüfe API...
+[2026-04-20 16:15:26] Gefundene Etiketten: 0
+[2026-04-20 16:15:26] Gefundene Abholscheine: 0
+[2026-04-20 16:15:26] Gefundene Rechnungen: 0
+[2026-04-20 16:15:26] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:26] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:31] Timer gestartet - prüfe API...
+[2026-04-20 16:15:31] Gefundene Etiketten: 0
+[2026-04-20 16:15:31] Gefundene Abholscheine: 0
+[2026-04-20 16:15:31] Gefundene Rechnungen: 0
+[2026-04-20 16:15:31] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:31] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:36] Timer gestartet - prüfe API...
+[2026-04-20 16:15:36] Gefundene Etiketten: 0
+[2026-04-20 16:15:36] Gefundene Abholscheine: 0
+[2026-04-20 16:15:36] Gefundene Rechnungen: 0
+[2026-04-20 16:15:36] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:36] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:41] Timer gestartet - prüfe API...
+[2026-04-20 16:15:41] Gefundene Etiketten: 0
+[2026-04-20 16:15:41] Gefundene Abholscheine: 0
+[2026-04-20 16:15:41] Gefundene Rechnungen: 0
+[2026-04-20 16:15:41] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:41] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:46] Timer gestartet - prüfe API...
+[2026-04-20 16:15:46] Gefundene Etiketten: 0
+[2026-04-20 16:15:46] Gefundene Abholscheine: 0
+[2026-04-20 16:15:46] Gefundene Rechnungen: 0
+[2026-04-20 16:15:46] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:46] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:51] Timer gestartet - prüfe API...
+[2026-04-20 16:15:51] Gefundene Etiketten: 0
+[2026-04-20 16:15:51] Gefundene Abholscheine: 0
+[2026-04-20 16:15:51] Gefundene Rechnungen: 0
+[2026-04-20 16:15:51] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:51] -------------------------------------------------------------------------------------------
+[2026-04-20 16:15:56] Timer gestartet - prüfe API...
+[2026-04-20 16:15:56] Gefundene Etiketten: 0
+[2026-04-20 16:15:56] Gefundene Abholscheine: 0
+[2026-04-20 16:15:57] Gefundene Rechnungen: 0
+[2026-04-20 16:15:57] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:15:57] -------------------------------------------------------------------------------------------
+[2026-04-20 16:16:02] Timer gestartet - prüfe API...
+[2026-04-20 16:16:02] Gefundene Etiketten: 0
+[2026-04-20 16:16:02] Gefundene Abholscheine: 0
+[2026-04-20 16:16:02] Gefundene Rechnungen: 0
+[2026-04-20 16:16:02] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:16:02] -------------------------------------------------------------------------------------------
+[2026-04-20 16:16:07] Timer gestartet - prüfe API...
+[2026-04-20 16:16:07] Gefundene Etiketten: 0
+[2026-04-20 16:16:07] Gefundene Abholscheine: 0
+[2026-04-20 16:16:07] Gefundene Rechnungen: 0
+[2026-04-20 16:16:07] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:16:07] -------------------------------------------------------------------------------------------
+[2026-04-20 16:16:12] Timer gestartet - prüfe API...
+[2026-04-20 16:16:12] Gefundene Etiketten: 0
+[2026-04-20 16:16:12] Gefundene Abholscheine: 0
+[2026-04-20 16:16:12] Gefundene Rechnungen: 0
+[2026-04-20 16:16:12] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:16:12] -------------------------------------------------------------------------------------------
+[2026-04-20 16:16:17] Timer gestartet - prüfe API...
+[2026-04-20 16:16:17] Gefundene Etiketten: 0
+[2026-04-20 16:16:17] Gefundene Abholscheine: 0
+[2026-04-20 16:16:17] Gefundene Rechnungen: 0
+[2026-04-20 16:16:17] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:16:17] -------------------------------------------------------------------------------------------
+[2026-04-20 16:16:22] Timer gestartet - prüfe API...
+[2026-04-20 16:16:22] Gefundene Etiketten: 0
+[2026-04-20 16:16:22] Gefundene Abholscheine: 0
+[2026-04-20 16:16:22] Gefundene Rechnungen: 0
+[2026-04-20 16:16:22] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:16:22] -------------------------------------------------------------------------------------------
+[2026-04-20 16:16:27] Timer gestartet - prüfe API...
+[2026-04-20 16:16:27] Gefundene Etiketten: 0
+[2026-04-20 16:16:27] Gefundene Abholscheine: 0
+[2026-04-20 16:16:27] Gefundene Rechnungen: 0
+[2026-04-20 16:16:27] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:16:27] -------------------------------------------------------------------------------------------
+[2026-04-20 16:16:32] Timer gestartet - prüfe API...
+[2026-04-20 16:16:32] Gefundene Etiketten: 0
+[2026-04-20 16:16:32] Gefundene Abholscheine: 0
+[2026-04-20 16:16:32] Gefundene Rechnungen: 0
+[2026-04-20 16:16:32] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:16:32] -------------------------------------------------------------------------------------------
+[2026-04-20 16:26:13] DEBUG MODE: False
+[2026-04-20 16:26:13] Printservice gestartet...
+[2026-04-20 16:26:13] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:10] DEBUG MODE: False
+[2026-04-20 16:29:10] Printservice gestartet...
+[2026-04-20 16:29:10] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:15] Timer gestartet - prüfe API...
+[2026-04-20 16:29:15] Gefundene Etiketten: 0
+[2026-04-20 16:29:15] Gefundene Abholscheine: 0
+[2026-04-20 16:29:15] Gefundene Rechnungen: 0
+[2026-04-20 16:29:15] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:15] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:20] Timer gestartet - prüfe API...
+[2026-04-20 16:29:20] Gefundene Etiketten: 0
+[2026-04-20 16:29:20] Gefundene Abholscheine: 0
+[2026-04-20 16:29:20] Gefundene Rechnungen: 0
+[2026-04-20 16:29:20] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:20] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:25] Timer gestartet - prüfe API...
+[2026-04-20 16:29:26] Gefundene Etiketten: 0
+[2026-04-20 16:29:26] Gefundene Abholscheine: 0
+[2026-04-20 16:29:26] Gefundene Rechnungen: 0
+[2026-04-20 16:29:26] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:26] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:31] Timer gestartet - prüfe API...
+[2026-04-20 16:29:31] Gefundene Etiketten: 0
+[2026-04-20 16:29:31] Gefundene Abholscheine: 0
+[2026-04-20 16:29:31] Gefundene Rechnungen: 0
+[2026-04-20 16:29:31] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:31] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:36] Timer gestartet - prüfe API...
+[2026-04-20 16:29:36] Gefundene Etiketten: 0
+[2026-04-20 16:29:36] Gefundene Abholscheine: 0
+[2026-04-20 16:29:36] Gefundene Rechnungen: 0
+[2026-04-20 16:29:36] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:36] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:41] Timer gestartet - prüfe API...
+[2026-04-20 16:29:41] Gefundene Etiketten: 1
+[2026-04-20 16:29:41] Drucke Etikett: 002 / Kunde: Jonas Altenhofer
+[2026-04-20 16:29:41] Starte Etikettendruck: 002
+[2026-04-20 16:29:41] Zebra Etikett gedruckt (ZPL): 002
+[2026-04-20 16:29:41] Markiere Etikett 002 als gedruckt
+[2026-04-20 16:29:41] Gefundene Abholscheine: 0
+[2026-04-20 16:29:41] Gefundene Rechnungen: 0
+[2026-04-20 16:29:41] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:41] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:46] Timer gestartet - prüfe API...
+[2026-04-20 16:29:46] Gefundene Etiketten: 1
+[2026-04-20 16:29:46] Drucke Etikett: 002 / Kunde: Jonas Altenhofer
+[2026-04-20 16:29:46] Starte Etikettendruck: 002
+[2026-04-20 16:29:46] Zebra Etikett gedruckt (ZPL): 002
+[2026-04-20 16:29:46] Markiere Etikett 002 als gedruckt
+[2026-04-20 16:29:46] Gefundene Abholscheine: 0
+[2026-04-20 16:29:46] Gefundene Rechnungen: 0
+[2026-04-20 16:29:46] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:46] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:51] Timer gestartet - prüfe API...
+[2026-04-20 16:29:52] Gefundene Etiketten: 0
+[2026-04-20 16:29:52] Gefundene Abholscheine: 1
+[2026-04-20 16:29:52] Drucke Abholschein: 002 / Kunde: Jonas Altenhofer / Typ: Standard / Preis: 15,00 €€
+[2026-04-20 16:29:52] Starte Druck Abholschein: 002
+[2026-04-20 16:29:52] Logo gefunden, versuche zu drucken: C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\Images\FF Wallern.bmp
+[2026-04-20 16:29:52] Druck Abholschein abgeschlossen: 002
+[2026-04-20 16:29:52] Markiere Abholschein 002 als gedruckt
+[2026-04-20 16:29:52] Gefundene Rechnungen: 0
+[2026-04-20 16:29:52] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:52] -------------------------------------------------------------------------------------------
+[2026-04-20 16:29:57] Timer gestartet - prüfe API...
+[2026-04-20 16:29:57] Gefundene Etiketten: 0
+[2026-04-20 16:29:57] Gefundene Abholscheine: 0
+[2026-04-20 16:29:57] Gefundene Rechnungen: 0
+[2026-04-20 16:29:57] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:29:57] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:02] Timer gestartet - prüfe API...
+[2026-04-20 16:30:02] Gefundene Etiketten: 0
+[2026-04-20 16:30:02] Gefundene Abholscheine: 0
+[2026-04-20 16:30:02] Gefundene Rechnungen: 0
+[2026-04-20 16:30:02] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:02] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:07] Timer gestartet - prüfe API...
+[2026-04-20 16:30:07] Gefundene Etiketten: 0
+[2026-04-20 16:30:07] Gefundene Abholscheine: 0
+[2026-04-20 16:30:07] Gefundene Rechnungen: 0
+[2026-04-20 16:30:07] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:07] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:12] Timer gestartet - prüfe API...
+[2026-04-20 16:30:12] Gefundene Etiketten: 0
+[2026-04-20 16:30:12] Gefundene Abholscheine: 0
+[2026-04-20 16:30:12] Gefundene Rechnungen: 0
+[2026-04-20 16:30:12] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:12] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:17] Timer gestartet - prüfe API...
+[2026-04-20 16:30:17] Gefundene Etiketten: 0
+[2026-04-20 16:30:18] Gefundene Abholscheine: 0
+[2026-04-20 16:30:18] Gefundene Rechnungen: 0
+[2026-04-20 16:30:18] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:18] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:23] Timer gestartet - prüfe API...
+[2026-04-20 16:30:23] Gefundene Etiketten: 0
+[2026-04-20 16:30:23] Gefundene Abholscheine: 0
+[2026-04-20 16:30:23] Gefundene Rechnungen: 0
+[2026-04-20 16:30:23] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:23] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:28] Timer gestartet - prüfe API...
+[2026-04-20 16:30:28] Gefundene Etiketten: 0
+[2026-04-20 16:30:28] Gefundene Abholscheine: 0
+[2026-04-20 16:30:28] Gefundene Rechnungen: 0
+[2026-04-20 16:30:28] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:28] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:33] Timer gestartet - prüfe API...
+[2026-04-20 16:30:33] Gefundene Etiketten: 0
+[2026-04-20 16:30:33] Gefundene Abholscheine: 0
+[2026-04-20 16:30:33] Gefundene Rechnungen: 0
+[2026-04-20 16:30:33] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:33] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:38] Timer gestartet - prüfe API...
+[2026-04-20 16:30:38] Gefundene Etiketten: 0
+[2026-04-20 16:30:38] Gefundene Abholscheine: 0
+[2026-04-20 16:30:38] Gefundene Rechnungen: 0
+[2026-04-20 16:30:38] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:38] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:43] Timer gestartet - prüfe API...
+[2026-04-20 16:30:43] Gefundene Etiketten: 0
+[2026-04-20 16:30:43] Gefundene Abholscheine: 0
+[2026-04-20 16:30:43] Gefundene Rechnungen: 0
+[2026-04-20 16:30:43] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:43] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:48] Timer gestartet - prüfe API...
+[2026-04-20 16:30:48] Gefundene Etiketten: 0
+[2026-04-20 16:30:48] Gefundene Abholscheine: 0
+[2026-04-20 16:30:48] Gefundene Rechnungen: 0
+[2026-04-20 16:30:48] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:48] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:53] Timer gestartet - prüfe API...
+[2026-04-20 16:30:54] Gefundene Etiketten: 1
+[2026-04-20 16:30:54] Drucke Etikett: 002 / Kunde: Jonas Altenhofer
+[2026-04-20 16:30:54] Starte Etikettendruck: 002
+[2026-04-20 16:30:54] Zebra Etikett gedruckt (ZPL): 002
+[2026-04-20 16:30:54] Markiere Etikett 002 als gedruckt
+[2026-04-20 16:30:54] Gefundene Abholscheine: 0
+[2026-04-20 16:30:54] Gefundene Rechnungen: 0
+[2026-04-20 16:30:54] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:54] -------------------------------------------------------------------------------------------
+[2026-04-20 16:30:59] Timer gestartet - prüfe API...
+[2026-04-20 16:30:59] Gefundene Etiketten: 0
+[2026-04-20 16:30:59] Gefundene Abholscheine: 0
+[2026-04-20 16:30:59] Gefundene Rechnungen: 0
+[2026-04-20 16:30:59] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:30:59] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:04] Timer gestartet - prüfe API...
+[2026-04-20 16:31:04] Gefundene Etiketten: 0
+[2026-04-20 16:31:04] FEHLER bei API-Abfrage: Der Remoteserver hat einen Fehler zurückgegeben: (500) Interner Serverfehler.
+[2026-04-20 16:31:04] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:04] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:09] Timer gestartet - prüfe API...
+[2026-04-20 16:31:10] Gefundene Etiketten: 1
+[2026-04-20 16:31:10] Drucke Etikett: 001 / Kunde: Jonas Altenhofer
+[2026-04-20 16:31:10] Starte Etikettendruck: 001
+[2026-04-20 16:31:10] Zebra Etikett gedruckt (ZPL): 001
+[2026-04-20 16:31:10] Markiere Etikett 001 als gedruckt
+[2026-04-20 16:31:10] Gefundene Abholscheine: 0
+[2026-04-20 16:31:10] Gefundene Rechnungen: 0
+[2026-04-20 16:31:10] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:10] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:15] Timer gestartet - prüfe API...
+[2026-04-20 16:31:15] Gefundene Etiketten: 0
+[2026-04-20 16:31:15] Gefundene Abholscheine: 0
+[2026-04-20 16:31:15] Gefundene Rechnungen: 0
+[2026-04-20 16:31:15] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:15] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:20] Timer gestartet - prüfe API...
+[2026-04-20 16:31:20] Gefundene Etiketten: 0
+[2026-04-20 16:31:20] Gefundene Abholscheine: 0
+[2026-04-20 16:31:20] Gefundene Rechnungen: 0
+[2026-04-20 16:31:20] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:20] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:25] Timer gestartet - prüfe API...
+[2026-04-20 16:31:25] Gefundene Etiketten: 0
+[2026-04-20 16:31:25] Gefundene Abholscheine: 0
+[2026-04-20 16:31:25] Gefundene Rechnungen: 0
+[2026-04-20 16:31:25] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:25] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:30] Timer gestartet - prüfe API...
+[2026-04-20 16:31:30] Gefundene Etiketten: 0
+[2026-04-20 16:31:30] Gefundene Abholscheine: 0
+[2026-04-20 16:31:30] Gefundene Rechnungen: 0
+[2026-04-20 16:31:30] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:30] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:35] Timer gestartet - prüfe API...
+[2026-04-20 16:31:35] Gefundene Etiketten: 0
+[2026-04-20 16:31:35] Gefundene Abholscheine: 0
+[2026-04-20 16:31:35] Gefundene Rechnungen: 0
+[2026-04-20 16:31:35] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:35] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:40] Timer gestartet - prüfe API...
+[2026-04-20 16:31:41] Gefundene Etiketten: 0
+[2026-04-20 16:31:41] Gefundene Abholscheine: 0
+[2026-04-20 16:31:41] Gefundene Rechnungen: 0
+[2026-04-20 16:31:41] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:41] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:46] Timer gestartet - prüfe API...
+[2026-04-20 16:31:46] Gefundene Etiketten: 0
+[2026-04-20 16:31:46] Gefundene Abholscheine: 0
+[2026-04-20 16:31:46] Gefundene Rechnungen: 0
+[2026-04-20 16:31:46] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:46] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:51] Timer gestartet - prüfe API...
+[2026-04-20 16:31:51] Gefundene Etiketten: 0
+[2026-04-20 16:31:51] Gefundene Abholscheine: 0
+[2026-04-20 16:31:51] Gefundene Rechnungen: 0
+[2026-04-20 16:31:51] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:51] -------------------------------------------------------------------------------------------
+[2026-04-20 16:31:56] Timer gestartet - prüfe API...
+[2026-04-20 16:31:56] Gefundene Etiketten: 0
+[2026-04-20 16:31:56] Gefundene Abholscheine: 0
+[2026-04-20 16:31:56] Gefundene Rechnungen: 0
+[2026-04-20 16:31:56] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:31:56] -------------------------------------------------------------------------------------------
+[2026-04-20 16:32:01] Timer gestartet - prüfe API...
+[2026-04-20 16:32:01] Gefundene Etiketten: 0
+[2026-04-20 16:32:01] Gefundene Abholscheine: 0
+[2026-04-20 16:32:01] Gefundene Rechnungen: 0
+[2026-04-20 16:32:01] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:32:01] -------------------------------------------------------------------------------------------
+[2026-04-20 16:32:06] Timer gestartet - prüfe API...
+[2026-04-20 16:32:06] Gefundene Etiketten: 0
+[2026-04-20 16:32:06] Gefundene Abholscheine: 0
+[2026-04-20 16:32:06] Gefundene Rechnungen: 0
+[2026-04-20 16:32:06] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:32:06] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:02] DEBUG MODE: False
+[2026-04-20 16:33:02] Printservice gestartet...
+[2026-04-20 16:33:02] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:07] Timer gestartet - prüfe API...
+[2026-04-20 16:33:07] Gefundene Etiketten: 0
+[2026-04-20 16:33:07] Gefundene Abholscheine: 0
+[2026-04-20 16:33:07] Gefundene Rechnungen: 0
+[2026-04-20 16:33:07] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:07] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:12] Timer gestartet - prüfe API...
+[2026-04-20 16:33:13] Gefundene Etiketten: 1
+[2026-04-20 16:33:13] Drucke Etikett: 001 / Kunde: Jonas Altenhofer
+[2026-04-20 16:33:13] Starte Etikettendruck: 001
+[2026-04-20 16:33:13] Zebra Etikett gedruckt (ZPL): 001
+[2026-04-20 16:33:13] Markiere Etikett 001 als gedruckt
+[2026-04-20 16:33:13] Gefundene Abholscheine: 0
+[2026-04-20 16:33:13] Gefundene Rechnungen: 0
+[2026-04-20 16:33:13] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:13] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:18] Timer gestartet - prüfe API...
+[2026-04-20 16:33:18] Gefundene Etiketten: 0
+[2026-04-20 16:33:18] Gefundene Abholscheine: 0
+[2026-04-20 16:33:18] Gefundene Rechnungen: 0
+[2026-04-20 16:33:18] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:18] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:23] Timer gestartet - prüfe API...
+[2026-04-20 16:33:23] Gefundene Etiketten: 0
+[2026-04-20 16:33:23] Gefundene Abholscheine: 0
+[2026-04-20 16:33:23] Gefundene Rechnungen: 0
+[2026-04-20 16:33:23] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:23] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:28] Timer gestartet - prüfe API...
+[2026-04-20 16:33:28] Gefundene Etiketten: 0
+[2026-04-20 16:33:28] Gefundene Abholscheine: 0
+[2026-04-20 16:33:28] Gefundene Rechnungen: 0
+[2026-04-20 16:33:28] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:28] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:33] Timer gestartet - prüfe API...
+[2026-04-20 16:33:33] Gefundene Etiketten: 0
+[2026-04-20 16:33:33] Gefundene Abholscheine: 0
+[2026-04-20 16:33:33] Gefundene Rechnungen: 0
+[2026-04-20 16:33:33] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:33] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:38] Timer gestartet - prüfe API...
+[2026-04-20 16:33:38] Gefundene Etiketten: 0
+[2026-04-20 16:33:38] Gefundene Abholscheine: 0
+[2026-04-20 16:33:38] Gefundene Rechnungen: 0
+[2026-04-20 16:33:38] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:38] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:43] Timer gestartet - prüfe API...
+[2026-04-20 16:33:44] Gefundene Etiketten: 0
+[2026-04-20 16:33:44] Gefundene Abholscheine: 0
+[2026-04-20 16:33:44] Gefundene Rechnungen: 0
+[2026-04-20 16:33:44] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:44] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:49] Timer gestartet - prüfe API...
+[2026-04-20 16:33:49] Gefundene Etiketten: 0
+[2026-04-20 16:33:49] Gefundene Abholscheine: 0
+[2026-04-20 16:33:49] Gefundene Rechnungen: 0
+[2026-04-20 16:33:49] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:49] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:54] Timer gestartet - prüfe API...
+[2026-04-20 16:33:54] Gefundene Etiketten: 0
+[2026-04-20 16:33:54] Gefundene Abholscheine: 0
+[2026-04-20 16:33:54] Gefundene Rechnungen: 0
+[2026-04-20 16:33:54] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:54] -------------------------------------------------------------------------------------------
+[2026-04-20 16:33:59] Timer gestartet - prüfe API...
+[2026-04-20 16:33:59] Gefundene Etiketten: 0
+[2026-04-20 16:33:59] Gefundene Abholscheine: 0
+[2026-04-20 16:33:59] Gefundene Rechnungen: 0
+[2026-04-20 16:33:59] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:33:59] -------------------------------------------------------------------------------------------
+[2026-04-20 16:34:04] Timer gestartet - prüfe API...
+[2026-04-20 16:34:04] Gefundene Etiketten: 0
+[2026-04-20 16:34:04] Gefundene Abholscheine: 0
+[2026-04-20 16:34:04] Gefundene Rechnungen: 0
+[2026-04-20 16:34:04] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:34:04] -------------------------------------------------------------------------------------------
+[2026-04-20 16:34:09] Timer gestartet - prüfe API...
+[2026-04-20 16:34:09] Gefundene Etiketten: 0
+[2026-04-20 16:34:09] Gefundene Abholscheine: 0
+[2026-04-20 16:34:09] Gefundene Rechnungen: 0
+[2026-04-20 16:34:09] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:34:09] -------------------------------------------------------------------------------------------
+[2026-04-20 16:34:14] Timer gestartet - prüfe API...
+[2026-04-20 16:34:14] Gefundene Etiketten: 0
+[2026-04-20 16:34:14] Gefundene Abholscheine: 0
+[2026-04-20 16:34:14] Gefundene Rechnungen: 0
+[2026-04-20 16:34:14] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:34:14] -------------------------------------------------------------------------------------------
+[2026-04-20 16:34:19] Timer gestartet - prüfe API...
+[2026-04-20 16:34:19] Gefundene Etiketten: 0
+[2026-04-20 16:34:19] Gefundene Abholscheine: 0
+[2026-04-20 16:34:19] Gefundene Rechnungen: 0
+[2026-04-20 16:34:19] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:34:19] -------------------------------------------------------------------------------------------
+[2026-04-20 16:34:24] Timer gestartet - prüfe API...
+[2026-04-20 16:34:24] Gefundene Etiketten: 0
+[2026-04-20 16:34:25] Gefundene Abholscheine: 0
+[2026-04-20 16:34:25] Gefundene Rechnungen: 0
+[2026-04-20 16:34:25] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-20 16:34:25] -------------------------------------------------------------------------------------------

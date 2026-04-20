@@ -101,6 +101,18 @@ Namespace My
                 Me("apiUrl") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public Property EtiDruckerTyp() As String
+            Get
+                Return CType(Me("EtiDruckerTyp"),String)
+            End Get
+            Set
+                Me("EtiDruckerTyp") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

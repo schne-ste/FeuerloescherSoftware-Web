@@ -124,19 +124,16 @@
   <data name="&gt;&gt;bt_restart.Name" xml:space="preserve">
     <value>bt_restart</value>
   </data>
-  <data name="&gt;&gt;Label2.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="&gt;&gt;tb_copyright.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="&gt;&gt;tb_apiToken.Name" xml:space="preserve">
     <value>tb_apiToken</value>
   </data>
-  <data name="&gt;&gt;tb_copyright.Name" xml:space="preserve">
-    <value>tb_copyright</value>
-  </data>
-  <data name="&gt;&gt;bt_restart.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Label1.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
   <data name="Label2.TabIndex" type="System.Int32, mscorlib">
     <value>43</value>
   </data>
@@ -150,10 +147,10 @@
     <value>Microsoft Sans Serif, 12pt</value>
   </data>
   <data name="&gt;&gt;tb_printerBon.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
   </data>
-  <data name="tb_printerEti.Items1" xml:space="preserve">
-    <value>62mm Endlos</value>
+  <data name="ComboBox1.Items2" xml:space="preserve">
+    <value>90x29</value>
   </data>
   <data name="tb_printerBon.Location" type="System.Drawing.Point, System.Drawing">
     <value>491, 119</value>
@@ -164,11 +161,14 @@
   <data name="&gt;&gt;tb_printerBon.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;tb_copyright.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
   <data name="&gt;&gt;Label5.Parent" xml:space="preserve">
     <value>$this</value>
+  </data>
+  <data name="tb_printerEti.Items1" xml:space="preserve">
+    <value>62mm Endlos</value>
+  </data>
+  <data name="ComboBox1.Items" xml:space="preserve">
+    <value />
   </data>
   <data name="Label2.Location" type="System.Drawing.Point, System.Drawing">
     <value>487, 21</value>
@@ -4686,14 +4686,17 @@
   <data name="tb_printerEti.Items" xml:space="preserve">
     <value />
   </data>
+  <data name="tb_printerEti.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 12pt</value>
+  </data>
   <data name="Label3.Text" xml:space="preserve">
     <value>API URL:</value>
   </data>
   <data name="tb_apiToken.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 9.75pt</value>
   </data>
-  <data name="Label2.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft Sans Serif, 12pt</value>
+  <data name="tb_debug.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left</value>
   </data>
   <data name="&gt;&gt;tb_printerEti.Parent" xml:space="preserve">
     <value>$this</value>
@@ -4701,20 +4704,41 @@
   <data name="&gt;&gt;bt_rechnungen.Name" xml:space="preserve">
     <value>bt_rechnungen</value>
   </data>
+  <data name="&gt;&gt;Label5.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;tb_printerEti_typ.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="Label4.Text" xml:space="preserve">
     <value>API Token:</value>
   </data>
   <data name="&gt;&gt;tb_printerEti.Name" xml:space="preserve">
     <value>tb_printerEti</value>
   </data>
-  <data name="&gt;&gt;tb_apiUrl.ZOrder" xml:space="preserve">
-    <value>6</value>
+  <data name="&gt;&gt;tb_printerEti_typ.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="tb_debug.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left</value>
+  <data name="tb_printerEti_typ.TabIndex" type="System.Int32, mscorlib">
+    <value>54</value>
+  </data>
+  <data name="&gt;&gt;tb_apiUrl.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="tb_debug.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="&gt;&gt;tb_printerEti_typ.Name" xml:space="preserve">
+    <value>tb_printerEti_typ</value>
+  </data>
+  <data name="&gt;&gt;Label1.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;ComboBox1.Name" xml:space="preserve">
+    <value>ComboBox1</value>
   </data>
   <data name="&gt;&gt;tb_apiToken.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="Label4.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4725,11 +4749,14 @@
   <data name="tb_apiToken.Location" type="System.Drawing.Point, System.Drawing">
     <value>491, 264</value>
   </data>
+  <data name="&gt;&gt;tb_debug.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;tb_debug.Name" xml:space="preserve">
+    <value>tb_debug</value>
+  </data>
   <data name="&gt;&gt;Label3.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="tb_printerEti.TabIndex" type="System.Int32, mscorlib">
-    <value>42</value>
   </data>
   <data name="tb_debug.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -4756,7 +4783,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;tb_debug.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>13</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Druckservice</value>
@@ -4770,14 +4797,11 @@
   <data name="Label1.Text" xml:space="preserve">
     <value>Bondrucker</value>
   </data>
-  <data name="tb_apiUrl.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft Sans Serif, 9.75pt</value>
-  </data>
   <data name="&gt;&gt;tb_copyright.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;tb_debug.Name" xml:space="preserve">
-    <value>tb_debug</value>
+  <data name="tb_printerEti_typ.Location" type="System.Drawing.Point, System.Drawing">
+    <value>619, 18</value>
   </data>
   <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
     <value>126, 20</value>
@@ -4786,7 +4810,7 @@
     <value>True</value>
   </data>
   <data name="&gt;&gt;tb_printerEti.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="Label4.Size" type="System.Drawing.Size, System.Drawing">
     <value>87, 20</value>
@@ -4797,8 +4821,8 @@
   <data name="&gt;&gt;tb_printerEti.Type" xml:space="preserve">
     <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="tb_debug.Text" xml:space="preserve">
-    <value />
+  <data name="Label2.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 12pt</value>
   </data>
   <data name="tb_apiUrl.Size" type="System.Drawing.Size, System.Drawing">
     <value>278, 22</value>
@@ -4812,8 +4836,14 @@
   <data name="&gt;&gt;tb_copyright.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
+  <data name="&gt;&gt;ComboBox1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
   <data name="tb_apiToken.TabIndex" type="System.Int32, mscorlib">
     <value>49</value>
+  </data>
+  <data name="&gt;&gt;Label2.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="Label2.Text" xml:space="preserve">
     <value>Etikettendrucker</value>
@@ -4827,14 +4857,11 @@
   <data name="&gt;&gt;bt_rechnungen.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="$this.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>816, 489</value>
+  <data name="&gt;&gt;Label4.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
-  <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>91, 20</value>
-  </data>
-  <data name="Label1.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="tb_apiUrl.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9.75pt</value>
   </data>
   <data name="tb_apiToken.Size" type="System.Drawing.Size, System.Drawing">
     <value>278, 22</value>
@@ -4854,11 +4881,11 @@
   <data name="Label3.Location" type="System.Drawing.Point, System.Drawing">
     <value>487, 168</value>
   </data>
-  <data name="&gt;&gt;Label1.ZOrder" xml:space="preserve">
-    <value>8</value>
+  <data name="&gt;&gt;bt_restart.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
-  <data name="Label1.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft Sans Serif, 12pt</value>
+  <data name="ComboBox1.Items1" xml:space="preserve">
+    <value>62mm Endlos</value>
   </data>
   <data name="bt_rechnungen.TabIndex" type="System.Int32, mscorlib">
     <value>50</value>
@@ -4866,16 +4893,25 @@
   <data name="Label5.TabIndex" type="System.Int32, mscorlib">
     <value>52</value>
   </data>
-  <data name="&gt;&gt;bt_rechnungen.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="tb_printerBon.Items1" xml:space="preserve">
+    <value>62mm Endlos</value>
   </data>
-  <data name="tb_copyright.TabIndex" type="System.Int32, mscorlib">
-    <value>53</value>
+  <data name="&gt;&gt;bt_rechnungen.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;Label2.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;Label1.Parent" xml:space="preserve">
+    <value>$this</value>
   </data>
   <data name="tb_printerBon.Items2" xml:space="preserve">
     <value>90x29</value>
   </data>
-  <data name="tb_printerEti.Font" type="System.Drawing.Font, System.Drawing">
+  <data name="tb_printerEti_typ.Items1" xml:space="preserve">
+    <value>Zebra ZD41X</value>
+  </data>
+  <data name="Label1.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 12pt</value>
   </data>
   <data name="bt_restart.TabIndex" type="System.Int32, mscorlib">
@@ -4884,8 +4920,14 @@
   <data name="bt_rechnungen.Location" type="System.Drawing.Point, System.Drawing">
     <value>651, 313</value>
   </data>
+  <data name="tb_printerEti_typ.Items" xml:space="preserve">
+    <value>Brother QL</value>
+  </data>
   <data name="Label4.TabIndex" type="System.Int32, mscorlib">
     <value>48</value>
+  </data>
+  <data name="ComboBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>54</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>Druckservice</value>
@@ -4896,6 +4938,9 @@
   <data name="tb_printerBon.TabIndex" type="System.Int32, mscorlib">
     <value>44</value>
   </data>
+  <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>91, 20</value>
+  </data>
   <data name="&gt;&gt;bt_restart.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -4903,7 +4948,7 @@
     <value>Microsoft Sans Serif, 12pt</value>
   </data>
   <data name="&gt;&gt;Label3.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="tb_printerEti.Size" type="System.Drawing.Size, System.Drawing">
     <value>278, 28</value>
@@ -4917,11 +4962,11 @@
   <data name="&gt;&gt;Label3.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="Label3.TabIndex" type="System.Int32, mscorlib">
-    <value>46</value>
+  <data name="ComboBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>619, 13</value>
   </data>
-  <data name="&gt;&gt;Label1.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="tb_copyright.TabIndex" type="System.Int32, mscorlib">
+    <value>53</value>
   </data>
   <data name="&gt;&gt;Label4.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -4929,14 +4974,14 @@
   <data name="Label1.TabIndex" type="System.Int32, mscorlib">
     <value>45</value>
   </data>
-  <data name="&gt;&gt;Label4.ZOrder" xml:space="preserve">
-    <value>5</value>
+  <data name="&gt;&gt;ComboBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="tb_printerBon.Items1" xml:space="preserve">
-    <value>62mm Endlos</value>
+  <data name="&gt;&gt;tb_copyright.Name" xml:space="preserve">
+    <value>tb_copyright</value>
   </data>
-  <data name="&gt;&gt;tb_debug.Parent" xml:space="preserve">
-    <value>$this</value>
+  <data name="tb_printerEti.TabIndex" type="System.Int32, mscorlib">
+    <value>42</value>
   </data>
   <data name="&gt;&gt;Label4.Name" xml:space="preserve">
     <value>Label4</value>
@@ -4947,8 +4992,8 @@
   <data name="bt_restart.Location" type="System.Drawing.Point, System.Drawing">
     <value>491, 313</value>
   </data>
-  <data name="&gt;&gt;Label5.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="Label3.TabIndex" type="System.Int32, mscorlib">
+    <value>46</value>
   </data>
   <data name="&gt;&gt;tb_apiToken.Type" xml:space="preserve">
     <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -4959,11 +5004,17 @@
   <data name="&gt;&gt;Label1.Name" xml:space="preserve">
     <value>Label1</value>
   </data>
+  <data name="&gt;&gt;tb_printerEti_typ.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
   <data name="&gt;&gt;bt_rechnungen.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;Label2.ZOrder" xml:space="preserve">
-    <value>10</value>
+  <data name="$this.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>816, 489</value>
+  </data>
+  <data name="&gt;&gt;ComboBox1.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="&gt;&gt;Label5.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

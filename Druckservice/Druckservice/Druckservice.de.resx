@@ -162,20 +162,20 @@
   <data name="tb_copyright.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <data name="tb_copyright.Location" type="System.Drawing.Point, System.Drawing">
-    <value>463, 430</value>
-  </data>
   <data name="tb_copyright.Size" type="System.Drawing.Size, System.Drawing">
     <value>336, 18</value>
-  </data>
-  <data name="tb_copyright.TabIndex" type="System.Int32, mscorlib">
-    <value>53</value>
   </data>
   <data name="tb_copyright.Text" xml:space="preserve">
     <value>© Schneebauer</value>
   </data>
   <data name="tb_copyright.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleCenter</value>
+  </data>
+  <data name="tb_printerEti_typ.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt</value>
+  </data>
+  <data name="tb_printerEti_typ.Size" type="System.Drawing.Size, System.Drawing">
+    <value>150, 23</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

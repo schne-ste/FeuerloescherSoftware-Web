@@ -109,6 +109,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="RawPrinter.vb" />
+    <Compile Include="ZPLRawPrinterHelper.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Druckservice.de.resx">
