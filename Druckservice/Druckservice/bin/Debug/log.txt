@@ -7262,3 +7262,210 @@
 [2026-04-21 10:05:08] PLZ/Ort: 4702 Wallern
 [2026-04-21 10:05:08] Web: https://www.feuerwehr-wallern.at
 [2026-04-21 10:05:08] ---------------------------------------
+[2026-04-21 10:12:23] DEBUG MODE: False
+[2026-04-21 10:12:24] Lade Konfiguration von API...
+[2026-04-21 10:12:24] Printservice gestartet...
+[2026-04-21 10:12:24] -------------------------------------------------------------------------------------------
+[2026-04-21 10:12:24] -------- Konfiguration geladen --------
+[2026-04-21 10:12:24] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:12:24] Adresse: Kienzlstraße 10
+[2026-04-21 10:12:24] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:12:24] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:12:24] ---------------------------------------
+[2026-04-21 10:12:29] Timer gestartet - prüfe API...
+[2026-04-21 10:12:29] Gefundene Etiketten: 0
+[2026-04-21 10:12:29] Gefundene Abholscheine: 0
+[2026-04-21 10:12:29] Gefundene Rechnungen: 0
+[2026-04-21 10:12:29] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:12:29] -------------------------------------------------------------------------------------------
+[2026-04-21 10:12:34] Timer gestartet - prüfe API...
+[2026-04-21 10:12:34] Gefundene Etiketten: 0
+[2026-04-21 10:12:34] Gefundene Abholscheine: 0
+[2026-04-21 10:12:34] Gefundene Rechnungen: 0
+[2026-04-21 10:12:34] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:12:34] -------------------------------------------------------------------------------------------
+[2026-04-21 10:12:39] Timer gestartet - prüfe API...
+[2026-04-21 10:12:39] Gefundene Etiketten: 0
+[2026-04-21 10:12:39] Gefundene Abholscheine: 0
+[2026-04-21 10:12:39] Gefundene Rechnungen: 0
+[2026-04-21 10:12:39] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:12:39] -------------------------------------------------------------------------------------------
+[2026-04-21 10:12:42] DEBUG MODE: False
+[2026-04-21 10:12:42] Lade Konfiguration von API...
+[2026-04-21 10:12:42] Printservice gestartet...
+[2026-04-21 10:12:42] -------------------------------------------------------------------------------------------
+[2026-04-21 10:12:42] -------- Konfiguration geladen --------
+[2026-04-21 10:12:42] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:12:42] Adresse: Kienzlstraße 10
+[2026-04-21 10:12:42] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:12:42] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:12:42] ---------------------------------------
+[2026-04-21 10:12:47] Timer gestartet - prüfe API...
+[2026-04-21 10:12:47] Gefundene Etiketten: 0
+[2026-04-21 10:12:47] Gefundene Abholscheine: 0
+[2026-04-21 10:12:47] Gefundene Rechnungen: 0
+[2026-04-21 10:12:47] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:12:47] -------------------------------------------------------------------------------------------
+[2026-04-21 10:12:50] DEBUG MODE: False
+[2026-04-21 10:12:50] Lade Konfiguration von API...
+[2026-04-21 10:12:50] Printservice gestartet...
+[2026-04-21 10:12:50] -------------------------------------------------------------------------------------------
+[2026-04-21 10:12:50] -------- Konfiguration geladen --------
+[2026-04-21 10:12:50] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:12:50] Adresse: Kienzlstraße 10
+[2026-04-21 10:12:50] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:12:50] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:12:50] ---------------------------------------
+[2026-04-21 10:12:55] Timer gestartet - prüfe API...
+[2026-04-21 10:12:55] Gefundene Etiketten: 0
+[2026-04-21 10:12:55] Gefundene Abholscheine: 0
+[2026-04-21 10:12:55] Gefundene Rechnungen: 0
+[2026-04-21 10:12:55] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:12:55] -------------------------------------------------------------------------------------------
+[2026-04-21 10:14:56] DEBUG MODE: False
+[2026-04-21 10:14:56] Lade Konfiguration von API...
+[2026-04-21 10:14:56] Printservice gestartet...
+[2026-04-21 10:14:56] -------------------------------------------------------------------------------------------
+[2026-04-21 10:14:56] -------- Konfiguration geladen --------
+[2026-04-21 10:14:56] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:14:56] Adresse: Kienzlstraße 10
+[2026-04-21 10:14:56] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:14:56] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:14:56] ---------------------------------------
+[2026-04-21 10:15:01] Timer gestartet - prüfe API...
+[2026-04-21 10:15:01] Gefundene Etiketten: 0
+[2026-04-21 10:15:01] Gefundene Abholscheine: 0
+[2026-04-21 10:15:01] Gefundene Rechnungen: 0
+[2026-04-21 10:15:01] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:15:01] -------------------------------------------------------------------------------------------
+[2026-04-21 10:15:53] DEBUG MODE: False
+[2026-04-21 10:15:53] Lade Konfiguration von API...
+[2026-04-21 10:15:53] Printservice gestartet...
+[2026-04-21 10:15:53] -------------------------------------------------------------------------------------------
+[2026-04-21 10:15:54] -------- Konfiguration geladen --------
+[2026-04-21 10:15:54] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:15:54] Adresse: Kienzlstraße 10
+[2026-04-21 10:15:54] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:15:54] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:15:54] ---------------------------------------
+[2026-04-21 10:15:58] Timer gestartet - prüfe API...
+[2026-04-21 10:15:58] Gefundene Etiketten: 0
+[2026-04-21 10:15:58] Gefundene Abholscheine: 0
+[2026-04-21 10:15:58] Gefundene Rechnungen: 0
+[2026-04-21 10:15:58] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:15:58] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:01] DEBUG MODE: False
+[2026-04-21 10:16:01] Lade Konfiguration von API...
+[2026-04-21 10:16:01] Printservice gestartet...
+[2026-04-21 10:16:01] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:01] -------- Konfiguration geladen --------
+[2026-04-21 10:16:01] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:16:01] Adresse: Kienzlstraße 10
+[2026-04-21 10:16:01] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:16:01] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:16:01] ---------------------------------------
+[2026-04-21 10:16:06] Timer gestartet - prüfe API...
+[2026-04-21 10:16:06] Gefundene Etiketten: 0
+[2026-04-21 10:16:06] Gefundene Abholscheine: 0
+[2026-04-21 10:16:06] Gefundene Rechnungen: 0
+[2026-04-21 10:16:06] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:06] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:11] Timer gestartet - prüfe API...
+[2026-04-21 10:16:11] Gefundene Etiketten: 0
+[2026-04-21 10:16:11] Gefundene Abholscheine: 0
+[2026-04-21 10:16:11] Gefundene Rechnungen: 0
+[2026-04-21 10:16:11] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:11] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:14] DEBUG MODE: False
+[2026-04-21 10:16:14] Lade Konfiguration von API...
+[2026-04-21 10:16:14] Fehler beim Laden der Konfiguration: Es wurde ein ungültiger Anforderungs-URI angegeben. Der Anforderungs-URI muss entweder ein absoluter URI sein, oder die Basisadresse muss festgelegt sein.
+[2026-04-21 10:16:14] Printservice gestartet...
+[2026-04-21 10:16:14] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:17] DEBUG MODE: False
+[2026-04-21 10:16:17] Lade Konfiguration von API...
+[2026-04-21 10:16:17] Fehler beim Laden der Konfiguration: Es wurde ein ungültiger Anforderungs-URI angegeben. Der Anforderungs-URI muss entweder ein absoluter URI sein, oder die Basisadresse muss festgelegt sein.
+[2026-04-21 10:16:17] Printservice gestartet...
+[2026-04-21 10:16:17] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:22] Timer gestartet - prüfe API...
+[2026-04-21 10:16:22] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:16:22] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:22] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:27] Timer gestartet - prüfe API...
+[2026-04-21 10:16:27] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:16:27] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:27] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:32] Timer gestartet - prüfe API...
+[2026-04-21 10:16:32] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:16:32] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:32] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:37] Timer gestartet - prüfe API...
+[2026-04-21 10:16:37] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:16:37] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:37] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:42] Timer gestartet - prüfe API...
+[2026-04-21 10:16:42] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:16:42] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:42] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:47] Timer gestartet - prüfe API...
+[2026-04-21 10:16:47] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:16:47] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:47] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:52] Timer gestartet - prüfe API...
+[2026-04-21 10:16:52] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:16:52] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:52] -------------------------------------------------------------------------------------------
+[2026-04-21 10:16:57] Timer gestartet - prüfe API...
+[2026-04-21 10:16:57] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:16:57] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:16:57] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:02] Timer gestartet - prüfe API...
+[2026-04-21 10:17:02] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:02] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:02] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:07] Timer gestartet - prüfe API...
+[2026-04-21 10:17:07] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:07] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:07] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:12] Timer gestartet - prüfe API...
+[2026-04-21 10:17:12] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:12] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:12] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:17] Timer gestartet - prüfe API...
+[2026-04-21 10:17:17] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:17] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:17] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:22] Timer gestartet - prüfe API...
+[2026-04-21 10:17:22] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:22] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:22] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:28] Timer gestartet - prüfe API...
+[2026-04-21 10:17:28] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:28] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:28] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:33] Timer gestartet - prüfe API...
+[2026-04-21 10:17:33] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:33] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:33] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:38] Timer gestartet - prüfe API...
+[2026-04-21 10:17:38] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:38] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:38] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:43] Timer gestartet - prüfe API...
+[2026-04-21 10:17:43] FEHLER bei API-Abfrage: Illegales Zeichen im Pfad.
+[2026-04-21 10:17:43] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:17:43] -------------------------------------------------------------------------------------------
+[2026-04-21 10:17:47] DEBUG MODE: False
+[2026-04-21 10:17:47] Lade Konfiguration von API...
+[2026-04-21 10:17:47] Fehler beim Laden der Konfiguration: Es wurde ein ungültiger Anforderungs-URI angegeben. Der Anforderungs-URI muss entweder ein absoluter URI sein, oder die Basisadresse muss festgelegt sein.
+[2026-04-21 10:17:47] Printservice gestartet...
+[2026-04-21 10:17:47] -------------------------------------------------------------------------------------------
+[2026-04-21 10:18:00] DEBUG MODE: False
+[2026-04-21 10:18:00] Lade Konfiguration von API...
+[2026-04-21 10:18:00] Printservice gestartet...
+[2026-04-21 10:18:00] -------------------------------------------------------------------------------------------
+[2026-04-21 10:18:01] -------- Konfiguration geladen --------
+[2026-04-21 10:18:01] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:18:01] Adresse: Kienzlstraße 10
+[2026-04-21 10:18:01] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:18:01] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:18:01] ---------------------------------------

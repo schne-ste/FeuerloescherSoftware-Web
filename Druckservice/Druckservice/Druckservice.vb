@@ -87,10 +87,49 @@ Public Class Druckservice
             tb_printerBon.SelectedIndex = 0
         End If
 
-
+        ' 1. Werte aus den Einstellungen laden
         tb_apiUrl.Text = My.Settings.apiUrl
         tb_apiToken.Text = My.Settings.apiToken
-        apiUrl = If(tb_apiUrl.Text, "")
+
+        ' 2. URL einlesen und bereinigen
+        Dim inputUrl As String = tb_apiUrl.Text.Trim()
+
+        If Not String.IsNullOrEmpty(inputUrl) Then
+
+            ' --- SCHRITT A: Protokoll prüfen (http://) ---
+            ' Falls weder http noch https vorhanden ist, http:// voranstellen
+            If Not inputUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) AndAlso
+       Not inputUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) Then
+                inputUrl = "http://" & inputUrl
+            End If
+
+            ' --- SCHRITT B: Endung prüfen (/api/index.php) ---
+            ' Zuerst alle Slashes am Ende entfernen, um eine saubere Basis zu haben
+            inputUrl = inputUrl.TrimEnd("/"c)
+
+            ' Prüfen, ob die URL bereits korrekt endet
+            If Not inputUrl.EndsWith("/api/index.php", StringComparison.OrdinalIgnoreCase) Then
+
+                If inputUrl.EndsWith("/api", StringComparison.OrdinalIgnoreCase) Then
+                    ' Wenn nur /api da ist, nur index.php ergänzen
+                    inputUrl &= "/index.php"
+                Else
+                    ' Ansonsten das komplette Suffix anhängen
+                    inputUrl &= "/api/index.php"
+                End If
+
+            End If
+
+            ' --- SCHRITT C: Speichern ---
+            If My.Settings.apiUrl <> inputUrl Then
+                My.Settings.apiUrl = inputUrl
+                My.Settings.Save()
+            End If
+        End If
+
+        ' 3. Ergebnis zurückschreiben
+        apiUrl = inputUrl
+        tb_apiUrl.Text = inputUrl
         apiToken = If(tb_apiToken.Text, "")
 
         ' Debug mode aus config.ini auslesen
