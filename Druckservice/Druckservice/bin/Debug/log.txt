@@ -7111,3 +7111,154 @@
 [2026-04-20 16:34:25] Gefundene Rechnungen: 0
 [2026-04-20 16:34:25] Timer beendet - nächster Lauf in 5 Sekunden.
 [2026-04-20 16:34:25] -------------------------------------------------------------------------------------------
+[2026-04-21 09:54:12] DEBUG MODE: False
+[2026-04-21 09:54:12] Printservice gestartet...
+[2026-04-21 09:54:12] -------------------------------------------------------------------------------------------
+[2026-04-21 09:54:17] Timer gestartet - prüfe API...
+[2026-04-21 09:54:18] Lade Konfiguration von API...
+[2026-04-21 09:54:18] --- Relevante Konfigurationsdaten ---
+[2026-04-21 09:54:18] PREIS_STANDARD: 15
+[2026-04-21 09:54:18] PREIS_RABATT: 8
+[2026-04-21 09:54:18] FIRMA_NAME: Freiwillige Feuerwehr Wallern
+[2026-04-21 09:54:18] FIRMA_ADRESSE: Kienzlstraße 10
+[2026-04-21 09:54:18] FIRMA_PLZORT: 4702 Wallern
+[2026-04-21 09:54:18] FIRMA_WEB: https://www.feuerwehr-wallern.at
+[2026-04-21 09:54:18] BANK_NAME: Raiffeisenbank Wallern
+[2026-04-21 09:54:18] BANK_IBAN: AT1234567890123456
+[2026-04-21 09:54:18] BANK_EMPFAENGER: Feuerwehr Wallern
+[2026-04-21 09:54:18] ---------------------------------------
+[2026-04-21 09:54:18] Gefundene Etiketten: 0
+[2026-04-21 09:54:18] Gefundene Abholscheine: 0
+[2026-04-21 09:54:18] Gefundene Rechnungen: 0
+[2026-04-21 09:54:18] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 09:54:18] -------------------------------------------------------------------------------------------
+[2026-04-21 09:54:23] Timer gestartet - prüfe API...
+[2026-04-21 09:54:23] Lade Konfiguration von API...
+[2026-04-21 09:54:23] --- Relevante Konfigurationsdaten ---
+[2026-04-21 09:54:23] PREIS_STANDARD: 15
+[2026-04-21 09:54:23] PREIS_RABATT: 8
+[2026-04-21 09:54:23] FIRMA_NAME: Freiwillige Feuerwehr Wallern
+[2026-04-21 09:54:23] FIRMA_ADRESSE: Kienzlstraße 10
+[2026-04-21 09:54:23] FIRMA_PLZORT: 4702 Wallern
+[2026-04-21 09:54:23] FIRMA_WEB: https://www.feuerwehr-wallern.at
+[2026-04-21 09:54:23] BANK_NAME: Raiffeisenbank Wallern
+[2026-04-21 09:54:23] BANK_IBAN: AT1234567890123456
+[2026-04-21 09:54:23] BANK_EMPFAENGER: Feuerwehr Wallern
+[2026-04-21 09:54:23] ---------------------------------------
+[2026-04-21 09:54:23] Gefundene Etiketten: 0
+[2026-04-21 09:54:23] Gefundene Abholscheine: 0
+[2026-04-21 09:54:23] Gefundene Rechnungen: 0
+[2026-04-21 09:54:23] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 09:54:23] -------------------------------------------------------------------------------------------
+[2026-04-21 09:54:28] Timer gestartet - prüfe API...
+[2026-04-21 09:54:28] Lade Konfiguration von API...
+[2026-04-21 09:54:28] --- Relevante Konfigurationsdaten ---
+[2026-04-21 09:54:28] PREIS_STANDARD: 15
+[2026-04-21 09:54:28] PREIS_RABATT: 8
+[2026-04-21 09:54:28] FIRMA_NAME: Freiwillige Feuerwehr Wallern
+[2026-04-21 09:54:28] FIRMA_ADRESSE: Kienzlstraße 10
+[2026-04-21 09:54:28] FIRMA_PLZORT: 4702 Wallern
+[2026-04-21 09:54:28] FIRMA_WEB: https://www.feuerwehr-wallern.at
+[2026-04-21 09:54:28] BANK_NAME: Raiffeisenbank Wallern
+[2026-04-21 09:54:28] BANK_IBAN: AT1234567890123456
+[2026-04-21 09:54:28] BANK_EMPFAENGER: Feuerwehr Wallern
+[2026-04-21 09:54:28] ---------------------------------------
+[2026-04-21 09:54:28] Gefundene Etiketten: 0
+[2026-04-21 09:54:28] Gefundene Abholscheine: 0
+[2026-04-21 09:54:28] Gefundene Rechnungen: 0
+[2026-04-21 09:54:28] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 09:54:28] -------------------------------------------------------------------------------------------
+[2026-04-21 09:57:56] DEBUG MODE: False
+[2026-04-21 09:57:56] Lade Konfiguration von API...
+[2026-04-21 09:57:56] Printservice gestartet...
+[2026-04-21 09:57:56] -------------------------------------------------------------------------------------------
+[2026-04-21 09:57:57] --- Konfiguration global geladen ---
+[2026-04-21 09:57:57] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 09:57:57] IBAN: AT1234567890123456
+[2026-04-21 09:57:57] ---------------------------------------
+[2026-04-21 09:58:01] Timer gestartet - prüfe API...
+[2026-04-21 09:58:01] Gefundene Etiketten: 0
+[2026-04-21 09:58:01] Gefundene Abholscheine: 0
+[2026-04-21 09:58:01] Gefundene Rechnungen: 0
+[2026-04-21 09:58:01] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 09:58:01] -------------------------------------------------------------------------------------------
+[2026-04-21 09:58:06] Timer gestartet - prüfe API...
+[2026-04-21 09:58:06] Gefundene Etiketten: 0
+[2026-04-21 09:58:06] Gefundene Abholscheine: 0
+[2026-04-21 09:58:06] Gefundene Rechnungen: 0
+[2026-04-21 09:58:06] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 09:58:06] -------------------------------------------------------------------------------------------
+[2026-04-21 10:02:58] DEBUG MODE: False
+[2026-04-21 10:02:58] Lade Konfiguration von API...
+[2026-04-21 10:02:58] Printservice gestartet...
+[2026-04-21 10:02:58] -------------------------------------------------------------------------------------------
+[2026-04-21 10:02:58] --- Konfiguration global geladen ---
+[2026-04-21 10:02:58] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:02:58] Adresse: Kienzlstraße 10
+[2026-04-21 10:02:58] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:02:58] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:02:58] ---------------------------------------
+[2026-04-21 10:03:03] Timer gestartet - prüfe API...
+[2026-04-21 10:03:03] Gefundene Etiketten: 0
+[2026-04-21 10:03:03] Gefundene Abholscheine: 0
+[2026-04-21 10:03:03] Gefundene Rechnungen: 0
+[2026-04-21 10:03:03] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:03:03] -------------------------------------------------------------------------------------------
+[2026-04-21 10:03:08] Timer gestartet - prüfe API...
+[2026-04-21 10:03:08] Gefundene Etiketten: 0
+[2026-04-21 10:03:08] Gefundene Abholscheine: 0
+[2026-04-21 10:03:08] Gefundene Rechnungen: 0
+[2026-04-21 10:03:08] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:03:08] -------------------------------------------------------------------------------------------
+[2026-04-21 10:03:13] Timer gestartet - prüfe API...
+[2026-04-21 10:03:13] Gefundene Etiketten: 0
+[2026-04-21 10:03:13] Gefundene Abholscheine: 0
+[2026-04-21 10:03:13] Gefundene Rechnungen: 0
+[2026-04-21 10:03:13] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:03:13] -------------------------------------------------------------------------------------------
+[2026-04-21 10:03:16] DEBUG MODE: False
+[2026-04-21 10:03:16] Lade Konfiguration von API...
+[2026-04-21 10:03:16] Printservice gestartet...
+[2026-04-21 10:03:16] -------------------------------------------------------------------------------------------
+[2026-04-21 10:03:16] --- Konfiguration global geladen ---
+[2026-04-21 10:03:16] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:03:16] Adresse: Kienzlstraße 10
+[2026-04-21 10:03:16] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:03:16] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:03:16] ---------------------------------------
+[2026-04-21 10:03:21] Timer gestartet - prüfe API...
+[2026-04-21 10:03:21] Gefundene Etiketten: 0
+[2026-04-21 10:03:21] Gefundene Abholscheine: 0
+[2026-04-21 10:03:21] Gefundene Rechnungen: 0
+[2026-04-21 10:03:21] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:03:21] -------------------------------------------------------------------------------------------
+[2026-04-21 10:04:46] DEBUG MODE: False
+[2026-04-21 10:04:47] Lade Konfiguration von API...
+[2026-04-21 10:04:47] Printservice gestartet...
+[2026-04-21 10:04:47] -------------------------------------------------------------------------------------------
+[2026-04-21 10:04:47] -------- Konfiguration geladen --------
+[2026-04-21 10:04:47] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:04:47] Adresse: Kienzlstraße 10
+[2026-04-21 10:04:47] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:04:47] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:04:47] 
+[2026-04-21 10:04:47] Bank Name: Raiffeisenbank Wallern
+[2026-04-21 10:04:47] Bank IBAN: AT1234567890123456
+[2026-04-21 10:04:47] Bank Empfänger: Feuerwehr Wallern
+[2026-04-21 10:04:47] ---------------------------------------
+[2026-04-21 10:04:52] Timer gestartet - prüfe API...
+[2026-04-21 10:04:52] Gefundene Etiketten: 0
+[2026-04-21 10:04:52] Gefundene Abholscheine: 0
+[2026-04-21 10:04:52] Gefundene Rechnungen: 0
+[2026-04-21 10:04:52] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-21 10:04:52] -------------------------------------------------------------------------------------------
+[2026-04-21 10:05:07] DEBUG MODE: False
+[2026-04-21 10:05:08] Lade Konfiguration von API...
+[2026-04-21 10:05:08] Printservice gestartet...
+[2026-04-21 10:05:08] -------------------------------------------------------------------------------------------
+[2026-04-21 10:05:08] -------- Konfiguration geladen --------
+[2026-04-21 10:05:08] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-21 10:05:08] Adresse: Kienzlstraße 10
+[2026-04-21 10:05:08] PLZ/Ort: 4702 Wallern
+[2026-04-21 10:05:08] Web: https://www.feuerwehr-wallern.at
+[2026-04-21 10:05:08] ---------------------------------------

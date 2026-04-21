@@ -7,6 +7,7 @@ Imports System.Drawing.Imaging
 Imports System.Drawing.Printing
 Imports System.IO
 Imports System.Net
+Imports System.Net.Http
 Imports System.Text
 Imports System.Threading.Tasks
 Imports System.Windows.Forms
@@ -23,6 +24,16 @@ Public Class Druckservice
     Private druckername_etikett As String = My.Settings.EtiDrucker 'Ini.ReadValue("Drucker", "EtikettenDruckerName", "", Application.StartupPath & "\config.ini")
     Private pollinginterval As Integer = Ini.ReadValue("Administrator", "PollingInterval", "", Application.StartupPath & "\config.ini")
     Private logFile As String = Path.Combine(Application.StartupPath, "log.txt")
+
+    ' Globale Variablen (Klassenweit verfügbar)
+    Private ConfigData As Dictionary(Of String, String)
+    Private firma_name As String = ""
+    Private firma_adresse As String = ""
+    Private firma_plzort As String = ""
+    Private firma_web As String = ""
+    Private bank_name As String = ""
+    Private bank_iban As String = ""
+    Private bank_empfaenger As String = ""
 
     ' ===== Log-Methode (Konsole + Datei) =====
     Private Sub Log(msg As String)
@@ -92,6 +103,8 @@ Public Class Druckservice
             debugMode = False
         End Try
 
+        Call LoadConfiguration()
+
         apiTimer.Interval = pollinginterval * 1000 ' Sekunden in Millisekunden
         apiTimer.Start()
         Log("Printservice gestartet...")
@@ -147,6 +160,48 @@ Public Class Druckservice
             Log($"Markiere Etikett {nummer} als gedruckt")
             Await SetEtikettGedruckt(nummer)
         Next
+    End Function
+
+    Private Async Function LoadConfiguration() As Task
+        Dim url As String = apiUrl & "?route=/config&token=" & apiToken
+
+        Try
+            Using client As New HttpClient()
+                Log("Lade Konfiguration von API...")
+
+                Dim json As String = Await client.GetStringAsync(url)
+                ConfigData = JsonConvert.DeserializeObject(Of Dictionary(Of String, String))(json)
+
+                If ConfigData IsNot Nothing Then
+                    ' Werte global zuweisen
+                    firma_name = GetVal("FIRMA_NAME")
+                    firma_adresse = GetVal("FIRMA_ADRESSE")
+                    firma_plzort = GetVal("FIRMA_PLZORT")
+                    firma_web = GetVal("FIRMA_WEB")
+                    bank_name = GetVal("BANK_NAME")
+                    bank_iban = GetVal("BANK_IBAN")
+                    bank_empfaenger = GetVal("BANK_EMPFAENGER")
+
+
+                    Log("-------- Konfiguration geladen --------")
+                    Log($"Firma: {firma_name}")
+                    Log($"Adresse: {firma_adresse}")
+                    Log($"PLZ/Ort: {firma_plzort}")
+                    Log($"Web: {firma_web}")
+                    Log("---------------------------------------")
+                End If
+            End Using
+        Catch ex As Exception
+            Log($"Fehler beim Laden der Konfiguration: {ex.Message}")
+        End Try
+    End Function
+
+    ' Hilfsfunktion um Abstürze bei fehlenden Keys zu vermeiden
+    Private Function GetVal(key As String) As String
+        If ConfigData IsNot Nothing AndAlso ConfigData.ContainsKey(key) Then
+            Return ConfigData(key).ToString()
+        End If
+        Return ""
     End Function
 
     Private Async Function CheckAbholschein() As Task
@@ -463,10 +518,10 @@ Public Class Druckservice
             p.WriteLine()
             p.WriteLine("Feuerlöscherüberprüfung " + Format(Now, "yyyy"))
             p.WriteLine()
-            p.WriteLine(Ini.ReadValue("Feuerwehr", "Name", "", Application.StartupPath & "\config.ini"))
-            p.WriteLine(Ini.ReadValue("Feuerwehr", "Adresse", "", Application.StartupPath & "\config.ini"))
-            p.WriteLine(Ini.ReadValue("Feuerwehr", "PLZOrt", "", Application.StartupPath & "\config.ini"))
-            p.WriteLine(Ini.ReadValue("Feuerwehr", "Website", "", Application.StartupPath & "\config.ini"))
+            p.WriteLine(firma_name)
+            p.WriteLine(firma_adresse)
+            p.WriteLine(firma_plzort)
+            p.WriteLine(firma_web)
 
             p.WriteLine()
             p.WriteLine("-".PadRight(42, "-"))
@@ -561,10 +616,10 @@ Public Class Druckservice
 
             p.WriteLine("Feuerlöscherüberprüfung " + Format(Now, "yyyy"))
             p.WriteLine()
-            p.WriteLine(Ini.ReadValue("Feuerwehr", "Name", "", Application.StartupPath & "\config.ini"))
-            p.WriteLine(Ini.ReadValue("Feuerwehr", "Adresse", "", Application.StartupPath & "\config.ini"))
-            p.WriteLine(Ini.ReadValue("Feuerwehr", "PLZOrt", "", Application.StartupPath & "\config.ini"))
-            p.WriteLine(Ini.ReadValue("Feuerwehr", "Website", "", Application.StartupPath & "\config.ini"))
+            p.WriteLine(firma_name)
+            p.WriteLine(firma_adresse)
+            p.WriteLine(firma_plzort)
+            p.WriteLine(firma_web)
 
             p.WriteLine()
             p.WriteLine("-".PadRight(42, "-"))

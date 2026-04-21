@@ -1,0 +1,330 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+Druckservice
+</name>
+</assembly>
+<members>
+<member name="T:Druckservice.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:Druckservice.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:Druckservice.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="T:Druckservice.BonPrinterUtilities.EscPosPrinter">
+ <summary>
+ Stellt einen zustandsbehafteten ESC/POS-Drucker dar.
+ </summary>
+ <remarks>
+ Diese Klasse bietet Methoden, die die ESC/POS-Befehle kapseln.
+ Zum Schreiben eines Strings können Sie die Write(String)-Methode verwenden.
+ 
+ Bei jedem Aufruf einer Methode werden dabei die Kommandos in einen internen 
+ Puffer geschrieben, der am Schluss mit GetCurrentPuffer() geholt werden 
+ kann, um das Bytearray an den Drucker zu senden.
+ </remarks>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.#ctor">
+ <summary>
+ Erstellt eine neue Instanz. Dadurch wird automatisch ein 
+ "Initialize Printer"-Command (ESC '@') in den Puffer geschrieben, der 
+ den Drucker auf die Standardwerte zurücksetzt, damit der Zustand des 
+ Druckers dem Zustand dieses Objektes entspricht.
+ </summary>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.Write(System.String)">
+ <summary>
+ Schreibt den angegebenen String.
+ </summary>
+ <remarks>
+ Bei diesem Vorgang werden automatisch
+ Bytes, die in den ASCII-Steuerzeichenbereich fallen (0x00-0x1F sowie 0x7F), 
+ durch Leerzeichen ersetzt. So wird verhindert, dass Strings aus fremden 
+ Quellen den Zustand des Druckers verändern können.
+ 
+ Dies betrifft auch Zeilenumbrüche. Um einen Zeilenumbruch zu schreiben, 
+ verwenden Sie WriteLine() oder WriteLine(String).
+ 
+ Beachten Sie, dass bei den meisten Bondruckern eine Zeile erst gedruckt 
+ wird, sobald diese mit einem Zeilenumbruch abgeschlossen wird (auch wenn 
+ die Zeile voll ist, also so viele Zeichen belegt, wie der Drucker in eine 
+ Zeile drucken kann).
+ 
+ Beachten Sie, dass ESC/POS-Drucker standardmäßig die DOS-Codepage 437 
+ verwenden, die u. a.Rahmenzeichen, einige griechische Zeichen und 
+ mathematischen Symbole enthält. In den meisten Fällen empfiehlt sich für 
+ Textdruck (v.a. europäische Texte) aber ein Umschalten auf die Windows-
+ Codepage 1252 (Methode SetCodepage(PrinterCodepage)), da hier mehr
+ unterschiedliche Buchstaben (z.B. "ß"), typographische Satzzeichen und 
+ auch das €-Zeichen enthalten sind.
+ 
+ Für Texte in anderen europäischen Sprachen empfehlen sich noch die 
+ Codepage 852, die Zeichen  für mitteleuropäische Sprachen enthält, sowie 
+ die Codepage 866 mit kyrillischen Zeichen.
+ </remarks>
+ <param name="str">der String, der ausgegeben werden soll</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.WriteLine">
+ <summary>
+ Schreibt einen Zeilenumbruch (LF) zum Abschließen der aktuellen Zeile.
+ </summary>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.WriteLine(System.String)">
+ <summary>
+ Schreibt den angegebenen String und danach einen Zeilenumbruch (LF). 
+ Siehe Dokumentation zur Write(String)-Methode.
+ </summary>
+ <param name="str">der String, der ausgegeben werden soll</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.PrintImage(System.Drawing.Bitmap)">
+ <summary>
+ ESC '*' 33 nL nH d1…dk: 
+ Druckt das angegebene Bild in Schwarz/Weiß. Die Höhe muss hierbei ein 
+ Vielfaches von 24 sein, da das Bild wie Textzeilen ohne Zeilenabstand 
+ gedruckt wird und eine Zeile (Font A) aus 24 Pixeln besteht. Die Breite 
+ sollte der Druckerauflösung entsprechen (z.B. 384 Pixel beim PRP-058-
+ Drucker mit 32 Zeichen pro Zeile).
+ </summary>
+ <remarks>
+ Die Druckauflösung hängt vom Druckermodell ab und beträgt normalerweise
+ 203,2 dpi (z.B. PRP-058) oder 180 dpi.
+ </remarks>
+ <param name="bmp">Die zu druckende Bitmap</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SetUnderline(System.Boolean,System.Boolean)">
+ <summary>
+ ESC '-' n:
+ Aktiviert oder deaktiviert den Underline-Modus.
+ </summary>
+ <param name="value">true, wenn der Underline-Modus aktiviert werden soll, 
+ sonst false</param>
+ <param name="doubleThickness">true, wenn die Linie 2 Pixel statt 1 Pixel 
+ dick sein soll</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SetBold(System.Boolean)">
+ <summary>
+ ESC 'E' n:
+ Aktiviert oder deaktiviert den Fettschrift-Modus.
+ </summary>
+ <param name="value"></param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SetPanelButtons(System.Boolean)">
+ <summary>
+ ESC 'c' '5' n:
+ Aktiviert oder deaktiviert die Panel-Buttons am Drucker 
+ (z.B. den Feed-Button).
+ </summary>
+ <param name="value"></param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SetColor(System.Boolean)">
+ <summary>
+ ESC 'r' n:
+ Setzt die Druckfarbe auf rot oder schwarz (nur bei Modellen, 
+ die dies unterstützen).
+ </summary>
+ <param name="red">true, wenn mit roter statt schwarzer Farbe gedruckt 
+ werden soll</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SetFontSize(System.Int32,System.Int32)">
+ <summary>
+ GS '!' n:
+ Ändert die Font-Größe (Parameter jeweils von 0-7).
+ Standardwerte: x = 0, y = 0
+ </summary>
+ <param name="x">Horizontale Größe</param>
+ <param name="y">Vertikale Größe</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SetCodepage(Druckservice.BonPrinterUtilities.EscPosPrinter.PrinterCodepage)">
+ <summary>
+ ESC 't' n:
+ Schaltet auf die angegebene Codepage um.
+ </summary>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SetAlignment(Druckservice.BonPrinterUtilities.EscPosPrinter.Alignment)">
+ <summary>
+ ESC 'a' n:
+ Setzt die angegebene Textausrichtung.
+ </summary>
+ <param name="alignment"></param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SendDrawerKickoutPulse(System.Boolean,System.Byte,System.Byte)">
+ <summary>
+ ESC 'p' m t1 t2:
+ Erzeugt einen Pulse, um eine am Drucker angeschlossene Kassenlade 
+ zu öffnen.
+ </summary>
+ <param name="p5">false, wenn Pin #2 verwendet werden soll (m = 0);
+ true, wenn Pin #5 verwendet werden soll (m = 1)</param>
+ <param name="onTime">On Time: wert * 2 ms</param>
+ <param name="offTime">Off Time: wert * 2 ms</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.CutPaper(System.Boolean)">
+ <summary>
+ GS 'V' m:
+ Schneidet das Papier (nur bei Modellen mit einer Auto-Cut-Funktion).
+ </summary>
+ <param name="fullCut">true, wenn ein voller Schnitt durchgeführt 
+ werden soll; false, wenn ein kleines Stück freigelassen 
+ werden soll</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SetBarcodeHeight(System.Byte)">
+ <summary>
+ GS 'h' n:
+ Legt die Höhe von 2D-Barcodes (z.B. EAN-13 und EAN-8) fest.
+ Der Standardwert ist 162.
+ </summary>
+ <param name="height">die Höhe der Barcodes (zwischen 1 und 255)</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.PrintEanBarcode(System.String)">
+ <summary>
+ GS 'k' 67/68 12/7 d1…dk:
+ Druckt einen EAN-13- oder EAN-8-Barcode.
+ </summary>
+ <param name="ean">Bei EAN-13: 12- oder 13-stelliger Barcode; 
+ bei EAN-8: 7- oder 8-stelliger Barcode.
+ Bei 8 bzw. 13 Stellen wird die Prüfziffer ignoriert;
+ sie wird in allen Fällen vom Drucker berechnet.</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.PrintBarcode(System.String)">
+ <summary>
+ GS 'k' 69 1-255 d1…dk:
+ Druckt einen Code39-Barcode.
+ </summary>
+ <param name="ean">Bei Code39;
+ sie wird in allen Fällen vom Drucker berechnet.</param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.PrintLogo(System.Int32)">
+ <summary>
+ Druckt gespeichertes Logo.
+ FS p 'n' 'm'
+ n = Bildnummer
+ m = Modus (Norm, Doublewidth, Doubleheight,Quadruple)
+ </summary>
+ <param name="number"></param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.GetCurrentBuffer">
+ <summary>
+ Gibt den aktuellen Pufferinhalt zurück und leert diesen anschließend.
+ </summary>
+ <returns></returns>
+</member>
+<member name="T:Druckservice.BonPrinterUtilities.RawPrinter">
+ <summary>
+ Eine Klasse zum Kapseln eines Druckers. Mit der Methode
+ <see cref="M:Druckservice.BonPrinterUtilities.RawPrinter.CreateDocument(System.String)">CreateDocument(String)</see> 
+ kann ein neues Dokument im RAW-Format erstellt werden.
+ 
+ Pro RawPrinter-Instanz kann immer nur eine RawDocumentStream-Instanz 
+ gleichzeitig aktiv sein. Nach der Freigabe einer RawDocumentStream-
+ Instanz kann wieder ein neues Dokument erstellt werden.
+ </summary>
+ <remarks>
+ Diese Klasse ist nicht threadsicher. Wenn verschiedene Threads drucken
+ wollen, muss für jeden Thread ein eigenens RawPrinter-Objekt 
+ erstellt werden.
+ </remarks>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.RawPrinter.#ctor(System.String)">
+ <summary>
+ Erstellt eine neue Instanz.
+ </summary>
+ <param name="printerName">Der Name des zu verwendenden Druckers</param>
+ <exception cref="T:System.ComponentModel.Win32Exception">Beim Aufruf einer
+ Win32-API trat ein Fehler auf.</exception>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.RawPrinter.CheckApiCall(System.Boolean)">
+ <summary>
+ Überprüft den Rückgabewert einer Win32-API-Funktion und wirft bei Bedarf
+ eine Exception.
+ </summary>
+ <param name="retVal"></param>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.RawPrinter.Dispose">
+ <summary>
+ Gibt die nativen Resourcen dieses Objekts frei.
+ </summary>
+ <exception cref="T:System.ComponentModel.Win32Exception">Beim Aufruf einer
+ Win32-API trat ein Fehler auf.</exception>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.RawPrinter.CreateDocument(System.String)">
+ <summary>
+ Erstellt ein neues RawPrintDocument.
+ </summary>
+ <param name="docName">Der Name des Dokuments</param>
+ <returns>Das neue Dokument</returns>
+ <exception cref="T:System.ComponentModel.Win32Exception">Beim Aufruf einer
+ Win32-API trat ein Fehler auf.</exception>
+ <exception cref="T:System.InvalidOperationException">Es wurde bereits ein Dokument
+ für diesen Drucker erstellt und noch nicht freigegeben.</exception>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.RawPrinter.IsXpsDriver">
+ <summary>
+ Überprüft, ob es sich bei dem Treiber dieses Druckers um einen 
+ XPS-Treiber handelt.
+ </summary>
+ <remarks>
+ Bei Windows-Versionen kleiner als Windows 8 (NT 6.2), also 
+ Windows Vista und Windows 7, wird immer
+ false zurückgegeben.
+ </remarks>
+ <returns>true, wenn es sich um einen XPS-Treiber handelt</returns>
+</member>
+<member name="T:Druckservice.BonPrinterUtilities.RawPrinter.RawDocumentStream">
+ <summary>
+ Ermöglicht das Senden von RAW-Dokumenten (Bytes) an den Drucker.
+ </summary>
+ <remarks>
+ Die Methoden StartPage() und EndPage() dienen zum Unterteilen des 
+ Druckauftrags in Seiten (wichtig, wenn der Windows Spooler verwendet 
+ wird und man Dokumente senden will, die lange zum Erstellen brauchen, 
+ da dieser bis zur Fertigestellung einer Seite wartet, bevor diese 
+ tatsächlich zum Drucker gesendet wird).
+ </remarks>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.RawPrinter.RawDocumentStream.StartPage">
+ <summary>
+ Startet eine neue Seite (nur wichtig für den Windows Spooler).
+ </summary>
+ <exception cref="T:System.ComponentModel.Win32Exception">Beim 
+ Aufruf einer Win32-API trat ein Fehler auf.</exception>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.RawPrinter.RawDocumentStream.FinishPage">
+ <summary>
+ Beendet die aktuelle Seite.
+ </summary>
+ <exception cref="T:System.ComponentModel.Win32Exception">Beim 
+ Aufruf einer Win32-API trat ein Fehler auf.</exception>
+</member>
+<member name="M:Druckservice.BonPrinterUtilities.RawPrinter.RawDocumentStream.Write(System.Byte[],System.Int32,System.Int32)">
+ <summary>
+ Sendet die angegebenen Bytes an den Drucker.
+ </summary>
+ <param name="buffer"></param>
+ <param name="offset"></param>
+ <param name="count"></param>
+ <exception cref="T:System.ComponentModel.Win32Exception">Beim Aufruf 
+ einer Win32-API trat ein Fehler auf.</exception>
+</member>
+<member name="M:Druckservice.ZPLRawPrinterHelper.SendStringToPrinter(System.String,System.String)">
+ <summary>
+ Sendet einen ZPL-String direkt an den Drucker.
+ </summary>
+</member>
+<member name="M:Druckservice.ZPLRawPrinterHelper.SendBytesToPrinter(System.String,System.IntPtr,System.Int32)">
+ <summary>
+ Sendet rohe Bytes an den Drucker.
+ </summary>
+</member>
+</members>
+</doc>
