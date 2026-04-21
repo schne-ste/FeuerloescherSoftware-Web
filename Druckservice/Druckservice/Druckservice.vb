@@ -413,19 +413,24 @@ Public Class Druckservice
             Dim displayYear As String = shortID & " - " & Format(Now, "yy")
             Dim zpl As String = ""
 
-            ' ZPL Code für 57x32mm
+            Dim hoehe As Integer = CInt(Ini.ReadValue("Drucker", "ZEBRA_ETI_HOEHE", "", Application.StartupPath & "\config.ini"))
+            Dim breite As Integer = CInt(Ini.ReadValue("Drucker", "ZEBRA_ETI_BREITE", "", Application.StartupPath & "\config.ini"))
+
+            ' ZPL Code
             ' Erklärung: GB = Schwarzer Balken, FR = Text invertieren (weiß auf schwarz), FB = Zentrieren
             zpl = "^XA" &
-            "^CI28" &
-            "^PW" & mm(57) &
-            "^LL" & mm(32) &
-            "^LS0" &
-            "^FO" & mm(2) & "," & mm(2) & "^GB" & mm(53) & "," & mm(10) & "," & mm(10) & "^FS" &
-            "^FO" & mm(2) & "," & mm(3) & "^A0N," & mm(8) & "," & mm(8) & "^FB" & mm(53) & ",1,0,C^FR^FD" & displayYear & "^FS" &
-            "^FO" & mm(2) & "," & mm(14) & "^A0N," & mm(5) & "," & mm(5) & "^FB" & mm(53) & ",1,0,C^FD" & name & "^FS" &
-            "^BY3,3" &
-            "^FO" & mm(0) & "," & mm(21) & "^B3N,N," & mm(8) & ",N,N^FB" & mm(57) & ",1,0,C^FD" & loescher_id & "^FS" &
-            "^XZ"
+              "^CI28" &
+              "^PW" & mm(breite) &
+              "^LL" & mm(hoehe) &
+              "^LS0" &
+              "^FO" & mm(1) & "," & mm(2) & "^GB" & mm(53) & "," & mm(10) & "," & mm(10) & "^FS" &
+              "^FO" & mm(1) & "," & mm(4) & "^A0N," & mm(8) & "," & mm(8) & "^FB" & mm(53) & ",1,0,C^FR^FD" & displayYear & "^FS" &
+              "^FO" & mm(1) & "," & mm(14) & "^A0N," & mm(5) & "," & mm(5) & "^FB" & mm(53) & ",1,0,C^FD" & name & "^FS" &
+              "^BY3,3" &
+              "^FO" & mm(10) & "," & mm(20) &
+              "^B3N,N," & mm(10) & ",Y,N" &
+              "^FD" & loescher_id & "^FS" &
+              "^XZ"
 
             ' Senden über die RawPrinterHelper Klasse
             If ZPLRawPrinterHelper.SendStringToPrinter(druckername, zpl) Then
