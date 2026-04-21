@@ -96,28 +96,30 @@ Public Class Druckservice
 
         If Not String.IsNullOrEmpty(inputUrl) Then
 
-            ' --- SCHRITT A: Protokoll prüfen (http://) ---
-            ' Falls weder http noch https vorhanden ist, http:// voranstellen
+            ' --- SCHRITT A: Protokoll prüfen ---
+            ' Standardmäßig http:// voranstellen, falls kein Protokoll angegeben wurde
             If Not inputUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) AndAlso
        Not inputUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) Then
                 inputUrl = "http://" & inputUrl
             End If
 
-            ' --- SCHRITT B: Endung prüfen (/api/index.php) ---
-            ' Zuerst alle Slashes am Ende entfernen, um eine saubere Basis zu haben
+            ' --- SCHRITT B: Pfad prüfen (/api) ---
+            ' Alle Slashes am Ende entfernen für eine saubere Basis
             inputUrl = inputUrl.TrimEnd("/"c)
 
-            ' Prüfen, ob die URL bereits korrekt endet
-            If Not inputUrl.EndsWith("/api/index.php", StringComparison.OrdinalIgnoreCase) Then
+            ' Prüfen, ob die URL auf /api endet (oder index.php falls doch vorhanden)
+            ' Wir prüfen primär auf /api, da dies laut deiner Anforderung das Wichtigste ist.
+            If Not inputUrl.EndsWith("/api", StringComparison.OrdinalIgnoreCase) AndAlso
+       Not inputUrl.EndsWith("/api/index.php", StringComparison.OrdinalIgnoreCase) Then
 
-                If inputUrl.EndsWith("/api", StringComparison.OrdinalIgnoreCase) Then
-                    ' Wenn nur /api da ist, nur index.php ergänzen
-                    inputUrl &= "/index.php"
+                ' Falls die URL auf /index.php ohne /api endet (unwahrscheinlich, aber sicherheitshalber)
+                If inputUrl.EndsWith("/index.php", StringComparison.OrdinalIgnoreCase) Then
+                    ' Ersetzt /index.php durch /api/index.php
+                    inputUrl = inputUrl.Substring(0, inputUrl.Length - 10) & "/api/index.php"
                 Else
-                    ' Ansonsten das komplette Suffix anhängen
-                    inputUrl &= "/api/index.php"
+                    ' Standardfall: /api einfach anhängen
+                    inputUrl &= "/api"
                 End If
-
             End If
 
             ' --- SCHRITT C: Speichern ---
@@ -130,7 +132,7 @@ Public Class Druckservice
         ' 3. Ergebnis zurückschreiben
         apiUrl = inputUrl
         tb_apiUrl.Text = inputUrl
-        apiToken = If(tb_apiToken.Text, "")
+        apiToken = tb_apiToken.Text.Trim()
 
         ' Debug mode aus config.ini auslesen
         Try
