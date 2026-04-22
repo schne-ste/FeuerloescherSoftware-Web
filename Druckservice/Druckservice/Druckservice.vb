@@ -416,19 +416,31 @@ Public Class Druckservice
             Dim hoehe As Integer = CInt(Ini.ReadValue("Drucker", "ZEBRA_ETI_HOEHE", "", Application.StartupPath & "\config.ini"))
             Dim breite As Integer = CInt(Ini.ReadValue("Drucker", "ZEBRA_ETI_BREITE", "", Application.StartupPath & "\config.ini"))
 
+            ' Standardwerte für 50x25
+            Dim barcodeX As Integer = 9
+            Dim barcodeY As Integer = 18
+
+            ' Anpassung falls es das große 57x32 Etikett ist
+            If breite > 50 Then
+                barcodeX = 11 ' Weiter rechts für 57mm
+                barcodeY = 22 ' Tiefer für 32mm
+            End If
+
             ' ZPL Code
             ' Erklärung: GB = Schwarzer Balken, FR = Text invertieren (weiß auf schwarz), FB = Zentrieren
+            ' ZPL Code angepasst
             zpl = "^XA" &
               "^CI28" &
+              "^LT0" &
               "^PW" & mm(breite) &
               "^LL" & mm(hoehe) &
               "^LS0" &
-              "^FO" & mm(1) & "," & mm(2) & "^GB" & mm(53) & "," & mm(10) & "," & mm(10) & "^FS" &
-              "^FO" & mm(1) & "," & mm(4) & "^A0N," & mm(8) & "," & mm(8) & "^FB" & mm(53) & ",1,0,C^FR^FD" & displayYear & "^FS" &
-              "^FO" & mm(1) & "," & mm(14) & "^A0N," & mm(5) & "," & mm(5) & "^FB" & mm(53) & ",1,0,C^FD" & name & "^FS" &
+              "^FO" & mm(3) & "," & mm(2) & "^GB" & mm(51) & "," & mm(10) & "," & mm(10) & "^FS" &
+              "^FO" & mm(3) & "," & mm(4) & "^A0N," & mm(8) & "," & mm(8) & "^FB" & mm(51) & ",1,0,C^FR^FD" & displayYear & "^FS" &
+              "^FO" & mm(3) & "," & mm(14) & "^A0N," & mm(5) & "," & mm(5) & "^FB" & mm(51) & ",1,0,C^FD" & name & "^FS" &
               "^BY3,3" &
-              "^FO" & mm(10) & "," & mm(20) &
-              "^B3N,N," & mm(10) & ",Y,N" &
+              "^FO" & mm(barcodeX) & "," & mm(barcodeY) &
+              "^B3N,N," & mm(7) & ",N,N" &' B3N,N,mm(x),N,N -> Das DRITTE N deaktiviert den Text unter dem Barcode
               "^FD" & loescher_id & "^FS" &
               "^XZ"
 
