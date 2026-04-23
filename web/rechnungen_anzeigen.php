@@ -68,6 +68,12 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
         <h2>Alle Rechnungen</h2>
         <span class="badge bg-secondary"><?= count($rechnungen) ?> Einträge gesamt</span>
     </div>
+    <div class="d-flex gap-2">
+        <a href="rechnung.php" class="btn btn-success btn-sm">+ Neue Rechnung</a>
+        <a href="rechnungen_download_zip.php" class="btn btn-primary btn-sm">
+            &#128229; Alle Rechnungen als ZIP herunterladen
+        </a>
+    </div>
 
     <div class="search-container mb-4">
         <div class="input-group">

@@ -214,6 +214,7 @@ $stats = getStats($db);
         </span>
 
         <div class="d-flex gap-2">
+            <a href="add_edit.php" class="btn btn-success btn-sm">+ Neuen Löscher anlegen</a>
             <a href="index.php" class="btn btn-outline-light btn-sm">
                 Zurück
             </a>

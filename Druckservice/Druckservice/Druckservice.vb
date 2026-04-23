@@ -38,27 +38,28 @@ Public Class Druckservice
     ' ===== Log-Methode (Konsole + Datei) =====
     Private Sub Log(msg As String)
         Dim line As String = $"[{Format(Now, "yyyy-MM-dd HH:mm:ss")}] {msg}"
-        Console.WriteLine(line)
+        'Console.WriteLine(line)
         Try
             If tb_debug.InvokeRequired Then
                 tb_debug.Invoke(Sub()
                                     tb_debug.AppendText(line & Environment.NewLine)
                                     tb_debug.ScrollToCaret()
-                                    File.AppendAllText(logFile, line & Environment.NewLine)
+                                    'File.AppendAllText(logFile, line & Environment.NewLine)
                                 End Sub)
             Else
                 tb_debug.AppendText(line & Environment.NewLine)
                 tb_debug.ScrollToCaret()
-                File.AppendAllText(logFile, line & Environment.NewLine)
+                'File.AppendAllText(logFile, line & Environment.NewLine)
             End If
         Catch ex As Exception
             Console.WriteLine("FEHLER beim Schreiben in UI: " & ex.Message)
-            File.AppendAllText(logFile, line & Environment.NewLine)
+            'File.AppendAllText(logFile, line & Environment.NewLine)
         End Try
     End Sub
 
     ' ===== Form Load =====
     Private Sub Druckservice_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Log("Printservice wird gestartet...")
         tb_copyright.Text = "© " & DateTime.Now.Year & " - Schneebauer Stefan - Alle Rechte vorbehalten."
         ' Drucker in Comboboxen laden
         'Ini.WriteValue("Drucker", "EtikettenDruckerName", "MeinDruckerName", Application.StartupPath & "\config.ini")
@@ -146,10 +147,34 @@ Public Class Druckservice
 
         Call LoadConfiguration()
 
-        apiTimer.Interval = pollinginterval * 1000 ' Sekunden in Millisekunden
-        apiTimer.Start()
-        Log("Printservice gestartet...")
+        btn_StartStop.Text = "Druckservice Starten"
+        btn_StartStop.BackColor = Color.LightSalmon
+
+        Log("Printservice bereit. Bitte Start drücken...")
         Log($"-------------------------------------------------------------------------------------------")
+    End Sub
+
+    Private Sub btn_StartStop_Click(sender As Object, e As EventArgs) Handles btn_StartStop.Click
+        If apiTimer.Enabled Then
+            ' Timer stoppen
+            apiTimer.Stop()
+            btn_StartStop.Text = "Druckservice Starten"
+            btn_StartStop.BackColor = Color.LightSalmon
+            Log(">>> Druckservice durch Benutzer GESTOPPT.")
+        Else
+            ' Validierung vor dem Start
+            If tb_apiToken.Text.Trim() = "" Or tb_apiUrl.Text.Trim() = "" Then
+                MessageBox.Show("Bitte API URL und Token eingeben!", "Fehlende Daten", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
+
+            ' Timer starten
+            apiTimer.Interval = pollinginterval * 1000
+            apiTimer.Start()
+            btn_StartStop.Text = "Druckservice Stoppen"
+            btn_StartStop.BackColor = Color.LightGreen
+            Log(">>> Druckservice durch Benutzer GESTARTET.")
+        End If
     End Sub
 
     ' ===== Timer Tick =====
@@ -179,7 +204,11 @@ Public Class Druckservice
         Dim sec As Integer = apiTimer.Interval \ 1000
         Log($"Timer beendet - nächster Lauf in {sec} Sekunden.")
         Log($"-------------------------------------------------------------------------------------------")
-        apiTimer.Start()
+
+        ' Nur neu starten, wenn der Benutzer nicht zwischendurch auf "Stopp" gedrückt hat
+        If Not btn_StartStop.Text.Contains("Starten") Then
+            apiTimer.Start()
+        End If
     End Sub
 
     ' ===== API Calls =====
@@ -203,14 +232,14 @@ Public Class Druckservice
         Next
     End Function
 
-    Private Async Function LoadConfiguration() As Task
+    Private Function LoadConfiguration() As Task
         Dim url As String = apiUrl & "?route=/config&token=" & apiToken
 
         Try
             Using client As New HttpClient()
                 Log("Lade Konfiguration von API...")
 
-                Dim json As String = Await client.GetStringAsync(url)
+                Dim json As String = client.GetStringAsync(url).Result
                 ConfigData = JsonConvert.DeserializeObject(Of Dictionary(Of String, String))(json)
 
                 If ConfigData IsNot Nothing Then
@@ -224,12 +253,12 @@ Public Class Druckservice
                     bank_empfaenger = GetVal("BANK_EMPFAENGER")
 
 
-                    Log("-------- Konfiguration geladen --------")
+                    'Log("------------------------- Konfiguration geladen ----------------------------")
                     Log($"Firma: {firma_name}")
                     Log($"Adresse: {firma_adresse}")
                     Log($"PLZ/Ort: {firma_plzort}")
                     Log($"Web: {firma_web}")
-                    Log("---------------------------------------")
+                    Log($"-------------------------------------------------------------------------------------------")
                 End If
             End Using
         Catch ex As Exception
@@ -417,32 +446,43 @@ Public Class Druckservice
             Dim breite As Integer = CInt(Ini.ReadValue("Drucker", "ZEBRA_ETI_BREITE", "", Application.StartupPath & "\config.ini"))
 
             ' Standardwerte für 50x25
-            Dim barcodeX As Integer = 9
+            Dim barcodeX As Integer = 10
             Dim barcodeY As Integer = 18
 
             ' Anpassung falls es das große 57x32 Etikett ist
             If breite > 50 Then
-                barcodeX = 11 ' Weiter rechts für 57mm
+                barcodeX = 13 ' Weiter rechts für 57mm
                 barcodeY = 22 ' Tiefer für 32mm
             End If
 
             ' ZPL Code
             ' Erklärung: GB = Schwarzer Balken, FR = Text invertieren (weiß auf schwarz), FB = Zentrieren
             ' ZPL Code angepasst
-            zpl = "^XA" &
-              "^CI28" &
-              "^LT0" &
-              "^PW" & mm(breite) &
-              "^LL" & mm(hoehe) &
-              "^LS0" &
-              "^FO" & mm(3) & "," & mm(2) & "^GB" & mm(51) & "," & mm(10) & "," & mm(10) & "^FS" &
-              "^FO" & mm(3) & "," & mm(4) & "^A0N," & mm(8) & "," & mm(8) & "^FB" & mm(51) & ",1,0,C^FR^FD" & displayYear & "^FS" &
-              "^FO" & mm(3) & "," & mm(14) & "^A0N," & mm(5) & "," & mm(5) & "^FB" & mm(51) & ",1,0,C^FD" & name & "^FS" &
-              "^BY3,3" &
-              "^FO" & mm(barcodeX) & "," & mm(barcodeY) &
-              "^B3N,N," & mm(7) & ",N,N" &' B3N,N,mm(x),N,N -> Das DRITTE N deaktiviert den Text unter dem Barcode
-              "^FD" & loescher_id & "^FS" &
-              "^XZ"
+            'zpl = "^XA" &
+            '  "^CI28" &
+            '  "^LT0" &
+            '  "^PW" & mm(breite) &
+            '  "^LL" & mm(hoehe) &
+            '  "^LS0" &
+            '  "^FO" & mm(3) & "," & mm(2) & "^GB" & mm(51) & "," & mm(10) & "," & mm(10) & "^FS" &
+            '  "^FO" & mm(3) & "," & mm(4) & "^A0N," & mm(8) & "," & mm(8) & "^FB" & mm(51) & ",1,0,C^FR^FD" & displayYear & "^FS" &
+            '  "^FO" & mm(3) & "," & mm(14) & "^A0N," & mm(5) & "," & mm(5) & "^FB" & mm(51) & ",1,0,C^FD" & name & "^FS" &
+            '  "^BY3,3" &
+            '  "^FO" & mm(barcodeX) & "," & mm(barcodeY) &
+            '  "^B3N,N," & mm(7) & ",N,N" &' B3N,N,mm(x),N,N -> Das DRITTE N deaktiviert den Text unter dem Barcode
+            '  "^FD" & loescher_id & "^FS" &
+            '  "^XZ"
+
+            ' ZPL dynamisch berechnet (Faktor 8 für 203 dpi)
+            ' Berechnung der Y-Position für den Namen: 
+            ' Wenn Höhe 25, dann etwas höher (104), sonst etwas tiefer (128)
+            Dim nameY As Integer = If(hoehe <= 25, 104, 128)
+
+            zpl = "^XA^CI28^LT0^PW" & (breite * 8) & "^LL" & (hoehe * 8) & "^LS0" &
+                  "^FO16,16^GB" & ((breite - 4) * 8) & ",80,80^FS" &
+                  "^FO16,32^A0N,64,64^FB" & ((breite - 4) * 8) & ",1,0,C^FR^FD" & displayYear & "^FS" &
+                  "^FO16," & nameY & "^A0N,40,40^FB" & ((breite - 4) * 8) & ",1,0,C^FD" & name & "^FS" &
+                  "^BY3,3^FO" & (barcodeX * 8) & "," & (barcodeY * 8) & "^B3N,N,56,N,N^FD" & loescher_id & "^FS^XZ"
 
             ' Senden über die RawPrinterHelper Klasse
             If ZPLRawPrinterHelper.SendStringToPrinter(druckername, zpl) Then

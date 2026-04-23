@@ -8916,3 +8916,237 @@
 [2026-04-22 13:08:04] Gefundene Rechnungen: 0
 [2026-04-22 13:08:04] Timer beendet - nächster Lauf in 5 Sekunden.
 [2026-04-22 13:08:04] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:27] DEBUG MODE: False
+[2026-04-23 12:45:27] Lade Konfiguration von API...
+[2026-04-23 12:45:27] Printservice gestartet...
+[2026-04-23 12:45:27] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:27] -------- Konfiguration geladen --------
+[2026-04-23 12:45:27] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-23 12:45:27] Adresse: Kienzlstraße 10
+[2026-04-23 12:45:27] PLZ/Ort: 4702 Wallern / Trattnach
+[2026-04-23 12:45:27] Web: https://www.feuerwehr-wallern.at
+[2026-04-23 12:45:27] ---------------------------------------
+[2026-04-23 12:45:32] Timer gestartet - prüfe API...
+[2026-04-23 12:45:32] Gefundene Etiketten: 0
+[2026-04-23 12:45:32] Gefundene Abholscheine: 0
+[2026-04-23 12:45:32] Gefundene Rechnungen: 0
+[2026-04-23 12:45:32] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-23 12:45:32] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:37] Timer gestartet - prüfe API...
+[2026-04-23 12:45:37] Gefundene Etiketten: 0
+[2026-04-23 12:45:37] Gefundene Abholscheine: 0
+[2026-04-23 12:45:37] Gefundene Rechnungen: 0
+[2026-04-23 12:45:37] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-23 12:45:37] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:42] Timer gestartet - prüfe API...
+[2026-04-23 12:45:42] Gefundene Etiketten: 0
+[2026-04-23 12:45:43] Gefundene Abholscheine: 0
+[2026-04-23 12:45:43] Gefundene Rechnungen: 0
+[2026-04-23 12:45:43] Timer beendet - nächster Lauf in 5 Sekunden.
+[2026-04-23 12:45:43] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:45] DEBUG MODE: False
+[2026-04-23 12:45:45] Lade Konfiguration von API...
+[2026-04-23 12:45:45] Printservice gestartet...
+[2026-04-23 12:45:45] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:45] -------- Konfiguration geladen --------
+[2026-04-23 12:45:45] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-23 12:45:45] Adresse: Kienzlstraße 10
+[2026-04-23 12:45:45] PLZ/Ort: 4702 Wallern / Trattnach
+[2026-04-23 12:45:45] Web: https://www.feuerwehr-wallern.at
+[2026-04-23 12:45:45] ---------------------------------------
+[2026-04-23 12:45:46] Timer gestartet - prüfe API...
+[2026-04-23 12:45:46] Gefundene Etiketten: 0
+[2026-04-23 12:45:46] Gefundene Abholscheine: 0
+[2026-04-23 12:45:46] Gefundene Rechnungen: 0
+[2026-04-23 12:45:46] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:46] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:47] Timer gestartet - prüfe API...
+[2026-04-23 12:45:47] Gefundene Etiketten: 0
+[2026-04-23 12:45:47] Gefundene Abholscheine: 0
+[2026-04-23 12:45:47] Gefundene Rechnungen: 0
+[2026-04-23 12:45:47] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:47] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:48] Timer gestartet - prüfe API...
+[2026-04-23 12:45:48] Gefundene Etiketten: 0
+[2026-04-23 12:45:48] Gefundene Abholscheine: 0
+[2026-04-23 12:45:48] Gefundene Rechnungen: 0
+[2026-04-23 12:45:48] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:48] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:49] Timer gestartet - prüfe API...
+[2026-04-23 12:45:49] Gefundene Etiketten: 0
+[2026-04-23 12:45:49] Gefundene Abholscheine: 0
+[2026-04-23 12:45:50] Gefundene Rechnungen: 0
+[2026-04-23 12:45:50] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:50] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:51] Timer gestartet - prüfe API...
+[2026-04-23 12:45:51] Gefundene Etiketten: 0
+[2026-04-23 12:45:51] Gefundene Abholscheine: 0
+[2026-04-23 12:45:51] Gefundene Rechnungen: 0
+[2026-04-23 12:45:51] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:51] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:52] Timer gestartet - prüfe API...
+[2026-04-23 12:45:52] Gefundene Etiketten: 0
+[2026-04-23 12:45:52] Gefundene Abholscheine: 0
+[2026-04-23 12:45:52] Gefundene Rechnungen: 0
+[2026-04-23 12:45:52] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:52] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:53] Timer gestartet - prüfe API...
+[2026-04-23 12:45:53] Gefundene Etiketten: 0
+[2026-04-23 12:45:53] Gefundene Abholscheine: 0
+[2026-04-23 12:45:53] Gefundene Rechnungen: 0
+[2026-04-23 12:45:53] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:53] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:54] Timer gestartet - prüfe API...
+[2026-04-23 12:45:54] Gefundene Etiketten: 0
+[2026-04-23 12:45:54] Gefundene Abholscheine: 0
+[2026-04-23 12:45:54] Gefundene Rechnungen: 0
+[2026-04-23 12:45:54] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:54] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:55] Timer gestartet - prüfe API...
+[2026-04-23 12:45:55] Gefundene Etiketten: 0
+[2026-04-23 12:45:55] Gefundene Abholscheine: 0
+[2026-04-23 12:45:56] Gefundene Rechnungen: 0
+[2026-04-23 12:45:56] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:56] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:57] Timer gestartet - prüfe API...
+[2026-04-23 12:45:57] Gefundene Etiketten: 0
+[2026-04-23 12:45:57] Gefundene Abholscheine: 0
+[2026-04-23 12:45:57] Gefundene Rechnungen: 0
+[2026-04-23 12:45:57] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:57] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:58] Timer gestartet - prüfe API...
+[2026-04-23 12:45:58] Gefundene Etiketten: 0
+[2026-04-23 12:45:58] Gefundene Abholscheine: 0
+[2026-04-23 12:45:58] Gefundene Rechnungen: 0
+[2026-04-23 12:45:58] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:58] -------------------------------------------------------------------------------------------
+[2026-04-23 12:45:59] Timer gestartet - prüfe API...
+[2026-04-23 12:45:59] Gefundene Etiketten: 0
+[2026-04-23 12:45:59] Gefundene Abholscheine: 0
+[2026-04-23 12:45:59] Gefundene Rechnungen: 0
+[2026-04-23 12:45:59] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:45:59] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:00] Timer gestartet - prüfe API...
+[2026-04-23 12:46:00] Gefundene Etiketten: 0
+[2026-04-23 12:46:00] Gefundene Abholscheine: 0
+[2026-04-23 12:46:00] Gefundene Rechnungen: 0
+[2026-04-23 12:46:00] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:00] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:01] Timer gestartet - prüfe API...
+[2026-04-23 12:46:01] Gefundene Etiketten: 0
+[2026-04-23 12:46:01] Gefundene Abholscheine: 0
+[2026-04-23 12:46:01] Gefundene Rechnungen: 0
+[2026-04-23 12:46:01] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:01] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:02] Timer gestartet - prüfe API...
+[2026-04-23 12:46:02] Gefundene Etiketten: 0
+[2026-04-23 12:46:02] Gefundene Abholscheine: 0
+[2026-04-23 12:46:02] Gefundene Rechnungen: 0
+[2026-04-23 12:46:02] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:02] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:03] Timer gestartet - prüfe API...
+[2026-04-23 12:46:03] Gefundene Etiketten: 0
+[2026-04-23 12:46:03] Gefundene Abholscheine: 0
+[2026-04-23 12:46:03] Gefundene Rechnungen: 0
+[2026-04-23 12:46:03] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:03] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:04] Timer gestartet - prüfe API...
+[2026-04-23 12:46:04] Gefundene Etiketten: 0
+[2026-04-23 12:46:04] Gefundene Abholscheine: 0
+[2026-04-23 12:46:05] Gefundene Rechnungen: 0
+[2026-04-23 12:46:05] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:05] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:06] Timer gestartet - prüfe API...
+[2026-04-23 12:46:06] Gefundene Etiketten: 0
+[2026-04-23 12:46:06] Gefundene Abholscheine: 0
+[2026-04-23 12:46:06] Gefundene Rechnungen: 0
+[2026-04-23 12:46:06] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:06] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:07] Timer gestartet - prüfe API...
+[2026-04-23 12:46:07] Gefundene Etiketten: 0
+[2026-04-23 12:46:07] Gefundene Abholscheine: 0
+[2026-04-23 12:46:07] Gefundene Rechnungen: 0
+[2026-04-23 12:46:07] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:07] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:08] Timer gestartet - prüfe API...
+[2026-04-23 12:46:08] Gefundene Etiketten: 0
+[2026-04-23 12:46:08] Gefundene Abholscheine: 0
+[2026-04-23 12:46:08] Gefundene Rechnungen: 0
+[2026-04-23 12:46:08] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:08] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:09] Timer gestartet - prüfe API...
+[2026-04-23 12:46:09] Gefundene Etiketten: 0
+[2026-04-23 12:46:09] Gefundene Abholscheine: 0
+[2026-04-23 12:46:09] Gefundene Rechnungen: 0
+[2026-04-23 12:46:09] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:09] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:10] Timer gestartet - prüfe API...
+[2026-04-23 12:46:10] Gefundene Etiketten: 0
+[2026-04-23 12:46:10] Gefundene Abholscheine: 0
+[2026-04-23 12:46:10] Gefundene Rechnungen: 0
+[2026-04-23 12:46:10] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:10] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:11] Timer gestartet - prüfe API...
+[2026-04-23 12:46:11] Gefundene Etiketten: 0
+[2026-04-23 12:46:11] Gefundene Abholscheine: 0
+[2026-04-23 12:46:11] Gefundene Rechnungen: 0
+[2026-04-23 12:46:11] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:11] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:12] Timer gestartet - prüfe API...
+[2026-04-23 12:46:12] Gefundene Etiketten: 0
+[2026-04-23 12:46:12] Gefundene Abholscheine: 0
+[2026-04-23 12:46:12] Gefundene Rechnungen: 0
+[2026-04-23 12:46:12] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:12] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:13] Timer gestartet - prüfe API...
+[2026-04-23 12:46:13] Gefundene Etiketten: 0
+[2026-04-23 12:46:13] Gefundene Abholscheine: 0
+[2026-04-23 12:46:13] Gefundene Rechnungen: 0
+[2026-04-23 12:46:13] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:13] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:14] Timer gestartet - prüfe API...
+[2026-04-23 12:46:14] Gefundene Etiketten: 0
+[2026-04-23 12:46:15] Gefundene Abholscheine: 0
+[2026-04-23 12:46:15] Gefundene Rechnungen: 0
+[2026-04-23 12:46:15] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:15] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:16] Timer gestartet - prüfe API...
+[2026-04-23 12:46:16] Gefundene Etiketten: 0
+[2026-04-23 12:46:16] Gefundene Abholscheine: 0
+[2026-04-23 12:46:16] Gefundene Rechnungen: 0
+[2026-04-23 12:46:16] Timer beendet - nächster Lauf in 1 Sekunden.
+[2026-04-23 12:46:16] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:17] DEBUG MODE: False
+[2026-04-23 12:46:17] Lade Konfiguration von API...
+[2026-04-23 12:46:17] Printservice gestartet...
+[2026-04-23 12:46:17] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:17] -------- Konfiguration geladen --------
+[2026-04-23 12:46:17] Firma: Freiwillige Feuerwehr Wallern
+[2026-04-23 12:46:17] Adresse: Kienzlstraße 10
+[2026-04-23 12:46:17] PLZ/Ort: 4702 Wallern / Trattnach
+[2026-04-23 12:46:17] Web: https://www.feuerwehr-wallern.at
+[2026-04-23 12:46:17] ---------------------------------------
+[2026-04-23 12:46:20] Timer gestartet - prüfe API...
+[2026-04-23 12:46:20] Gefundene Etiketten: 0
+[2026-04-23 12:46:20] Gefundene Abholscheine: 0
+[2026-04-23 12:46:20] Gefundene Rechnungen: 0
+[2026-04-23 12:46:20] Timer beendet - nächster Lauf in 3 Sekunden.
+[2026-04-23 12:46:20] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:23] Timer gestartet - prüfe API...
+[2026-04-23 12:46:23] Gefundene Etiketten: 0
+[2026-04-23 12:46:23] Gefundene Abholscheine: 0
+[2026-04-23 12:46:23] Gefundene Rechnungen: 0
+[2026-04-23 12:46:23] Timer beendet - nächster Lauf in 3 Sekunden.
+[2026-04-23 12:46:23] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:26] Timer gestartet - prüfe API...
+[2026-04-23 12:46:26] Gefundene Etiketten: 0
+[2026-04-23 12:46:26] Gefundene Abholscheine: 0
+[2026-04-23 12:46:26] Gefundene Rechnungen: 0
+[2026-04-23 12:46:26] Timer beendet - nächster Lauf in 3 Sekunden.
+[2026-04-23 12:46:26] -------------------------------------------------------------------------------------------
+[2026-04-23 12:46:29] Timer gestartet - prüfe API...
+[2026-04-23 12:46:29] Gefundene Etiketten: 0
+[2026-04-23 12:46:29] Gefundene Abholscheine: 0
+[2026-04-23 12:46:29] Gefundene Rechnungen: 0
+[2026-04-23 12:46:29] Timer beendet - nächster Lauf in 3 Sekunden.
+[2026-04-23 12:46:29] -------------------------------------------------------------------------------------------

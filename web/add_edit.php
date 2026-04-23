@@ -509,6 +509,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         </span>
 
         <div class="d-flex gap-2">
+            <a href="liste.php" class="btn btn-outline-info btn-sm">Löscherübersicht</a>
             <a href="index.php" class="btn btn-outline-light btn-sm">
                 Zurück
             </a>

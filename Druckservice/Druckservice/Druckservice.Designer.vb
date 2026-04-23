@@ -37,6 +37,7 @@ Partial Class Druckservice
         Me.Label5 = New System.Windows.Forms.Label()
         Me.tb_copyright = New System.Windows.Forms.Label()
         Me.tb_printerEti_typ = New System.Windows.Forms.ComboBox()
+        Me.btn_StartStop = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'tb_debug
@@ -120,10 +121,17 @@ Partial Class Druckservice
         Me.tb_printerEti_typ.Items.AddRange(New Object() {resources.GetString("tb_printerEti_typ.Items"), resources.GetString("tb_printerEti_typ.Items1")})
         Me.tb_printerEti_typ.Name = "tb_printerEti_typ"
         '
+        'btn_StartStop
+        '
+        resources.ApplyResources(Me.btn_StartStop, "btn_StartStop")
+        Me.btn_StartStop.Name = "btn_StartStop"
+        Me.btn_StartStop.UseVisualStyleBackColor = True
+        '
         'Druckservice
         '
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.btn_StartStop)
         Me.Controls.Add(Me.tb_printerEti_typ)
         Me.Controls.Add(Me.tb_copyright)
         Me.Controls.Add(Me.Label5)
@@ -159,4 +167,5 @@ Partial Class Druckservice
     Friend WithEvents Label5 As Label
     Friend WithEvents tb_copyright As Label
     Friend WithEvents tb_printerEti_typ As ComboBox
+    Friend WithEvents btn_StartStop As Button
 End Class

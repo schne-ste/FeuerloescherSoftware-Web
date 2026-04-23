@@ -256,17 +256,38 @@ if (isset($_POST['save_settings'])) {
                     <div class="col-md-4">
                         <div class="card shadow-sm h-100">
                             <div class="card-body text-center">
-                                <h5>&#128193; Schilder</h5>
+                                <i class="bi bi-signpost-split"></i>
+                                <h5>&#128293;&#128220; Schilder</h5>
 
-                                <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                    <a href="./data/Schilder.pdf" target="_blank" class="btn btn-outline-danger">
-                                        PDF
-                                    </a>
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex justify-content-center">
+                                        <a href="schilder.php" target="_blank" class="btn btn-outline-danger w-100">
+                                            Standard-Set generieren
+                                        </a>
+                                    </div>
 
-                                    <a href="./data/Schilder.pptx" target="_blank" class="btn btn-outline-primary">
-                                        PowerPoint
-                                    </a>
+                                    <hr class="my-1">
+
+                                    <form action="schilder.php" method="GET" target="_blank">
+                                        <p class="small mb-1 text-muted">ID Bereich (z.B. 1-30)</p>
+                                        <div class="input-group">
+                                            <input type="text" name="id" class="form-control form-control-sm" placeholder="Bereich..." required>
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                ID Schild erstellen
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    <hr class="my-1">
+
+                                    <div class="d-flex justify-content-center">
+                                        <a href="oenormf1053.php" target="_blank" class="btn btn-outline-danger w-100">
+                                            ÖNORM F 1053 Flyer generieren
+                                        </a>
+                                    </div>
+
                                 </div>
+                                
                             </div>
                         </div>
                     </div>
@@ -350,7 +371,7 @@ function confirmReset() {
 
 // Logik zum Ausblenden der Meldung
 document.addEventListener('DOMContentLoaded', function() {
-    const alert = document.querySelector('.alert'); // Wir wählen die rote Alert-Box
+    const alert = document.querySelector('.alert');
     
     if (alert) {
         // Starte Timer für 3 Sekunden (3000ms)

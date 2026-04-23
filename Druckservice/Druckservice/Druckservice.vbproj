@@ -112,6 +112,9 @@
     <Compile Include="ZPLRawPrinterHelper.vb" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Druckservice.de-AT.resx">
+      <DependentUpon>Druckservice.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Druckservice.de.resx">
       <DependentUpon>Druckservice.vb</DependentUpon>
       <SubType>Designer</SubType>
