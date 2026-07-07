@@ -2,6 +2,11 @@
 require 'config.php';
 require_once('tcpdf/tcpdf.php');
 
+if (!isset($_SESSION['logged_in'])) {
+    header("Location: login.php");
+    exit;
+}
+
 class MyPDF extends TCPDF {
 
     public function Footer() {
@@ -42,10 +47,6 @@ $pdf->SetFont('helvetica', 'B', 20);
 $pdf->SetXY(15, 12);
 $pdf->Cell(0, 10, 'Feuerlöscherüberprüfung '.date('Y'), 0, 1);
 
-// Linie oben
-//$pdf->SetLineWidth(0.5);
-//$pdf->Line(15, 20, $pageWidth - 15, 20);
-
 // Feuerwehrdaten
 $pdf->Ln(5);
 $pdf->SetFont('helvetica', '', 11);
@@ -63,6 +64,17 @@ $pdf->Line(15, $pdf->GetY(), $pageWidth - 15, $pdf->GetY());
 $pdf->Ln(8);
 
 // =====================
+// FILTER & ANSICHT PARAMETER
+// =====================
+$statusFilter = $_GET['status'] ?? 'alle';
+$ansicht = $_GET['ansicht'] ?? 'liste'; // 'liste' oder 'uebersicht'
+
+// Wenn "Nur Übersicht" gewählt ist, wird der Filter ignoriert (immer alle anzeigen)
+if ($ansicht === 'uebersicht') {
+    $statusFilter = 'alle';
+}
+
+// =====================
 // DATEN LADEN
 // =====================
 $db = getDB();
@@ -73,7 +85,8 @@ $stats = [
     'verrechenbar' => 0,
     'nicht_verrechenbar' => 0,
     'ok' => 0,
-    'defekt' => 0
+    'defekt' => 0,
+    'nicht_geprueft' => 0
 ];
 
 $gesamtVollerPreis = 0;
@@ -91,13 +104,23 @@ $rows = [];
 while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
 
     if ($l['defekt']) {
-        $status = 'Defekt';
-        $stats['defekt']++;
+        $status = 'defekt';
+        $statusText = 'Defekt';
     } elseif (!$l['geprueft']) {
-        $status = 'Nicht geprüft';
+        $status = 'nicht';
+        $statusText = 'Nicht geprüft';
     } else {
-        $status = 'OK';
-        $stats['ok']++;
+        $status = 'ok';
+        $statusText = 'OK';
+    }
+
+    // FILTER GREIFT HIER (Bei Uebersicht ist $statusFilter durch die obige Bedingung immer 'alle')
+    if ($statusFilter === 'nicht_abgeholt') {
+        if ($l['abgeholt']) {
+            continue;
+        }
+    } elseif ($statusFilter !== 'alle' && $statusFilter !== $status) {
+        continue;
     }
 
     $vollpreis = getPreis($l['typ']);
@@ -110,12 +133,16 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
     }
 
     $stats['gesamt']++;
+    if ($status === 'defekt') $stats['defekt']++;
+    elseif ($status === 'ok') $stats['ok']++;
+    elseif ($status === 'nicht') $stats['nicht_geprueft']++;
 
     $rows[] = [
         'nummer' => $l['nummer'],
         'name' => $l['name'],
-        'typ' => $l['typ'],
+        'abgeholt' => $l['abgeholt'] == 1 ? 'Ja' : 'Nein',
         'preis' => number_format($vollpreis,2).' €',
+        'statusText' => $statusText,
         'status' => $status
     ];
 }
@@ -125,10 +152,23 @@ $gesamtGewinnFirma = $stats['verrechenbar'] * PREIS_RABATT;
 $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
 
 // =====================
-// ÜBERSCHRIFT
+// ÜBERSCHRIFT & FILTERANZEIGE
 // =====================
 $pdf->SetFont('helvetica', 'B', 14);
-$pdf->Cell(0, 8, 'Übersicht', 0, 1);
+
+// Filter-Text bestimmen, falls ungleich 'alle'
+$filterErgaenzung = '';
+if ($statusFilter !== 'alle') {
+    $filterLabel = $statusFilter;
+    if ($statusFilter === 'nicht_abgeholt') $filterLabel = 'Nicht abgeholt';
+    if ($statusFilter === 'nicht') $filterLabel = 'Nicht geprüft';
+    if ($statusFilter === 'ok') $filterLabel = 'OK';
+    if ($statusFilter === 'defekt') $filterLabel = 'Defekt';
+    
+    $filterErgaenzung = ' (Filter: ' . $filterLabel . ')';
+}
+
+$pdf->Cell(0, 8, 'Übersicht' . $filterErgaenzung, 0, 1);
 
 $pdf->Ln(2);
 
@@ -141,6 +181,7 @@ $statData = [
     ['Gesamt', $stats['gesamt']],
     ['Verrechenbar', $stats['verrechenbar']],
     ['Nicht verrechenbar', $stats['nicht_verrechenbar']],
+    ['Nicht geprüft', $stats['nicht_geprueft']],
     ['OK', $stats['ok']],
     ['Defekt', $stats['defekt']],
     ['Geld gesamt', number_format($gesamtVollerPreis,2).' €'],
@@ -172,46 +213,49 @@ foreach ($statData as $row) {
 $pdf->Ln(6);
 
 // =====================
-// LISTE
+// LISTE (NUR GENERIEREN WENN ANSICHT NICHT UEBERSICHT IST)
 // =====================
-$pdf->SetFont('helvetica', 'B', 13);
-$pdf->Cell(0, 8, 'Liste der Löscher', 0, 1);
+if ($ansicht !== 'uebersicht') {
+    $pdf->SetFont('helvetica', 'B', 13);
+    $pdf->Cell(0, 8, 'Liste der Löscher', 0, 1);
 
-$pdf->SetFont('helvetica', 'B', 10);
-$pdf->SetFillColor(200,200,200);
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->SetFillColor(200,200,200);
 
-$pdf->Cell(20, 8, 'Nr', 1, 0, 'C', true);
-$pdf->Cell(95, 8, 'Name', 1, 0, 'C', true);
-//$pdf->Cell(35, 8, 'Typ', 1, 0, 'C', true);
-$pdf->Cell(30, 8, 'Preis', 1, 0, 'C', true);
-$pdf->Cell(35, 8, 'Status', 1, 1, 'C', true);
+    $pdf->Cell(15, 8, 'Nr', 1, 0, 'C', true);
+    $pdf->Cell(80, 8, 'Name', 1, 0, 'C', true);
+    $pdf->Cell(25, 8, 'Abgeholt', 1, 0, 'C', true);
+    $pdf->Cell(30, 8, 'Preis', 1, 0, 'C', true);
+    $pdf->Cell(30, 8, 'Status', 1, 1, 'C', true);
 
-// Daten
-$pdf->SetFont('helvetica', '', 10);
+    // Daten
+    $pdf->SetFont('helvetica', '', 10);
 
-$fill = false;
-foreach ($rows as $r) {
+    foreach ($rows as $r) {
 
-    // Standardfarbe (weiß)
-    $bgColor = [255, 255, 255];
+        // Standardfarbe (weiß)
+        $bgColor = [255, 255, 255];
 
-    if ($r['status'] === 'OK') {
-        $bgColor = [198, 239, 206]; // grün
-    } elseif ($r['status'] === 'Defekt') {
-        $bgColor = [255, 199, 206]; // rot
-    } elseif ($r['status'] === 'Nicht geprüft') {
-        $bgColor = [255, 235, 156]; // orange/gelb
+        if ($r['status'] === 'ok') {
+            $bgColor = [198, 239, 206]; // grün
+        } elseif ($r['status'] === 'defekt') {
+            $bgColor = [255, 199, 206]; // rot
+        } elseif ($r['status'] === 'nicht') {
+            $bgColor = [255, 235, 156]; // orange/gelb
+        }
+
+        $pdf->SetFillColor($bgColor[0], $bgColor[1], $bgColor[2]);
+
+        $pdf->Cell(15, 7, sprintf("%03d", $r['nummer']), 1, 0, 'C', true);
+        $pdf->Cell(80, 7, $r['name'], 1, 0, 'L', true);
+        $pdf->Cell(25, 7, $r['abgeholt'], 1, 0, 'L', true); // Linksbündig
+        $pdf->Cell(30, 7, $r['preis'], 1, 0, 'R', true);
+        $pdf->Cell(30, 7, $r['statusText'], 1, 1, 'C', true);
     }
-
-    $pdf->SetFillColor($bgColor[0], $bgColor[1], $bgColor[2]);
-
-    $pdf->Cell(20, 7, $r['nummer'], 1, 0, 'C', true);
-    $pdf->Cell(95, 7, $r['name'], 1, 0, 'L', true);
-    $pdf->Cell(30, 7, $r['preis'], 1, 0, 'R', true);
-    $pdf->Cell(35, 7, $r['status'], 1, 1, 'C', true);
 }
 
 // =====================
 // OUTPUT
 // =====================
 $pdf->Output('feuerloescher_statistik.pdf', 'I');
+?>

@@ -499,7 +499,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <div class="alert alert-danger"><?= $errorMessage ?></div>
 <?php endif; ?>
 
-<!-- SUCHE -->
 <form method="post" class="card p-3 mb-4">
     <label class="form-label">&#128269; Name oder Rechnungsnummer</label>
     <div class="d-flex gap-2">
@@ -514,7 +513,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
     </datalist>
 </form>
 
-<!-- MEHRFACH -->
 <?php if ($searchResults): ?>
 <form method="post" class="card p-3 mb-4">
     <label>Mehrere Treffer:</label>
@@ -529,10 +527,9 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 </form>
 <?php endif; ?>
 
-<!-- FORMULAR -->
-<form method="post" class="card p-4">
+<form method="post" id="rechnungsForm" class="card p-4">
 
-<input type="hidden" name="edit_id" value="<?= $editEntry['id'] ?? '' ?>">
+<input type="hidden" name="edit_id" id="edit_id_field" value="<?= $editEntry['id'] ?? '' ?>">
 
 <div class="mb-3">
     <label class="form-label">&#128100; Anrede</label>
@@ -596,20 +593,53 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <div class="mb-3">
     <label class="form-label">&#128179; Zahlungsart</label>
     <select name="zahlungsart" id="zahlungsartSelect" class="form-select highlight">
-        <option value="Barzahlung" <?= ($editEntry['zahlungsart'] ?? 'Barzahlung')=='Barzahlung'?'selected':'' ?>>Barzahlung</option>
-        <option value="Kartenzahlung" <?= ($editEntry['zahlungsart'] ?? 'Barzahlung')=='Kartenzahlung'?'selected':'' ?>>Kartenzahlung</option>
+        <?php 
+        // Barzahlung soll vorausgewählt sein, wenn kein Eintrag geladen wurde (Neu anlegen)
+        $selectedZahlungsart = isset($editEntry['zahlungsart']) ? $editEntry['zahlungsart'] : 'Barzahlung'; 
+        ?>
+        <option value="Barzahlung" <?= ($selectedZahlungsart =='Barzahlung')?'selected':'' ?>>Barzahlung</option>
+        <option value="Kartenzahlung" <?= ($selectedZahlungsart =='Kartenzahlung')?'selected':'' ?>>Kartenzahlung</option>
         
         <?php if (defined('SumUp_AVALIABLE') && SumUp_AVALIABLE === 'TRUE'): ?>
-            <option value="SumUp" <?= ($editEntry['zahlungsart'] ?? '')=='SumUp'?'selected':'' ?>>SumUp</option>
+            <option value="SumUp" <?= ($selectedZahlungsart =='SumUp')?'selected':'' ?>>SumUp</option>
         <?php endif; ?>
 
-        <option value="Überweisung" <?= ($editEntry['zahlungsart'] ?? 'Überweisung')=='Überweisung'?'selected':'' ?>>Überweisung</option>
+        <option value="Überweisung" <?= ($selectedZahlungsart =='Überweisung')?'selected':'' ?>>Überweisung</option>
     </select>
 </div>
 
 <div class="mb-3 form-check">
     <input type="checkbox" name="bezahlt" value="1" class="form-check-input" id="bezahltCheck" <?= ($editEntry['bezahlt'] ?? 0) ? 'checked' : '' ?>>
     <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
+</div>
+
+<div class="modal fade" id="changeCalculatorModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="changeCalculatorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="changeCalculatorModalLabel">&#128181; Wechselgeldrechner</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schließen"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Zu zahlen (Gesamt):</label>
+          <input type="text" id="calcTotalAmount" class="form-control form-control-lg fw-bold text-danger" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="calcGivenAmount">Erhalten vom Kunden (€):</label>
+          <input type="number" id="calcGivenAmount" class="form-control form-control-lg" step="0.01" min="0" placeholder="0,00" autocomplete="off">
+        </div>
+        <div class="p-3 bg-light rounded border text-center">
+          <span class="fs-5 d-block text-muted">Rückgeld:</span>
+          <span id="calcReturnAmount" class="fs-2 fw-bold text-success">0,00 €</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+        <button type="button" id="confirmChangeCalc" class="btn btn-success">Betrag passt & Speichern</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <hr>    
@@ -662,11 +692,13 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
 <?php } ?>
 
-<button class="btn btn-success w-100" name="save_rechnung">&#128190; Speichern</button>
+<button class="btn btn-success w-100" name="save_rechnung" id="submitFormBtn">&#128190; Speichern</button>
 <button type="button" class="btn btn-outline-secondary w-100 mt-2" id="clearForm">&#128465; Formular leeren</button>
 
 </form>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 // 1. PHP-Daten sicher übernehmen
@@ -677,39 +709,122 @@ const nextRechnungsnummer = "<?= $nextRechnungsnummer ?>";
 function updatePreis(){
     const typSelect = document.getElementById('typSelect');
     const preisField = document.getElementById('preisField');
-    if(!typSelect || !preisField) return;
+    if(!typSelect || !preisField) return 0;
 
     const typ = typSelect.value;
     const preis = preisMap[typ] || 0;
     preisField.value = preis.toFixed(2).replace('.', ',') + " €";
+    return preis;
+}
+
+// Hilfsfunktion zur Ermittlung des aktuellen Gesamtpreises
+function getGesamtBetrag() {
+    const anzahlInput = document.querySelector('[name="anzahl"]');
+    const anzahl = anzahlInput ? parseInt(anzahlInput.value) || 0 : 0;
+    const einzelpreis = updatePreis();
+    return anzahl * einzelpreis;
 }
 
 // 3. Hauptlogik beim Laden der Seite
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Dynamisches Anzeigen des SumUp Buttons bei Auswahl ---
-    const zahlungsartSelect = document.getElementById('zahlungsartSelect');
-    zahlungsartSelect.addEventListener('change', function() {
-        const sumupBtn = document.getElementById('sumupBtn');
-        if (this.value === 'SumUp') {
-            // Falls der Button gar nicht im HTML ist (weil PHP ihn nicht gerendert hat),
-            // müsste man ihn hier dynamisch erstellen. 
-            // Einfacher: Erscheint nach dem ersten Speichern mit "SumUp".
-            if(sumupBtn) sumupBtn.style.display = 'block';
-        } else {
-            if(sumupBtn) sumupBtn.style.display = 'none';
+    // Bootstrap Modal initialisieren
+    const changeModalEl = document.getElementById('changeCalculatorModal');
+    const changeModal = new bootstrap.Modal(changeModalEl);
+    
+    const rechnungsForm = document.getElementById('rechnungsForm');
+    const bezahltCheck = document.getElementById('bezahltCheck');
+    const calcTotalAmount = document.getElementById('calcTotalAmount');
+    const calcGivenAmount = document.getElementById('calcGivenAmount');
+    const calcReturnAmount = document.getElementById('calcReturnAmount');
+    const confirmChangeCalc = document.getElementById('confirmChangeCalc');
+    
+    let bypassModal = false; // Flag, um das Modal beim echten Submit zu überspringen
+
+    // Funktion zum Öffnen und Füllen des Modals
+    function openWechselgeldRechner() {
+        const gesamt = getGesamtBetrag();
+        calcTotalAmount.value = gesamt.toFixed(2).replace('.', ',') + " €";
+        calcGivenAmount.value = ''; // Reset Eingabe
+        calcReturnAmount.innerText = "0,00 €";
+        calcReturnAmount.className = "fs-2 fw-bold text-success";
+        
+        changeModal.show();
+        
+        // Autofokus auf das "Erhalten"-Feld nach dem Öffnen
+        changeModalEl.addEventListener('shown.bs.modal', function () {
+            calcGivenAmount.focus();
+        }, { once: true });
+    }
+
+    // Beim Klick auf den großen "Speichern" Button das Submit abfangen
+    rechnungsForm.addEventListener('submit', function(e) {
+        const activeSubmitter = e.submitter ? e.submitter.name : '';
+        const zahlungsart = document.getElementById('zahlungsartSelect').value;
+
+        // NUR abfangen, wenn:
+        // 1. "Bezahlt" angehakt ist
+        // 2. Exakt "Barzahlung" ausgewählt ist
+        // 3. Wir nicht schon das OK aus dem Modal bekommen haben (bypassModal)
+        // 4. Nicht der "Nachdrucken" Button gedrückt wurde
+        if (bezahltCheck.checked && zahlungsart === 'Barzahlung' && !bypassModal && activeSubmitter === 'save_rechnung') {
+            e.preventDefault(); // Stoppt das Speichern vorerst
+            openWechselgeldRechner(); // Zeigt stattdessen das Wechselgeld an
         }
     });
+
+    // Klick auf "Betrag passt & Speichern" im Modal
+    confirmChangeCalc.addEventListener('click', function() {
+        bypassModal = true; // Erlaubt das Durchgehen des Submits
+        changeModal.hide();
+        
+        // Erstellt einen versteckten Input für 'save_rechnung', da e.submitter beim manuellen .submit() verloren geht
+        const hiddenSubmit = document.createElement('input');
+        hiddenSubmit.type = 'hidden';
+        hiddenSubmit.name = 'save_rechnung';
+        hiddenSubmit.value = '1';
+        rechnungsForm.appendChild(hiddenSubmit);
+        
+        rechnungsForm.submit(); // Sendet das Formular jetzt final ab
+    });
+
+    // Live-Wechselgeld-Berechnung bei der Eingabe
+    calcGivenAmount.addEventListener('input', function() {
+        const gesamt = getGesamtBetrag();
+        const gegeben = parseFloat(this.value) || 0;
+        const wechselgeld = gegeben - gesamt;
+
+        if (wechselgeld < 0) {
+            calcReturnAmount.innerText = "Noch offen: " + Math.abs(wechselgeld).toFixed(2).replace('.', ',') + " €";
+            calcReturnAmount.className = "fs-2 fw-bold text-danger";
+        } else {
+            calcReturnAmount.innerText = wechselgeld.toFixed(2).replace('.', ',') + " €";
+            calcReturnAmount.className = "fs-2 fw-bold text-success";
+        }
+    });
+
+    // --- Dynamisches Anzeigen des SumUp Buttons bei Auswahl ---
+    const zahlungsartSelect = document.getElementById('zahlungsartSelect');
+    if(zahlungsartSelect) {
+        zahlungsartSelect.addEventListener('change', function() {
+            const sumupBtn = document.getElementById('sumupBtn');
+            if (this.value === 'SumUp') {
+                if(sumupBtn) sumupBtn.style.display = 'block';
+            } else {
+                if(sumupBtn) sumupBtn.style.display = 'none';
+            }
+        });
+    }
     
     // --- PREIS INITIALISIERUNG ---
     document.getElementById('typSelect').addEventListener('change', updatePreis);
+    const anzahlInput = document.querySelector('[name="anzahl"]');
+    if(anzahlInput) anzahlInput.addEventListener('input', updatePreis);
     updatePreis();
 
     // --- FORMULAR LEEREN FUNKTION ---
     const clearBtn = document.getElementById('clearForm');
     if (clearBtn) {
         clearBtn.addEventListener('click', function() {
-            // Seite einfach neu laden ist die sauberste Lösung, 
-            // um alle PHP-Zustände (Buttons, IDs, etc.) zurückzusetzen
             const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
             window.location.href = cleanUrl;
         });
@@ -717,12 +832,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- ESC-TASTE ZUM LEEREN ---
     document.addEventListener('keydown', (e) => {
-        // Nur reagieren, wenn ESC gedrückt wird
         if (e.key === "Escape" || e.keyCode === 27) {
-            const clearBtn = document.getElementById('clearForm');
-            if (clearBtn) {
-                e.preventDefault(); // Standardverhalten verhindern
-                clearBtn.click();   // Deine "Leeren"-Funktion auslösen
+            if (!changeModalEl.classList.contains('show')) {
+                const clearBtn = document.getElementById('clearForm');
+                if (clearBtn) {
+                    e.preventDefault();
+                    clearBtn.click();
+                }
             }
         }
     });
@@ -734,7 +850,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const editId = document.querySelector('[name="edit_id"]').value;
             if (!editId) return alert("Bitte Rechnung zuerst speichern!");
 
-            // Öffnet das Terminal-Frontend in einem kleinen Pop-up
             const width = 400;
             const height = 500;
             const left = (window.innerWidth / 2) - (width / 2);
@@ -755,7 +870,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const editId = document.querySelector('[name="edit_id"]').value;
             if (!editId) return alert('Keine Rechnung ausgewählt!');
 
-            // Button optisch deaktivieren während des Ladevorgangs
             reloadBtn.disabled = true;
             reloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Lade...';
 
@@ -763,16 +877,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data) {
-                        // 1. Druckstatus Icon/Text aktualisieren
                         const statusSpan = document.getElementById('druckStatusAnzeige');
                         if (statusSpan) statusSpan.innerHTML = data.status_html;
 
-                        // 2. PDF Link aktualisieren (falls sich die Rechnungsnummer geändert hat)
                         const pdfLink = document.getElementById('openPdf');
                         if (pdfLink) pdfLink.href = data.pdf_url;
-
-                        // 3. Optional: Weitere Felder aktualisieren, falls sie sich in der DB geändert haben
-                        // document.querySelector('[name="name"]').value = data.name;
 
                         console.log("Daten erfolgreich via AJAX aktualisiert.");
                     }
@@ -782,7 +891,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert("Fehler beim Laden der Daten.");
                 })
                 .finally(() => {
-                    // Button wieder normal machen
                     reloadBtn.disabled = false;
                     reloadBtn.innerHTML = '&#128260; Daten neu laden';
                 });

@@ -39,9 +39,9 @@ function getStats($db) {
     $stats['gesamt_ok'] = $stats['gesamt'] - $stats['defekt'];
 
     $stats['p_defekt'] = percent($stats['defekt'], $stats['gesamt']);
-    $stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt_ok']);
-    $stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt_ok']);
-    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt_ok']);
+    $stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt']);
+    $stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt']);
+    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt']);
 
     return $stats;
 }

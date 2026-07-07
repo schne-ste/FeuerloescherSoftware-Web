@@ -68,14 +68,18 @@ foreach ($allLoscher as $l) {
         $statusText = 'Defekt';
     } elseif (!$l['geprueft']) {
         $status = 'nicht';
-        $statusText = 'Nicht geprüft';
+        $statusText = 'Nicht geprüft &#10060;';
     } else {
         $status = 'ok';
         $statusText = 'OK';
     }
 
     // FILTER
-    if ($statusFilter !== 'alle' && $statusFilter !== $status) {
+    if ($statusFilter === 'nicht_abgeholt') {
+        if ($l['abgeholt']) {
+            continue;
+        }
+    } elseif ($statusFilter !== 'alle' && $statusFilter !== $status) {
         continue;
     }
 
@@ -167,7 +171,7 @@ td {
     </div>
 </nav>
 
-<? 
+<?php 
     function status_link_resolver($status = "", $text = "") {
         $selectedStatus = "alle";
         if(array_key_exists("status", $_GET)) {
@@ -188,6 +192,9 @@ td {
             case "nicht":
                 $btncls = "warning";
                 break;
+            case "nicht_abgeholt":
+                $btncls = "info";
+                break;
         }
 
         $fullbtncls = "";
@@ -205,21 +212,29 @@ td {
 
     <h1>&#128293; Übersicht</h1>
 
-    <!-- FILTER -->
-    <div class="mb-3">
+    <div class="mb-3 d-flex gap-1 flex-wrap align-items-center">
         <?= status_link_resolver("alle", "Alle"); ?>
         <?= status_link_resolver("ok", "OK"); ?>
         <?= status_link_resolver("defekt", "Defekt"); ?>
         <?= status_link_resolver("nicht", "Nicht geprüft"); ?>
-        <a href="statistik_export_pdf.php?status=<?= $statusFilter ?>" 
+        <?= status_link_resolver("nicht_abgeholt", "Nicht abgeholt"); ?>
+        
+        <span class="ms-2 me-1 text-muted">|</span>
+        
+        <a href="statistik_export_pdf.php?status=<?= $statusFilter ?>&ansicht=liste" 
            target="_blank" 
            rel="noopener noreferrer" 
            class="btn btn-dark btn-sm">
-           📄 PDF
+           📄 PDF (Komplette Liste)
+        </a>
+        <a href="statistik_export_pdf.php?status=<?= $statusFilter ?>&ansicht=uebersicht" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="btn btn-outline-dark btn-sm">
+           📋 PDF (Nur Übersicht)
         </a>
     </div>
 
-    <!-- STATISTIK -->
     <table class="table table-bordered w-100">
         <tr><th>Gesamt</th><td><?= $stats['gesamt'] ?></td></tr>
         <tr><th>Verrechenbar</th><td><?= $stats['verrechenbar'] ?></td></tr>
@@ -232,14 +247,13 @@ td {
         <tr><th>Gewinn FF</th><td><?= number_format($gesamtGewinnFF,2) ?> €</td></tr>
     </table>
 
-    <!-- TABELLE -->
     <h3>Liste</h3>
     <table class="table table-bordered">
     <thead>
         <tr>
             <th>Nr</th>
             <th>Name</th>
-            <th>Typ</th>
+            <th>Abgeholt</th>
             <th>Preis</th>
             <th>Status</th>
         </tr>
@@ -253,13 +267,15 @@ td {
             } elseif (!$v['geprueft']) {
                 $class = 'status-nicht';  // orange
             } else {
-                $class = 'status-ok';     // grün
+                $class = 'status-ok';     /* grün */
             }
             ?>
             <tr>
                 <td class="<?= $class ?>"><?= sprintf("%03d", $v['nummer']) ?></td>
                 <td class="<?= $class ?>"><?= htmlspecialchars($v['name']) ?></td>
-                <td class="<?= $class ?>"><?= htmlspecialchars($v['typ']) ?></td>
+                <td class="<?= $class ?>">
+                    <?= $v['abgeholt'] == 1 ? 'Abgeholt' : 'Nicht abgeholt &#10060;' ?>
+                </td>
                 <td class="<?= $class ?>"><?= number_format($v['vollpreis'],2) ?> €</td>
                 <td class="<?= $class ?>"><?= $v['statusText'] ?></td>
             </tr>

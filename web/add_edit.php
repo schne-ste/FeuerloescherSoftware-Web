@@ -474,9 +474,12 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
     window.onload = setupPolling; 
 
-    // ESC-Taste: Fokus auf Suchfeld setzen
+    // ESC-Taste: Fokus auf Suchfeld setzen (nur wenn Modal nicht offen ist)
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
+            if (document.getElementById('wechselgeldModal')?.classList.contains('show')) {
+                return;
+            }
             const suchfeld = document.getElementById('suchfeld');
             if (suchfeld) {
                 suchfeld.focus();
@@ -530,7 +533,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 <?php endif; ?>
 
 
-<!-- Suchformular -->
 <form method="post" class="card shadow p-3 mb-4" id="searchForm">
     <div class="row g-2">
         <div class="col-md-6">
@@ -576,8 +578,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 	    </select>
 	    <button type="submit" name="select_entry" class="btn btn-primary">Datensatz laden</button>
 	</form>
-<?php endif; ?><!-- Edit-Buttons (nur wenn mode=edit und editEntry existiert) -->
-<?php if ($mode === 'edit' && $editEntry): ?>
+<?php endif; ?><?php if ($mode === 'edit' && $editEntry): ?>
 	<div class="row g-2 mb-3" id="editButtons">
 	    <div class="col-6">
 	        <a href="?mode=add" class="btn btn-secondary w-100">
@@ -594,14 +595,12 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 	</div>
 <?php endif; ?>
 
-<!-- Edit-Formular (nur wenn mode=edit und editEntry existiert) -->
 <?php if ($mode === 'edit' && $editEntry): ?>
     <form method="post" class="card shadow p-3 mb-4" id="editForm">
         <input type="hidden" name="mode" value="edit">
         <input type="hidden" name="edit_id" value="<?= $editEntry['id'] ?>">
         <input type="hidden" name="nummer" value="<?= $editEntry['nummer'] ?>">
 
-        <!--Überschrift-->
         <h3 id="pageTitle">&#9999; Bearbeiten</h3>
         <hr>
 
@@ -754,10 +753,8 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 <?php endif; ?>
 
 
-<!-- Add-Formular (nur wenn mode=add) -->
 <?php if ($mode === 'add'): ?>
 <form method="post" class="card shadow p-3 mb-4" id="addForm">
-    <!--Überschrift-->
     <h3 id="pageTitle">&#10133; Neu Anlegen</h3>
     <hr>
 
@@ -769,7 +766,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
     <div class="mb-3">
         <label class="form-label">&#128290; Anzahl Löscher</label>
-        <input type="number" name="anzahl" class="form-control highlight" value="1" min="1">
+        <input type="number" name="anzahl" id="addAnzahlField" class="form-control highlight" value="1" min="1">
     </div>
 
     <div class="mb-3">
@@ -799,10 +796,40 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
     </div>
 
     <div class="text-start">
-        <button type="submit" class="btn btn-success px-2" name="add_loscher">&#128190;  Speichern</button>
+        <input type="hidden" name="add_loscher" value="1">
+        <button type="button" id="submitAddBtn" class="btn btn-success px-2">&#128190;  Speichern</button>
     </div>
 </form>
 <?php endif; ?>
+
+<div class="modal fade" id="wechselgeldModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="wechselgeldModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="wechselgeldModalLabel">&#128181; Wechselgeldrechner</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schließen" id="closeModalCrossBtn"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Gesamtpreis (zu bezahlen):</label>
+                    <input type="text" id="modalGesamtpreisField" class="form-control bg-light fw-bold text-dark fs-4" readonly value="0,00 €">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-success">Gegebener Betrag (€):</label>
+                    <input type="number" step="0.01" min="0" id="modalGegebenField" class="form-control form-control-lg highlight" placeholder="0,00" autocomplete="off">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-bold text-dark">Rückgeld / Wechselgeld:</label>
+                    <input type="text" id="modalWechselgeldField" class="form-control bg-light fw-bold text-dark fs-3" readonly value="0,00 €">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModalBtn">Abbrechen</button>
+                <button type="button" class="btn btn-success px-4 fs-5" id="confirmKassierenBtn">&#128178; Kassieren & Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php include 'massenverwaltung.php'; ?>
 </div>
@@ -835,9 +862,141 @@ document.getElementById('addTypSelect')?.addEventListener('change',()=>{
     document.getElementById('addPreisField').value = preisString;
 });
 
+// --- POPUP-WECHSELGELD LOGIK BEIM SPEICHERN ---
+document.addEventListener('DOMContentLoaded', () => {
+    const submitAddBtn = document.getElementById('submitAddBtn');
+    const addForm = document.getElementById('addForm');
+    const addBezahltCheck = document.getElementById('addBezahltCheck');
+    const addTypSelect = document.getElementById('addTypSelect');
+    const addAnzahlField = document.getElementById('addAnzahlField');
+
+    // Modal Elemente
+    const wechselgeldModalEl = document.getElementById('wechselgeldModal');
+    let wechselgeldModal = null;
+    if (wechselgeldModalEl) {
+        wechselgeldModal = new bootstrap.Modal(wechselgeldModalEl);
+    }
+    
+    const modalGesamtpreisField = document.getElementById('modalGesamtpreisField');
+    const modalGegebenField = document.getElementById('modalGegebenField');
+    const modalWechselgeldField = document.getElementById('modalWechselgeldField');
+    const confirmKassierenBtn = document.getElementById('confirmKassierenBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const closeModalCrossBtn = document.getElementById('closeModalCrossBtn');
+
+    let currentGesamtpreis = 0;
+
+    // Funktion zur Live-Berechnung im Modal
+    function calculateModalWechselgeld() {
+        let gegeben = parseFloat(modalGegebenField.value) || 0;
+        let wechselgeld = gegeben - currentGesamtpreis;
+
+        if (modalWechselgeldField) {
+            if (modalGegebenField.value === '' || gegeben <= 0) {
+                modalWechselgeldField.value = "0,00 €";
+                modalWechselgeldField.className = "form-control bg-light fw-bold text-dark fs-3";
+            } else if (wechselgeld >= 0) {
+                modalWechselgeldField.value = wechselgeld.toLocaleString(navigator.language, {
+                    minimumFractionDigits: 2, maximumFractionDigits: 2
+                }) + " €";
+                modalWechselgeldField.className = "form-control bg-light fw-bold text-success fs-3";
+            } else {
+                modalWechselgeldField.value = "Zu wenig! (" + wechselgeld.toLocaleString(navigator.language, {
+                    minimumFractionDigits: 2, maximumFractionDigits: 2
+                }) + " €)";
+                modalWechselgeldField.className = "form-control bg-light fw-bold text-danger fs-3";
+            }
+        }
+    }
+
+    // Wenn der Speichern-Button geklickt wird
+    submitAddBtn?.addEventListener('click', (e) => {
+        // Validiere zuerst das HTML5 Formular (z.B. Name required)
+        if (!addForm.checkValidity()) {
+            addForm.reportValidity();
+            return;
+        }
+
+        // Falls bezahlt angehakt ist -> Öffne Wechselgeldrechner Modal
+        if (addBezahltCheck && addBezahltCheck.checked && wechselgeldModal) {
+            let einzelpreis = preisMap[addTypSelect.value] ?? 0;
+            if (typeof einzelpreis === "string") einzelpreis = parseFloat(einzelpreis);
+            let anzahl = parseInt(addAnzahlField.value) || 1;
+            if (anzahl < 1) anzahl = 1;
+
+            currentGesamtpreis = einzelpreis * anzahl;
+
+            // Modal Felder zurücksetzen / befüllen
+            modalGesamtpreisField.value = currentGesamtpreis.toLocaleString(navigator.language, {
+                minimumFractionDigits: 2, maximumFractionDigits: 2
+            }) + " €";
+            modalGegebenField.value = '';
+            modalWechselgeldField.value = "0,00 €";
+            modalWechselgeldField.className = "form-control bg-light fw-bold text-dark fs-3";
+
+            wechselgeldModal.show();
+            
+            // Fokus automatisch auf das Gegeben-Feld setzen sobald das Modal sichtbar ist
+            wechselgeldModalEl.addEventListener('shown.bs.modal', () => {
+                modalGegebenField.focus();
+            }, { once: true });
+
+        } else {
+            // Falls bezahlt NICHT angehakt ist -> direkt wegspeichern
+            addForm.submit();
+        }
+    });
+
+    // Event Listener für Eingaben im Modal
+    modalGegebenField?.addEventListener('input', calculateModalWechselgeld);
+
+    // TABULATOR WORKFLOW: Beim Drücken von Tabulator direkt zum Speichern-Button springen
+    modalGegebenField?.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            confirmKassierenBtn.focus();
+        }
+    });
+
+    // SMART ENTER: Enter-Taste im Gegeben-Feld triggert Abschluss (trägt Gesamtpreis ein falls leer)
+    modalGegebenField?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (modalGegebenField.value.trim() === '') {
+                modalGegebenField.value = currentGesamtpreis;
+            }
+            confirmKassierenBtn.click();
+        }
+    });
+
+    // ESCAPE-ABBRUCH: Schließt das Modal sauber und bricht ab
+    wechselgeldModalEl?.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModalBtn.click();
+        }
+    });
+
+    // Endgültiges Absenden des Formulars beim Klick im Modal
+    confirmKassierenBtn?.addEventListener('click', () => {
+        addForm.submit();
+    });
+    
+    // Fallback falls abgebrochen wird, Fokus zurück auf Speichern Button setzen
+    const focusBack = () => { submitAddBtn?.focus(); };
+    closeModalBtn?.addEventListener('click', focusBack);
+    closeModalCrossBtn?.addEventListener('click', focusBack);
+});
+
+
 // Escape-Taste überwachen, um zum Add-Modus zu wechseln
 document.addEventListener("keydown", function(e){
     if (e.key === "Escape") {
+        // Falls das Modal geöffnet ist, Escape nicht abfangen, damit das Modal schließt
+        if (document.getElementById('wechselgeldModal').classList.contains('show')) {
+            return;
+        }
         e.preventDefault();
         e.stopPropagation();
         window.location.href = "?mode=add";
