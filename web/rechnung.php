@@ -299,7 +299,7 @@ if (isset($_POST['save_rechnung'])) {
             $this->SetFont('helvetica', 'B', 8);
             $this->Cell(0, 4, 'Vielen Dank für Ihren Besuch!', 0, 0, 'C');
 
-            $info = "Erstellt mit Feuerlöscher-Software | © Schneebauer " . date("Y");
+            $info = "Erstellt mit Feuerlöscher-Software | © " . FIRMA_NAME . " - Schneebauer " . date("Y");
             $this->SetY(-5);
             $this->SetFont('helvetica', 'I', 5);
             $this->Cell(0, 4, $info, 0, 1, 'C');
