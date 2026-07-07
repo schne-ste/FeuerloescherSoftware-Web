@@ -87,6 +87,33 @@ if (isset($_GET['action']) && $_GET['action'] === 'reload_data' && isset($_GET['
 }
 
 // =====================
+// RECHNUNG AUS MASKE LÖSCHEN (STORNO)
+// =====================
+if (isset($_POST['delete_rechnung_form']) && !empty($_POST['edit_id'])) {
+    $deleteId = (int)$_POST['edit_id'];
+    
+    $stmt = $db->prepare("SELECT rechnungsnummer FROM rechnungen WHERE id = :id");
+    $stmt->bindValue(':id', $deleteId);
+    $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+    
+    if ($res) {
+        $rnr = $res['rechnungsnummer'];
+        $pdfPath = __DIR__ . '/_Rechnungen/Rechnung_' . preg_replace('/[^a-zA-Z0-9_-]/', '', $rnr) . '.pdf';
+        
+        $delStmt = $db->prepare("DELETE FROM rechnungen WHERE id = :id");
+        $delStmt->bindValue(':id', $deleteId);
+        if ($delStmt->execute()) {
+            if (file_exists($pdfPath)) {
+                @unlink($pdfPath);
+            }
+            // Nach dem Löschen leiten wir zurück zur Rechnungsübersicht mit einer Erfolgsmeldung
+            header("Location: rechnungen_anzeigen.php");
+            exit;
+        }
+    }
+}
+
+// =====================
 // RECHNUNG NACHDRUCKEN
 // =====================
 if (isset($_POST['reprint_rechnung']) && !empty($_POST['edit_id'])) {
@@ -267,11 +294,16 @@ if (isset($_POST['save_rechnung'])) {
             $this->Ln(2);
 
             $firma = FIRMA_NAME . " | " . FIRMA_ADRESSE . " | " . FIRMA_PLZORT. " | " . FIRMA_WEB;
-            $info = "Erstellt mit Feuerlöscher-Software";
-
             $this->Cell(0, 4, $firma, 0, 1, 'C');
-            $this->Cell(0, 4, $info, 0, 1, 'C');
+
+            $this->SetFont('helvetica', 'B', 8);
             $this->Cell(0, 4, 'Vielen Dank für Ihren Besuch!', 0, 0, 'C');
+
+            $info = "Erstellt mit Feuerlöscher-Software | © Schneebauer " . date("Y");
+            $this->SetY(-5);
+            $this->SetFont('helvetica', 'I', 5);
+            $this->Cell(0, 4, $info, 0, 1, 'C');
+            
         }
     }
 
@@ -601,7 +633,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
         <option value="Kartenzahlung" <?= ($selectedZahlungsart =='Kartenzahlung')?'selected':'' ?>>Kartenzahlung</option>
         
         <?php if (defined('SumUp_AVALIABLE') && SumUp_AVALIABLE === 'TRUE'): ?>
-            <option value="SumUp" <?= ($selectedZahlungsart =='SumUp')?'selected':'' ?>>SumUp</option>
+            <option value="SumUp" <?= ($selectedZahlungsart =='SumUp')?'selected':'' ?>>SumUp (Button erscheint nach dem Speichern - "Bezahlt" setzt sich autom. nach erfolgreicher Zahlung!)</option>
         <?php endif; ?>
 
         <option value="Überweisung" <?= ($selectedZahlungsart =='Überweisung')?'selected':'' ?>>Überweisung</option>
@@ -672,6 +704,10 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
     <button type="button" id="reloadData" class="btn btn-secondary">
         &#128260; Daten neu laden
+    </button>
+
+    <button type="submit" name="delete_rechnung_form" class="btn btn-danger" onclick="return confirm('Möchten Sie diese Rechnung wirklich unwiderruflich stornieren und löschen? Das PDF wird ebenfalls gelöscht.');">
+        &#128465; Rechnung stornieren
     </button>
 
     <?php if (($editEntry['zahlungsart'] ?? '') === 'SumUp' && defined('SumUp_AVALIABLE') && SumUp_AVALIABLE === 'TRUE' && $editEntry['bezahlt'] === 0): ?>
