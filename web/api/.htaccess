@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Leitet /api oder /api/ auf die API-Startdatei um
+RewriteRule ^$ index.php [L,QSA]
+RewriteRule ^(.+)$ index.php?route=/$1 [L,QSA]
+
+# Erlaubt PUT/PATCH/DELETE für die API, damit der Druckservice markiert werden kann
+RewriteCond %{REQUEST_METHOD} ^(PUT|PATCH|DELETE)$
+RewriteRule .* index.php [L,QSA]

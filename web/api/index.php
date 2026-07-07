@@ -24,9 +24,23 @@ require_once __DIR__ . '/../config.php';
 // API Token Überprüfung
 $token = $_GET['token'] ?? $_SERVER['HTTP_X_API_TOKEN'] ?? '';
 if ($token !== API_TOKEN) {
+    if (isset($_SERVER['HTTP_AUTHORIZATION']) && strpos($_SERVER['HTTP_AUTHORIZATION'], 'Bearer ') === 0) {
+        $bearer = trim(substr($_SERVER['HTTP_AUTHORIZATION'], 7));
+        if ($bearer === API_TOKEN) {
+            $token = $bearer;
+        }
+    }
+}
+
+if ($token !== API_TOKEN) {
     http_response_code(401);
     echo json_encode(["error" => "Unauthorized"]);
     exit;
+}
+
+// Support für direkte PUT/PATCH/POST-Requests ohne Rewrite
+if (empty($_GET['route']) && isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] !== '') {
+    $_GET['route'] = $_SERVER['PATH_INFO'];
 }
 
 require_once __DIR__ . '/helpers/Router.php';
@@ -64,5 +78,34 @@ $router->put('/rechnungen/{nummer}/gedruckt', 'PrintController@rechnungGedruckt'
 $router->get('/config', 'ConfigController@defines');
 
 // Route ausführen
-$route = $_GET['route'] ?? '/';
+$route = $_GET['route'] ?? null;
+if (is_array($route)) {
+    $route = $route[0] ?? null;
+}
+
+if (empty($route)) {
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '/api/index.php';
+    $path = parse_url($requestUri, PHP_URL_PATH) ?: '/';
+    $path = rawurldecode($path);
+
+    $apiBase = '/api';
+    if (strpos($path, $apiBase) === 0) {
+        $path = substr($path, strlen($apiBase));
+    }
+
+    if ($path === '/index.php' || $path === '/index.php/') {
+        $path = '/';
+    }
+
+    if ($path !== '/' && strpos($path, '/index.php') === 0) {
+        $path = substr($path, strlen('/index.php'));
+    }
+
+    $route = '/' . trim($path, '/');
+    if ($route === '//') {
+        $route = '/';
+    }
+}
+
 $router->run($route);
