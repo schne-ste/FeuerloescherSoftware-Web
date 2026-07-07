@@ -478,11 +478,22 @@ Public Class Druckservice
             ' Wenn Höhe 25, dann etwas höher (104), sonst etwas tiefer (128)
             Dim nameY As Integer = If(hoehe <= 25, 104, 128)
 
+            ' Text-Umlaute in UTF-8 Hex-Werte für ZPL (^FH) konvertieren
+            Dim safeName As String = name _
+                .Replace("ä", "_c3_a4") _
+                .Replace("ö", "_c3_b6") _
+                .Replace("ü", "_c3_bc") _
+                .Replace("Ä", "_c3_84") _
+                .Replace("Ö", "_c3_96") _
+                .Replace("Ü", "_c3_9c") _
+                .Replace("ß", "_c3_9f")
+
+            ' Wichtig: ^FH hinzugefügt vor dem Namen-Feld (^FD)
             zpl = "^XA^CI28^LT0^PW" & (breite * 8) & "^LL" & (hoehe * 8) & "^LS0" &
-                  "^FO16,16^GB" & ((breite - 4) * 8) & ",80,80^FS" &
-                  "^FO16,32^A0N,64,64^FB" & ((breite - 4) * 8) & ",1,0,C^FR^FD" & displayYear & "^FS" &
-                  "^FO16," & nameY & "^A0N,40,40^FB" & ((breite - 4) * 8) & ",1,0,C^FD" & name & "^FS" &
-                  "^BY3,3^FO" & (barcodeX * 8) & "," & (barcodeY * 8) & "^B3N,N,56,N,N^FD" & loescher_id & "^FS^XZ"
+              "^FO16,16^GB" & ((breite - 4) * 8) & ",80,80^FS" &
+              "^FO16,32^A0N,64,64^FB" & ((breite - 4) * 8) & ",1,0,C^FR^FD" & displayYear & "^FS" &
+              "^FO16," & nameY & "^A0N,40,40^FB" & ((breite - 4) * 8) & ",1,0,C^FH^FD" & safeName & "^FS" &
+              "^BY3,3^FO" & (barcodeX * 8) & "," & (barcodeY * 8) & "^B3N,N,56,N,N^FD" & loescher_id & "^FS^XZ"
 
             ' Senden über die RawPrinterHelper Klasse
             If ZPLRawPrinterHelper.SendStringToPrinter(druckername, zpl) Then

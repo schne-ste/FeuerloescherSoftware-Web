@@ -128,3 +128,6 @@ C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Dru
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\de-AT\Druckservice.resources.dll
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.Druckservice.de-AT.resources
 C:\Users\Stefan\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\de-AT\Druckservice.resources.dll
+C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\bin\Debug\de-AT\Druckservice.resources.dll
+C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\Druckservice.Druckservice.de-AT.resources
+C:\Users\schrift.FFW\Documents\GitHub\FeuerloescherSoftware-Web\Druckservice\Druckservice\obj\Debug\de-AT\Druckservice.resources.dll
