@@ -24,14 +24,14 @@ function getStats($db) {
     $stats['gesamt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE active = 1");
 
 
-    $stats['geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND active = 1 AND defekt = 0");
-    $stats['nicht_geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 0 AND active = 1 AND defekt = 0");
+    $stats['geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND active = 1");
+    $stats['nicht_geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 0 AND active = 1");
 
-    $stats['abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 1 AND active = 1 AND defekt = 0");
-    $stats['nicht_abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 0 AND active = 1 AND defekt = 0");
+    $stats['abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 1 AND active = 1");
+    $stats['nicht_abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 0 AND active = 1");
 
-    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1 AND defekt = 0");
-    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1 AND defekt = 0");
+    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1");
+    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1");
 
     $stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 0 AND active = 1");
     $stats['defekt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 1 AND active = 1");
