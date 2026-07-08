@@ -139,7 +139,7 @@ $displayAmount = number_format($row['anzahl_loescher'] * $row['preis_pro_loesche
                 let res = await fetch(`sumup.php?action=create&rechnung_id=${rid}`);
                 let data = await res.json();
                 if(data.success) {
-                    document.getElementById('status').innerText = "Bitte Karte auflegen...";
+                    document.getElementById('status').innerText = "Transaktion erstellt \n\nBitte in der SumUp-Adaper-App fortsetzen.\n\n Warte auf Zahlung...";
                     checkStatus();
                 } else {
                     showError("API Fehler: " + (data.error || "Unbekannt"));

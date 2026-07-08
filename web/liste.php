@@ -216,7 +216,7 @@ $stats = getStats($db);
         <div class="d-flex gap-2">
             <a href="add_edit.php" class="btn btn-success btn-sm">+ Neuen Löscher anlegen</a>
             <a href="index.php" class="btn btn-outline-light btn-sm">
-                Zurück
+                Start
             </a>
             <a href="?logout=1" class="btn btn-danger btn-sm">
                 Abmelden

@@ -513,7 +513,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
         <div class="d-flex gap-2">
             <a href="rechnungen_anzeigen.php" class="btn btn-outline-info btn-sm">Rechnungsübersicht</a>
             <a href="index.php" class="btn btn-outline-light btn-sm">
-                Zurück
+                Start
             </a>
             <a href="?logout=1" class="btn btn-danger btn-sm">
                 Abmelden
