@@ -41,11 +41,12 @@ if ($action) {
         if (!$row) die(json_encode(["error" => "Rechnung nicht gefunden"]));
 
         // API erwartet Betrag in Cents (Integer)
-        $amount = (float)($row['anzahl_loescher'] * $row['preis_pro_loescher']);
+        $baseAmount = (float)($row['anzahl_loescher'] * $row['preis_pro_loescher']);
+        $amount = $baseAmount * (defined('SumUp_PRICE_FAKTOR') ? (float)SumUp_PRICE_FAKTOR : 1.0);
         
         $res = apiRequest("POST", "", [
             "title" => $row['rechnungsnummer'], 
-            "amount" => $amount // Die apiRequest wandelt intern korrekt um, falls nötig, oder wir senden es als float
+            "amount" => $amount 
         ]);
 
         if (!empty($res['id'])) {
@@ -71,9 +72,9 @@ if ($action) {
 
         $res = apiRequest("GET", "?id=" . $row['sumup_transaction_id']);
         
-        // Wenn API 404 liefert (hidden=1), ist res['error'] gesetzt durch unsere apiRequest Funktion
-        if (isset($res['error'])) {
-            echo json_encode(["status" => "failed", "error" => "Transaktion ungültig oder gelöscht"]);
+        if (isset($res['error']) || (isset($res['hidden']) && $res['hidden'] == 1)) {
+            $db->exec("UPDATE rechnungen SET sumup_status = 'cancelled', sumup_transaction_id = NULL WHERE id = $rechnung_id");
+            echo json_encode(["status" => "failed", "error" => "Zahlung wurde abgebrochen"]);
             exit;
         }
 
@@ -90,9 +91,7 @@ if ($action) {
         $row = $db->query("SELECT sumup_transaction_id FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
         
         if ($row && !empty($row['sumup_transaction_id'])) {
-            // Deine API verlangt die ID im JSON-Body für DELETE
             apiRequest("DELETE", "", ["id" => $row['sumup_transaction_id']]);
-            
             $db->exec("UPDATE rechnungen SET sumup_status = 'cancelled', sumup_transaction_id = NULL WHERE id = $rechnung_id");
         }
         echo json_encode(["success" => true]);
@@ -100,10 +99,20 @@ if ($action) {
     }
 }
 
-// FRONTEND
+// FRONTEND-BERECHHNUNG
 $rechnung_id = (int)$_GET['rechnung_id'];
 $row = $db->query("SELECT anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
-$displayAmount = number_format($row['anzahl_loescher'] * $row['preis_pro_loescher'], 2, ',', '.');
+$baseAmount = $row['anzahl_loescher'] * $row['preis_pro_loescher'];
+
+$faktor = defined('SumUp_PRICE_FAKTOR') ? (float)SumUp_PRICE_FAKTOR : 1.0;
+$finalAmount = $baseAmount * $faktor;
+$displayAmount = number_format($finalAmount, 2, ',', '.');
+
+// Prozentwert für die Anzeige berechnen (z.B. 1.02 -> 2%)
+$gebuehrProzent = 0;
+if ($faktor > 1) {
+    $gebuehrProzent = round(($faktor - 1) * 100, 2);
+}
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -115,7 +124,8 @@ $displayAmount = number_format($row['anzahl_loescher'] * $row['preis_pro_loesche
         body { font-family: sans-serif; text-align: center; padding: 40px; background: #f4f4f9; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; min-width: 250px; }
         .amount { font-size: 42px; font-weight: bold; color: #333; margin-bottom: 10px; }
-        .status-text { margin: 20px 0; font-size: 18px; color: #666; }
+        .status-text { margin: 20px 0; font-size: 17px; color: #666; line-height: 1.5; }
+        .fee-notice { font-size: 13px; color: #7f8c8d; margin-top: 8px; font-style: italic; display: block; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .btn-cancel { background: #e74c3c; color: white; border: none; padding: 12px 24px; cursor: pointer; border-radius: 6px; font-size: 16px; transition: background 0.3s; }
@@ -133,13 +143,20 @@ $displayAmount = number_format($row['anzahl_loescher'] * $row['preis_pro_loesche
 
     <script>
         const rid = <?= $rechnung_id ?>;
+        const gebuehrProzent = <?= $gebuehrProzent ?>;
+        let interval = null;
         
         async function init() {
             try {
                 let res = await fetch(`sumup.php?action=create&rechnung_id=${rid}`);
                 let data = await res.json();
                 if(data.success) {
-                    document.getElementById('status').innerText = "Transaktion erstellt \n\nBitte in der SumUp-Adaper-App fortsetzen.\n\n Warte auf Zahlung...";
+                    // Setzt den Text und hängt den Gebührenhinweis unten an, falls vorhanden
+                    let statusHtml = "Transaktion erstellt.<br><br>Bitte in der SumUp-Adapter-App fortsetzen.<br><br>Warte auf Zahlung...";
+                    if(gebuehrProzent > 0) {
+                        statusHtml += `<span class="fee-notice">(Inkl. ${gebuehrProzent.toString().replace('.', ',')}% Kartenzahlungsgebühr)</span>`;
+                    }
+                    document.getElementById('status').innerHTML = statusHtml;
                     checkStatus();
                 } else {
                     showError("API Fehler: " + (data.error || "Unbekannt"));
@@ -150,7 +167,7 @@ $displayAmount = number_format($row['anzahl_loescher'] * $row['preis_pro_loesche
         }
 
         function checkStatus() {
-            let interval = setInterval(async () => {
+            interval = setInterval(async () => {
                 try {
                     let res = await fetch(`sumup.php?action=status&rechnung_id=${rid}`);
                     let data = await res.json();
@@ -164,7 +181,9 @@ $displayAmount = number_format($row['anzahl_loescher'] * $row['preis_pro_loesche
                     } 
                     else if (data.status === 'failed') {
                         clearInterval(interval);
-                        showError("Zahlung fehlgeschlagen oder storniert.");
+                        showError(data.error || "Zahlung fehlgeschlagen oder storniert.");
+                        if(window.opener) window.opener.location.reload();
+                        setTimeout(() => window.close(), 2500);
                     }
                 } catch (e) {
                     console.error("Status-Check Fehler");
@@ -173,17 +192,26 @@ $displayAmount = number_format($row['anzahl_loescher'] * $row['preis_pro_loesche
         }
 
         async function cancelPayment() {
+            if(interval) clearInterval(interval);
+
             const btn = document.querySelector('.btn-cancel');
             btn.disabled = true;
+            btn.style.background = "#ccc";
             btn.innerText = "Wird storniert...";
             
-            await fetch(`sumup.php?action=cancel&rechnung_id=${rid}`);
-            document.getElementById('status').innerText = "Zahlung wurde abgebrochen.";
-            setTimeout(() => window.close(), 1200);
+            try {
+                await fetch(`sumup.php?action=cancel&rechnung_id=${rid}`);
+                document.getElementById('loader').style.display = "none";
+                document.getElementById('status').innerHTML = '<span style="color:#e74c3c; font-weight:bold;">❌ Zahlung wurde abgebrochen.</span>';
+                if(window.opener) window.opener.location.reload();
+                setTimeout(() => window.close(), 2500);
+            } catch (e) {
+                showError("Fehler beim Abbrechen der Zahlung.");
+            }
         }
 
         function showError(msg) {
-            document.getElementById('status').innerHTML = `<span style="color:red; font-weight:bold;">❌ ${msg}</span>`;
+            document.getElementById('status').innerHTML = `<span style="color:#e74c3c; font-weight:bold;">❌ ${msg}</span>`;
             document.getElementById('loader').style.display = "none";
         }
 
