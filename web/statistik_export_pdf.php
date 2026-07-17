@@ -42,10 +42,13 @@ $pageWidth = $pdf->getPageWidth();
 // Logo rechts
 $pdf->Image(__DIR__.'/images/Logo.png', $pageWidth - 45, 15, 30);
 
-// Titel
+// Datenbankname ohne Pfad und ohne .db extrahieren
+$dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME); // Holt z.B. "Test1" aus "databases/Test1.db"
+
+// Titel mit dynamischem Datenbanknamen
 $pdf->SetFont('helvetica', 'B', 20);
 $pdf->SetXY(15, 12);
-$pdf->Cell(0, 10, 'Feuerlöscherüberprüfung '.date('Y'), 0, 1);
+$pdf->Cell(0, 10, 'Feuerlöscherüberprüfung ' . $dbNameOnly, 0, 1);
 
 // Feuerwehrdaten
 $pdf->Ln(5);

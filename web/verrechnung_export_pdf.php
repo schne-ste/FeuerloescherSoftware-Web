@@ -2,19 +2,22 @@
 require 'config.php';
 require_once('tcpdf/tcpdf.php');
 
+// Prüfen, ob die Liste ausgeblendet werden soll[cite: 3]
+$hideList = isset($_GET['hide_list']) && $_GET['hide_list'] == 1;
+
 class MyPDF extends TCPDF {
 
     public function Footer() {
         $this->SetY(-15);
         $this->SetFont('helvetica', '', 8);
 
-        // Links: Gedruckt am
+        // Links: Gedruckt am[cite: 3]
         $this->Cell(0, 5,
             'Erstellt am: '.date('d.m.Y').' um '.date('H:i'),
             0, 0, 'L'
         );
 
-        // Rechts: Seite X/Y
+        // Rechts: Seite X/Y[cite: 3]
         $this->Cell(0, 5,
             'Seite '.$this->getAliasNumPage().'/'.$this->getAliasNbPages(),
             0, 0, 'R'
@@ -23,26 +26,29 @@ class MyPDF extends TCPDF {
 }
 
 // =====================
-// INIT
+// INIT[cite: 3]
 // =====================
 $pdf = new MyPDF();
 $pdf->SetMargins(15, 20, 15);
 $pdf->AddPage();
 
 // =====================
-// HEADER
+// HEADER[cite: 3]
 // =====================
 $pageWidth = $pdf->getPageWidth();
 
-// Logo rechts
+// Logo rechts[cite: 3]
 $pdf->Image(__DIR__.'/images/Logo.png', $pageWidth - 45, 15, 30);
 
-// Titel
+// Datenbankname ohne Pfad und ohne .db extrahieren[cite: 3]
+$dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME); // Holt z.B. "Test1" aus "databases/Test1.db"[cite: 3]
+
+// Titel mit dynamischem Datenbanknamen[cite: 3]
 $pdf->SetFont('helvetica', 'B', 20);
 $pdf->SetXY(15, 12);
-$pdf->Cell(0, 10, 'Feuerlöscherüberprüfung '.date('Y'), 0, 1);
+$pdf->Cell(0, 10, 'Feuerlöscherüberprüfung ' . $dbNameOnly, 0, 1);
 
-// Feuerwehrdaten
+// Feuerwehrdaten[cite: 3]
 $pdf->Ln(5);
 $pdf->SetFont('helvetica', '', 11);
 
@@ -51,7 +57,7 @@ $pdf->Cell(0, 6, FIRMA_ADRESSE, 0, 1);
 $pdf->Cell(0, 6, FIRMA_PLZORT, 0, 1);
 $pdf->Cell(0, 6, FIRMA_WEB, 0, 1);
 
-// Trennlinie
+// Trennlinie[cite: 3]
 $pdf->Ln(2);
 $pdf->SetLineWidth(0.2);
 $pdf->Line(15, $pdf->GetY(), $pageWidth - 15, $pdf->GetY());
@@ -59,7 +65,7 @@ $pdf->Line(15, $pdf->GetY(), $pageWidth - 15, $pdf->GetY());
 $pdf->Ln(8);
 
 // =====================
-// DATEN LADEN (nur verrechenbare)
+// DATEN LADEN (nur verrechenbare)[cite: 3]
 // =====================
 $db = getDB();
 $result = $db->query("SELECT * FROM loescher WHERE active=1");
@@ -85,7 +91,7 @@ $rows = [];
 
 while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
 
-    // Filter nur verrechenbare Löscher
+    // Filter nur verrechenbare Löscher[cite: 3]
     $istVerrechenbar = (
         !$l['defekt'] &&
         $l['bezahlt'] &&
@@ -96,7 +102,7 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
         continue;
     }
 
-    // Status bestimmen (für die Liste und Statistik)
+    // Status bestimmen (für die Liste und Statistik)[cite: 3]
     if ($l['defekt']) {
         $status = 'Defekt';
         $stats['defekt']++;
@@ -122,12 +128,12 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
     ];
 }
 
-// Gewinn (Firma bekommt Rabatt, FF bekommt Differenz)
+// Gewinn (Firma bekommt Rabatt, FF bekommt Differenz)[cite: 3]
 $gesamtGewinnFirma = $stats['gesamt'] * PREIS_RABATT;
 $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
 
 // =====================
-// ÜBERSCHRIFT
+// ÜBERSCHRIFT[cite: 3]
 // =====================
 $pdf->SetFont('helvetica', 'B', 14);
 $pdf->Cell(0, 8, 'Übersicht', 0, 1);
@@ -135,7 +141,7 @@ $pdf->Cell(0, 8, 'Übersicht', 0, 1);
 $pdf->Ln(2);
 
 // =====================
-// STATISTIK TABELLE
+// STATISTIK TABELLE[cite: 3]
 // =====================
 $pdf->SetFont('helvetica', '', 11);
 
@@ -153,34 +159,38 @@ foreach ($statData as $row) {
 $pdf->Ln(6);
 
 // =====================
-// LISTE
+// LISTE (Wird nur ausgegeben, wenn nicht ausgeblendet)[cite: 3]
 // =====================
-$pdf->SetFont('helvetica', 'B', 13);
-$pdf->Cell(0, 8, 'Liste der Löscher', 0, 1);
+if (!$hideList) {
+    $pdf->SetFont('helvetica', 'B', 13);
+    $pdf->Cell(0, 8, 'Liste der Löscher', 0, 1);
 
-$pdf->SetFont('helvetica', 'B', 10);
-$pdf->SetFillColor(200,200,200);
+    $pdf->SetFont('helvetica', 'B', 10);
+    $pdf->SetFillColor(200,200,200);
 
-$pdf->Cell(20, 8, 'Nr', 1, 0, 'C', true);
-$pdf->Cell(80, 8, 'Preis', 1, 0, 'C', true);
-$pdf->Cell(80, 8, 'Status', 1, 1, 'C', true);
+    $pdf->Cell(20, 8, 'Nr', 1, 0, 'C', true);
+    $pdf->Cell(80, 8, 'Preis', 1, 0, 'C', true);
+    $pdf->Cell(80, 8, 'Status', 1, 1, 'C', true);
 
-// Daten
-$pdf->SetFont('helvetica', '', 10);
+    // Daten[cite: 3]
+    $pdf->SetFont('helvetica', '', 10);
 
-$fill = false;
-foreach ($rows as $r) {
-    $pdf->SetFillColor($fill ? 245 : 255, $fill ? 245 : 255, $fill ? 245 : 255);
+    $fill = false;
+    foreach ($rows as $r) {
+        // Hintergrundfarbe umschalten (Wechselnd weiß und hellgrau)[cite: 3]
+        $color = $fill ? 245 : 255;
+        $pdf->SetFillColor($color, $color, $color);
 
-    $pdf->Cell(20, 7, $r['nummer'], 1, 0, 'C', true);
-    $pdf->Cell(80, 7, $r['preis'], 1, 0, 'R', true);
-    $pdf->Cell(80, 7, $r['status'], 1, 1, 'C', true);
+        $pdf->Cell(20, 7, $r['nummer'], 1, 0, 'C', true);
+        $pdf->Cell(80, 7, $r['preis'], 1, 0, 'R', true);
+        $pdf->Cell(80, 7, $r['status'], 1, 1, 'C', true);
 
-    $fill = !$fill;
+        $fill = !$fill;
+    }
 }
 
 // =====================
-// Unterschrift & Bestätigung
+// Unterschrift & Bestätigung[cite: 3]
 // =====================
 $pdf->Ln(15);
 $pdf->SetFont('helvetica', '', 11);
@@ -188,6 +198,6 @@ $pdf->MultiCell(0, 10, "Die Firma bestätigt hiermit die Auswertung als korrekt.
 
 
 // =====================
-// OUTPUT
+// OUTPUT[cite: 3]
 // =====================
 $pdf->Output('feuerloescher_verrechnung.pdf', 'I');

@@ -145,9 +145,12 @@ $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
     <h1>&#128293; Löscher</h1>
 
     <!-- PDF Export -->
-    <div class="mb-3">
+    <div class="mb-3 d-flex gap-2">
        <a href="verrechnung_export_pdf.php" target="_blank" rel="noopener noreferrer" class="btn btn-dark btn-sm">
-            📄 PDF Export
+            📄 PDF Export (mit Liste)
+        </a>
+       <a href="verrechnung_export_pdf.php?hide_list=1" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">
+            📄 PDF Export (ohne Liste)
         </a>
     </div>
 

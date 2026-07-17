@@ -5,14 +5,16 @@ if (basename($_SERVER["SCRIPT_NAME"]) === "init_db.php") {
     exit("Not found");
 }
 
-$dbFile = 'feuerloescher.db';
+// Den richtigen Pfad ermitteln (entweder temporär für Neu-Erstellung oder die aktive DB)
+$dbPath = defined('TEMP_INIT_DB') ? TEMP_INIT_DB : DB_FILE;
 
-// Alte DB löschen
-if (file_exists($dbFile)) {
-    unlink($dbFile);
+// Falls die Datei bereits existiert, löschen wir sie für den Reset
+if (file_exists($dbPath)) {
+    unlink($dbPath);
 }
 
-$db = new SQLite3($dbFile);
+// Datenbank neu erzeugen
+$db = new SQLite3($dbPath);
 
 // Tabelle für Löscher
 $db->exec("
@@ -59,4 +61,4 @@ CREATE TABLE rechnungen (
 );
 ");
 
-//echo "Datenbank wurde neu erstellt!";
+$db->close();

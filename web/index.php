@@ -1,11 +1,145 @@
 <?php
-require 'config.php';
 session_start();
+
+// Pfad-Sicherheit und Verzeichnis anlegen
+$dbDir = 'databases';
+if (!is_dir($dbDir)) {
+    mkdir($dbDir, 0755, true);
+}
+
+// 1. Hilfsfunktion zum Ändern der config.php (VOR dem Einlesen der config!)
+function updateConfigDefine($key, $value, $isNumber = false) {
+    $configFile = 'config.php';
+    if (!file_exists($configFile)) return false;
+
+    $content = file_get_contents($configFile);
+    if ($isNumber) {
+        $replacement = "define('$key', " . floatval($value) . ");";
+    } else {
+        $escapedValue = addslashes($value);
+        $replacement = "define('$key', '$escapedValue');";
+    }
+
+    $content = preg_replace(
+        "/define\('$key',\s*.*?\);/",
+        $replacement,
+        $content
+    );
+
+    return file_put_contents($configFile, $content) !== false;
+}
+
+// --- DATENBANKEN ERSTELLEN / WECHSELN / LÖSCHEN (Vor require 'config.php' auswerten!) ---
+
+// 1. Neue Datenbank anlegen
+if (isset($_POST['create_db'])) {
+    require 'config.php'; // Passwort-Konstante holen
+    if (!isset($_POST['db_password']) || $_POST['db_password'] !== RESET_PASSWORD) {
+        $errorMessage = "Falsches Passwort!";
+    } else {
+        $newName = trim($_POST['new_db_name']);
+        
+        // Validierung auf exakt 4 Ziffern (Jahreszahl)
+        if (!preg_match('/^\d{4}$/', $newName)) {
+            $errorMessage = "Ungültiger Datenbankname! Der Name darf nur aus einer 4-stelligen Jahreszahl bestehen (z.B. 2026).";
+        } else {
+            $newDbPath = $dbDir . '/' . $newName . '.db';
+            if (file_exists($newDbPath)) {
+                $errorMessage = "Datenbank existiert bereits!";
+            } else {
+                // Temporäre Konstante setzen, damit getDB() die neue Datenbank anspricht
+                define('TEMP_INIT_DB', $newDbPath);
+                
+                // Neue Struktur initialisieren (Nutzt jetzt TEMP_INIT_DB)
+                require 'init_db.php';
+                
+                // config.php aktualisieren
+                updateConfigDefine('DB_FILE', $newDbPath);
+                
+                // Seite neu laden, damit die neue DB_FILE geladen wird
+                header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Datenbank '$newName.db' erfolgreich angelegt und aktiviert!"));
+                exit;
+            }
+        }
+    }
+}
+
+// 2. Datenbank wechseln
+if (isset($_POST['select_db'])) {
+    $selectedDb = $_POST['selected_db'];
+    if (file_exists($selectedDb) && strpos(realpath($selectedDb), realpath($dbDir)) === 0) {
+        updateConfigDefine('DB_FILE', $selectedDb);
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Erfolgreich zur Datenbank " . basename($selectedDb) . " gewechselt!"));
+        exit;
+    } else {
+        $errorMessage = "Ungültige Datenbank-Auswahl!";
+    }
+}
+
+// 3. Datenbank löschen (inklusive dazugehörigem PDF-Unterordner)
+if (isset($_POST['delete_db'])) {
+    require 'config.php';
+    if (!isset($_POST['db_password']) || $_POST['db_password'] !== RESET_PASSWORD) {
+        $errorMessage = "Falsches Passwort!";
+    } else {
+        $toDelete = $_POST['db_to_delete'];
+        if (file_exists($toDelete) && strpos(realpath($toDelete), realpath($dbDir)) === 0) {
+            if ($toDelete === DB_FILE) {
+                $errorMessage = "Die aktuell aktive Datenbank kann nicht gelöscht werden!";
+            } else {
+                // 1. Namen der Datenbank ohne Endung ermitteln (z.B. "Test1")
+                $dbNameOnly = pathinfo($toDelete, PATHINFO_FILENAME);
+                $pdfFolderToDelete = __DIR__ . '/_Rechnungen/' . $dbNameOnly;
+
+                // 2. Hilfsfunktion zum rekursiven Löschen definieren (falls nicht bereits geladen)
+                if (!function_exists('rrmdir')) {
+                    function rrmdir($dir) {
+                        if (!is_dir($dir)) return;
+                        $files = new RecursiveIteratorIterator(
+                            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+                            RecursiveIteratorIterator::CHILD_FIRST
+                        );
+
+                        foreach ($files as $file) {
+                            if ($file->isDir()) {
+                                rmdir($file->getRealPath());
+                            } else {
+                                unlink($file->getRealPath());
+                            }
+                        }
+                        rmdir($dir);
+                    }
+                }
+
+                // 3. Dazugehörigen PDF-Ordner löschen, falls er existiert
+                if (is_dir($pdfFolderToDelete)) {
+                    rrmdir($pdfFolderToDelete);
+                }
+
+                // 4. Eigentliche .db Datei löschen
+                unlink($toDelete);
+                
+                header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Datenbank " . basename($toDelete) . " und alle zugehörigen PDF-Rechnungen wurden gelöscht!"));
+                exit;
+            }
+        } else {
+            $errorMessage = "Datenbank nicht gefunden oder ungültig!";
+        }
+    }
+}
+
+// Jetzt regulär config.php laden
+require 'config.php';
 
 // Nur eingeloggte Benutzer
 if (!isset($_SESSION['logged_in'])) {
     header("Location: login.php");
     exit;
+}
+
+// Erfolgsmeldungen aus Redirects abfangen
+if (isset($_GET['success'])) {
+    $successMessage = htmlspecialchars($_GET['success']);
 }
 
 // Logout
@@ -15,107 +149,93 @@ if (isset($_GET['logout'])) {
     exit;
 }
 
-// Reset durchführen
+// Reset der aktuellen DB durchführen
 if (isset($_POST['reset_db'])) {
-
     if (!isset($_POST['reset_password']) || $_POST['reset_password'] !== RESET_PASSWORD) {
-    $errorMessage = "Falsches Passwort!";
+        $errorMessage = "Falsches Passwort!";
     } else {
-
-    $backupDir = 'backups';
-    if (!is_dir($backupDir)) {
-        mkdir($backupDir, 0755, true);
-    }
-
-    $timestamp = date('Ymd_His');
-
-    // 1. Datenbank sichern
-    $backupFile = $backupDir . '/feuerloescher_backup_' . $timestamp . '.db';
-    if (file_exists(DB_FILE)) {
-        copy(DB_FILE, $backupFile);
-    }
-
-    // 2. _Rechnungen Ordner sichern
-    $rechnungenDir = '_Rechnungen';
-    if (is_dir($rechnungenDir)) {
-        $zipFile = $backupDir . '/feuerloescher_backup_' . $timestamp . '.zip';
-        $zip = new ZipArchive();
-        if ($zip->open($zipFile, ZipArchive::CREATE) === true) {
-            $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($rechnungenDir));
-            foreach ($files as $file) {
-                if (!$file->isDir()) {
-                    $filePath = $file->getRealPath();
-                    $relativePath = substr($filePath, strlen($rechnungenDir) + 1);
-                    $zip->addFile($filePath, $relativePath);
-                }
-            }
-            $zip->close();
-        }
-        // Ordner leeren
-        function rrmdir($dir) {
-            if (!is_dir($dir)) return;
-            $files = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::CHILD_FIRST
-            );
-
-            foreach ($files as $file) {
-                if ($file->isDir()) {
-                    rmdir($file->getRealPath());
-                } else {
-                    unlink($file->getRealPath());
-                }
-            }
+        $backupDir = 'backups';
+        if (!is_dir($backupDir)) {
+            mkdir($backupDir, 0755, true);
         }
 
-        rrmdir($rechnungenDir);
-    }
+        $timestamp = date('Ymd_His');
 
-    // 3. Datenbank initialisieren
-    require 'init_db.php';
+        // 1. Datenbank sichern
+        $currentDbName = basename(DB_FILE, '.db');
+        $backupFile = $backupDir . '/backup_' . $currentDbName . '_' . $timestamp . '.db';
+        if (file_exists(DB_FILE)) {
+            copy(DB_FILE, $backupFile);
+        }
 
-    $successMessage = "Datenbank wurde zurückgesetzt! Backup DB: $backupFile, Backup Rechnungen: $zipFile";
+
+        // 2. _Rechnungen Unterordner der AKTIVEN DB sichern
+        $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
+        $rechnungenDir = '_Rechnungen/' . $dbNameOnly;
+        
+        if (is_dir($rechnungenDir)) {
+            $zipFile = $backupDir . '/rechnungen_' . $dbNameOnly . '_backup_' . $timestamp . '.zip';
+            $zip = new ZipArchive();
+            if ($zip->open($zipFile, ZipArchive::CREATE) === true) {
+                $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($rechnungenDir));
+                foreach ($files as $file) {
+                    if (!$file->isDir()) {
+                        $filePath = $file->getRealPath();
+                        $relativePath = substr($filePath, strlen($rechnungenDir) + 1);
+                        $zip->addFile($filePath, $relativePath);
+                    }
+                }
+                $zip->close();
+            }
+            
+            // Hilfsfunktion zum rekursiven Löschen
+            if (!function_exists('rrmdir')) {
+                function rrmdir($dir) {
+                    if (!is_dir($dir)) return;
+                    $files = new RecursiveIteratorIterator(
+                        new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+                        RecursiveIteratorIterator::CHILD_FIRST
+                    );
+
+                    foreach ($files as $file) {
+                        if ($file->isDir()) {
+                            rmdir($file->getRealPath());
+                        } else {
+                            unlink($file->getRealPath());
+                        }
+                    }
+                    rmdir($dir);
+                }
+            }
+            // Nur den spezifischen Unterordner leeren/löschen
+            rrmdir($rechnungenDir);
+        }
+
+        // 3. Datenbank initialisieren (Hier wird die aktive DB geleert und neu aufgebaut)
+        require 'init_db.php';
+
+        $successMessage = "Datenbank wurde zurückgesetzt! Backup DB: $backupFile";
+        if (isset($zipFile)) {
+            $successMessage .= ", Backup Rechnungen: $zipFile";
+        }
     }
 }
 
 // Einstellungen speichern
 if (isset($_POST['save_settings'])) {
-
     if ($_POST['settings_password'] !== RESET_PASSWORD) {
         $errorMessage = "Falsches Passwort!";
     } else {
-
-        $configFile = 'config.php';
-        $configContent = file_get_contents($configFile);
-
-        function replaceDefine($content, $key, $value) {
-            $value = addslashes($value);
-            return preg_replace(
-                "/define\('$key',\s*.*?\);/",
-                "define('$key', '$value');",
-                $content
-            );
-        }
-
-        function replaceDefineNumber($content, $key, $value) {
-            return preg_replace(
-                "/define\('$key',\s*.*?\);/",
-                "define('$key', " . floatval($value) . ");",
-                $content
-            );
-        }
-
-        // Preise
-        $configContent = replaceDefineNumber($configContent, 'PREIS_STANDARD', $_POST['preis_standard']);
-        $configContent = replaceDefineNumber($configContent, 'PREIS_RABATT', $_POST['preis_rabatt']);
-
-        file_put_contents($configFile, $configContent);
-
-        $successMessage = "Einstellungen gespeichert!";
+        updateConfigDefine('PREIS_STANDARD', $_POST['preis_standard'], true);
+        updateConfigDefine('PREIS_RABATT', $_POST['preis_rabatt'], true);
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Einstellungen gespeichert!"));
+        exit;
     }
 }
-?>
 
+// Datenbank-Dateien einlesen
+$dbFiles = glob($dbDir . '/*.db');
+?>
 
 <!doctype html>
 <html lang="de">
@@ -125,11 +245,10 @@ if (isset($_POST['save_settings'])) {
     <title>&#128293; Feuerlöscher Software</title>
     <link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
     <link rel="shortcut icon" href="./images/Feuerlöscher.ico">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-light">
+<body class="bg-light pb-5">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -137,16 +256,14 @@ if (isset($_POST['save_settings'])) {
             <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
             &#128293; Feuerlöscher Software
         </span>
-
-        <div class="d-flex gap-2">
-            <a href="?logout=1" class="btn btn-danger btn-sm">
-                Abmelden
-            </a>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge bg-success me-2">Aktive DB: <?php echo basename(DB_FILE); ?></span>
+            <a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>
         </div>
     </div>
 </nav>
 
-<div class="container mt-5 flex-grow-1">
+<div class="container mt-5">
     <h1>&#128293; Feuerlöscher Software</h1>
     <br>
 
@@ -156,16 +273,14 @@ if (isset($_POST['save_settings'])) {
         </div>
     <?php endif; ?>
 
-    <!-- Erfolgsmeldung -->
     <?php if(isset($successMessage)): ?>
         <div class="alert alert-success">
             <?php echo $successMessage; ?>
         </div>
     <?php endif; ?>
 
-    <!-- FUNKTIONEN -->
+    <!-- FUNKTIONEN GRID -->
     <div class="row g-4">
-
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -175,7 +290,6 @@ if (isset($_POST['save_settings'])) {
                 </div>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -185,7 +299,6 @@ if (isset($_POST['save_settings'])) {
                 </div>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -195,17 +308,15 @@ if (isset($_POST['save_settings'])) {
                 </div>
             </div>
         </div>
-        
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
-                    <h5 class="card-title">&#128179; Rechnung</h5>
+                    <h5 class="card-title">&#128179; Rechnungen</h5>
                     <p class="card-text">Rechnungen erstellen oder bearbeiten</p>
                     <a href="rechnung.php" class="btn btn-primary w-100">Öffnen</a>
                 </div>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -215,7 +326,6 @@ if (isset($_POST['save_settings'])) {
                 </div>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -225,7 +335,6 @@ if (isset($_POST['save_settings'])) {
                 </div>
             </div>
         </div>
-
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -235,129 +344,194 @@ if (isset($_POST['save_settings'])) {
                 </div>
             </div>
         </div>
-
     </div>
 
-    <div class="mt-5">
-    <div class="card shadow-sm">
+    <!-- EINSTELLUNGEN CONTAINER -->
+    <div class="mt-5 mb-5">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <button class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#settingsAll">
+                    &#9881; Einstellungen &amp; Datenbanken
+                </button>
+            </div>
 
-        <div class="card-body text-center">
-            <button class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#settingsAll">
-                &#9881; Einstellungen
-            </button>
-        </div>
+            <div id="settingsAll" class="collapse">
+                <div class="card-body">
+                    <div class="row g-4">
 
-        <div id="settingsAll" class="collapse">
-            <div class="card-body">
-
-                <div class="row g-4">
-
-                    <!-- SCHILDER -->
-                    <div class="col-md-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <i class="bi bi-signpost-split"></i>
-                                <h5>&#128293;&#128220; Schilder</h5>
-
-                                <div class="d-flex flex-column gap-3">
-                                    <div class="d-flex justify-content-center">
+                        <!-- SCHILDER -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <h5>&#128293;&#128220; Schilder</h5>
+                                    <div class="d-flex flex-column gap-3">
                                         <a href="schilder.php" target="_blank" class="btn btn-outline-danger w-100">
                                             Standard-Set generieren
                                         </a>
-                                    </div>
-
-                                    <hr class="my-1">
-
-                                    <form action="schilder.php" method="GET" target="_blank">
-                                        <p class="small mb-1 text-muted">ID Bereich (z.B. 1-30)</p>
-                                        <div class="input-group">
-                                            <input type="text" name="id" class="form-control form-control-sm" placeholder="Bereich..." required>
-                                            <button type="submit" class="btn btn-sm btn-outline-success">
-                                                ID Schild erstellen
-                                            </button>
-                                        </div>
-                                    </form>
-
-                                    <hr class="my-1">
-
-                                    <div class="d-flex justify-content-center">
+                                        <hr class="my-1">
+                                        <form action="schilder.php" method="GET" target="_blank">
+                                            <p class="small mb-1 text-muted">ID Bereich (z.B. 1-30)</p>
+                                            <div class="input-group">
+                                                <input type="text" name="id" class="form-control form-control-sm" placeholder="Bereich..." required>
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Erstellen</button>
+                                            </div>
+                                        </form>
+                                        <hr class="my-1">
                                         <a href="oenormf1053.php" target="_blank" class="btn btn-outline-danger w-100">
                                             ÖNORM F 1053 Flyer generieren
                                         </a>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DATENBANK VERWALTUNG & RESET -->
+                        <div class="col-md-4">
+                            <div class="card border-warning shadow-sm h-100">
+                                <div class="card-body">
+                                    <h5 class="text-warning text-center">📂 Datenbanken verwalten</h5>
+                                    
+                                    <!-- DB Auswählen -->
+                                    <form method="post" class="mb-3">
+                                        <label class="small text-muted">Aktive DB wechseln:</label>
+                                        <div class="input-group">
+                                            <select name="selected_db" class="form-select form-select-sm" required>
+                                                <?php foreach ($dbFiles as $file): ?>
+                                                    <option value="<?php echo $file; ?>" <?php echo ($file === DB_FILE) ? 'selected' : ''; ?>>
+                                                        <?php echo basename($file); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <button type="submit" name="select_db" class="btn btn-sm btn-warning">Wählen</button>
+                                        </div>
+                                    </form>
+
+                                    <hr>
+
+                                    <!-- Neue DB anlegen (Eingeschränkt auf exakt 4 Zahlen) -->
+                                    <form id="createDbForm" method="post" class="mb-3">
+                                        <input type="hidden" name="create_db" value="1">
+                                        <input type="hidden" name="db_password" id="create_db_password">
+                                        <label class="small text-muted">Neue DB erstellen (Nur 4-stellige Jahreszahl):</label>
+                                        <div class="input-group">
+                                            <input type="text" name="new_db_name" class="form-control form-control-sm" 
+                                                   placeholder="z.B. 2026" required 
+                                                   pattern="[0-9]{4}" maxlength="4" minlength="4">
+                                            <button type="button" class="btn btn-sm btn-success" onclick="confirmDbCreate()">Erstellen</button>
+                                        </div>
+                                    </form>
+
+                                    <hr>
+
+                                    <!-- DB Löschen -->
+                                    <form id="deleteDbForm" method="post" class="mb-3">
+                                        <input type="hidden" name="delete_db" value="1">
+                                        <input type="hidden" name="db_password" id="delete_db_password">
+                                        <label class="small text-danger">Datenbank löschen:</label>
+                                        <div class="input-group">
+                                            <select name="db_to_delete" id="db_to_delete" class="form-select form-select-sm" required>
+                                                <option value="">-- DB wählen --</option>
+                                                <?php foreach ($dbFiles as $file): ?>
+                                                    <?php if ($file !== DB_FILE): ?>
+                                                        <option value="<?php echo $file; ?>"><?php echo basename($file); ?></option>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="confirmDbDelete()">Löschen</button>
+                                        </div>
+                                    </form>
+
+                                    <hr>
+
+                                    <!-- RESET DER AKTUELLEN DB -->
+                                    <div class="text-center mt-2">
+                                        <span class="small text-danger d-block mb-1">Aktive DB zurücksetzen:</span>
+                                        <form id="resetForm" method="post">
+                                            <input type="hidden" name="reset_db" value="1">
+                                            <input type="hidden" name="reset_password" id="reset_password">
+                                            <button type="button" class="btn btn-danger btn-sm w-100" onclick="confirmReset()">
+                                                ⚠ Zurücksetzen (<?php echo basename(DB_FILE); ?>)
+                                            </button>
+                                        </form>
+                                    </div>
 
                                 </div>
-                                
                             </div>
                         </div>
-                    </div>
 
-                    <!-- RESET -->
-                    <div class="col-md-4">
-                        <div class="card border-danger shadow-sm h-100">
-                            <div class="card-body text-center">
-                                <h5 class="text-danger">⚠ Datenbank zurücksetzen</h5>
+                        <!-- EINSTELLUNGEN (Preise) -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body">
+                                    <form id="settingsForm" method="post">
+                                        <input type="hidden" name="save_settings" value="1">
+                                        <input type="hidden" name="settings_password" id="settings_password">
 
-                                <p class="card-text small">
-                                    Alle Daten werden gelöscht.<br>
-                                    Ein Backup wird automatisch erstellt.
-                                </p>
+                                        <h5 class="text-center">&#9881; Preise</h5>
 
-                                <form id="resetForm" method="post">
-                                    <input type="hidden" name="reset_db" value="1">
-                                    <input type="hidden" name="reset_password" id="reset_password">
+                                        <label class="small">Standard</label>
+                                        <input type="number" step="0.01" name="preis_standard"
+                                               value="<?php echo PREIS_STANDARD; ?>"
+                                               class="form-control form-control-sm mb-2" required>
 
-                                    <button type="button" class="btn btn-danger w-100" onclick="confirmReset()">
-                                        Datenbank zurücksetzen
-                                    </button>
-                                </form>
+                                        <label class="small">Rabatt</label>
+                                        <input type="number" step="0.01" name="preis_rabatt"
+                                               value="<?php echo PREIS_RABATT; ?>"
+                                               class="form-control form-control-sm mb-2" required>
+
+                                        <button type="button" class="btn btn-success btn-sm w-100" onclick="confirmSettingsSave()">
+                                            &#128190; Speichern
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
+
                     </div>
-
-                    <!-- EINSTELLUNGEN -->
-                    <div class="col-md-4">
-                        <div class="card shadow-sm h-100">
-                            <div class="card-body">
-
-                                <form id="settingsForm" method="post">
-                                    <input type="hidden" name="save_settings" value="1">
-                                    <input type="hidden" name="settings_password" id="settings_password">
-
-                                    <h5 class="text-center">&#9881; Preise</h5>
-
-                                    <label>Standard</label>
-                                    <input type="number" step="0.01" name="preis_standard"
-                                           value="<?php echo PREIS_STANDARD; ?>"
-                                           class="form-control mb-2" required>
-
-                                    <label>Rabatt</label>
-                                    <input type="number" step="0.01" name="preis_rabatt"
-                                           value="<?php echo PREIS_RABATT; ?>"
-                                           class="form-control mb-2" required>
-
-                                    <button type="button" class="btn btn-success w-100" onclick="confirmSettingsSave()">
-                                        &#128190; Speichern
-                                    </button>
-                                </form>
-
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
-
             </div>
         </div>
-
     </div>
-</div>
-    
 </div>
 
 <script>
+function confirmDbCreate() {
+    const dbNameInput = document.getElementsByName("new_db_name")[0];
+    const dbName = dbNameInput.value.trim();
+    
+    // JS Vorab-Validierung auf exakt 4 Ziffern
+    const regex = /^\d{4}$/;
+    if (!regex.test(dbName)) {
+        alert("Fehler: Der Datenbankname muss exakt eine 4-stellige Jahreszahl sein (z.B. 2026)!");
+        dbNameInput.focus();
+        return;
+    }
+    
+    const pwd = prompt("Admin-Passwort zum Erstellen der Datenbank eingeben:");
+    if (!pwd) return;
+
+    document.getElementById("create_db_password").value = pwd;
+    document.getElementById("createDbForm").submit();
+}
+
+function confirmDbDelete() {
+    const selectEl = document.getElementById("db_to_delete");
+    if (!selectEl.value) {
+        alert("Bitte wähle eine Datenbank aus, die gelöscht werden soll!");
+        return;
+    }
+    const dbName = selectEl.options[selectEl.selectedIndex].text;
+    if (!confirm("ACHTUNG!\nMöchtest du die Datenbank '" + dbName + "' wirklich unwiderruflich löschen?")) return;
+
+    const pwd = prompt("Admin-Passwort zum Löschen eingeben:");
+    if (!pwd) return;
+
+    document.getElementById("delete_db_password").value = pwd;
+    document.getElementById("deleteDbForm").submit();
+}
+
 function confirmReset() {
-    if (!confirm("ACHTUNG!\n\nAlle Daten werden gelöscht!\nBackup wird erstellt.\n\nFortfahren?")) return;
+    if (!confirm("ACHTUNG!\n\nAlle Daten der AKTIVEN DATENBANK werden gelöscht!\nEin Backup wird erstellt.\n\nFortfahren?")) return;
 
     const pwd = prompt("Admin-Passwort eingeben:");
     if (!pwd) {
@@ -368,30 +542,6 @@ function confirmReset() {
     document.getElementById("reset_password").value = pwd;
     document.getElementById("resetForm").submit();
 }
-
-// Logik zum Ausblenden der Meldung
-document.addEventListener('DOMContentLoaded', function() {
-    const alert = document.querySelector('.alert');
-    
-    if (alert) {
-        // Starte Timer für 3 Sekunden (3000ms)
-        setTimeout(() => {
-            // Weicher Übergang
-            alert.style.transition = "opacity 0.8s ease, transform 0.8s ease, height 0.8s ease, margin 0.8s ease, padding 0.8s ease";
-            alert.style.opacity = "0";
-            alert.style.transform = "translateY(-10px)";
-            
-            // Nach dem Fade-out das Element komplett entfernen
-            setTimeout(() => {
-                alert.style.height = "0";
-                alert.style.margin = "0";
-                alert.style.padding = "0";
-                alert.style.overflow = "hidden";
-                setTimeout(() => alert.remove(), 800);
-            }, 400);
-        }, 3000);
-    }
-});
 
 function confirmSettingsSave() {
     if (!confirm("Einstellungen wirklich speichern?")) return;
@@ -405,10 +555,21 @@ function confirmSettingsSave() {
     document.getElementById("settings_password").value = pwd;
     document.getElementById("settingsForm").submit();
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const alert = document.querySelector('.alert');
+    if (alert) {
+        setTimeout(() => {
+            alert.style.transition = "opacity 0.8s ease, transform 0.8s ease";
+            alert.style.opacity = "0";
+            alert.style.transform = "translateY(-10px)";
+            setTimeout(() => alert.remove(), 800);
+        }, 3000);
+    }
+});
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<div class="small d-hidden p-4"></div>
 <footer class="bg-light text-center text-muted py-2 small border-top fixed-bottom">
     &copy; Freiwillige Feuerwehr Wallern - Stefan Schneebauer <?php echo date('Y'); ?>
 </footer>

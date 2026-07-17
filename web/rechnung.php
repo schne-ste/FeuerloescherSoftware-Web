@@ -23,6 +23,31 @@ $searchResults = [];
 $editEntry = null;
 
 // =====================
+// HILFSFUNKTION FÜR DATEINAMEN
+// =====================
+function cleanWindowsFilename($rnr, $kundenname) {
+    // 1. Rechnungsnummer säubern
+    $cleanRnr = preg_replace('/[^a-zA-Z0-9_-]/', '', $rnr);
+    
+    // 2. Kundenname: Umlaute und scharfes S ersetzen
+    $umlautMap = ['ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue', 'ß' => 'ss'];
+    $cleanName = strtr($kundenname, $umlautMap);
+    
+    // 3. Leerzeichen durch Unterstriche ersetzen
+    $cleanName = str_replace(' ', '_', $cleanName);
+    
+    // 4. Windows-Sonderzeichen entfernen (\ / : * ? " < > |) sowie ungewollte Zeichen
+    $cleanName = preg_replace('/[^a-zA-Z0-9_-]/', '', $cleanName);
+    
+    // 5. Mehrfache Unterstriche reduzieren
+    $cleanName = preg_replace('/_+/', '_', $cleanName);
+    $cleanName = trim($cleanName, '_');
+
+    // Rückgabe mit _ getrennt. Wenn Name leer ist, nur die Nummer.
+    return !empty($cleanName) ? $cleanRnr . '_' . $cleanName : $cleanRnr;
+}
+
+// =====================
 // PREISE
 // =====================
 $preise = [
@@ -78,7 +103,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'reload_data' && isset($_GET['
     if ($row) {
         $row['status_html'] = ($row['rechnung_gedruckt'] == 1) ? '&#9989;' : '&#10060;';
         // Dateiname für den Link generieren
-        $row['pdf_url'] = '_Rechnungen/Rechnung_' . preg_replace('/[^a-zA-Z0-9_-]/', '', $row['rechnungsnummer']) . '.pdf';
+        $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME); // Holt z.B. 'Test1' aus 'databases/Test1.db'
+        $row['pdf_url'] = '_Rechnungen/' . $dbNameOnly . '/Rechnung_' . cleanWindowsFilename($row['rechnungsnummer'], $row['name']) . '.pdf';
     }
     
     header('Content-Type: application/json');
@@ -92,13 +118,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'reload_data' && isset($_GET['
 if (isset($_POST['delete_rechnung_form']) && !empty($_POST['edit_id'])) {
     $deleteId = (int)$_POST['edit_id'];
     
-    $stmt = $db->prepare("SELECT rechnungsnummer FROM rechnungen WHERE id = :id");
+    $stmt = $db->prepare("SELECT rechnungsnummer, name FROM rechnungen WHERE id = :id");
     $stmt->bindValue(':id', $deleteId);
     $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
     
     if ($res) {
         $rnr = $res['rechnungsnummer'];
-        $pdfPath = __DIR__ . '/_Rechnungen/Rechnung_' . preg_replace('/[^a-zA-Z0-9_-]/', '', $rnr) . '.pdf';
+        $kname = $res['name'];
+        $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
+        $pdfPath = __DIR__ . '/_Rechnungen/' . $dbNameOnly . '/Rechnung_' . cleanWindowsFilename($rnr, $kname) . '.pdf';
         
         $delStmt = $db->prepare("DELETE FROM rechnungen WHERE id = :id");
         $delStmt->bindValue(':id', $deleteId);
@@ -206,7 +234,6 @@ if (isset($_POST['save_rechnung'])) {
         $currentData = $db->query("SELECT * FROM rechnungen WHERE id = $lastId")->fetchArray(SQLITE3_ASSOC);
         
         // 2. Definieren, was eine kritische Änderung ist
-        // Wir vergleichen: Anzahl, gewählter Preis-Typ (über den Preis) und die Rechnungsnummer
         $typ = $_POST['typ'] ?? '';
         $neuerPreis = $preise[$typ] ?? 0;
         
@@ -219,6 +246,12 @@ if (isset($_POST['save_rechnung'])) {
         // 3. Status nur zurücksetzen, wenn kritisch geändert ODER wenn wir manuell "Nachdrucken" gedrückt haben
         $resetDruck = $hatKritischeAenderung ? 0 : $currentData['rechnung_gedruckt'];
         $resetZeit  = $hatKritischeAenderung ? NULL : $currentData['zeitstempel_gedruckt'];
+
+        // Altes PDF löschen, falls sich der Name oder die Rechnungsnummer geändert hat
+        $oldFilename = __DIR__ . '/_Rechnungen/' . pathinfo(DB_FILE, PATHINFO_FILENAME) . '/Rechnung_' . cleanWindowsFilename($currentData['rechnungsnummer'], $currentData['name']) . '.pdf';
+        if (file_exists($oldFilename)) {
+            @unlink($oldFilename);
+        }
 
         $stmt = $db->prepare("
             UPDATE rechnungen SET
@@ -285,11 +318,9 @@ if (isset($_POST['save_rechnung'])) {
 
     class MYPDF extends TCPDF {
         public function Footer() {
-            // Position 25 mm vom unteren Rand
             $this->SetY(-25);
             $this->SetFont('helvetica', 'I', 8);
             
-            // Dezente Trennlinie über dem Footer
             $this->Line(15, $this->GetY(), 195, $this->GetY());
             $this->Ln(2);
 
@@ -303,7 +334,6 @@ if (isset($_POST['save_rechnung'])) {
             $this->SetY(-5);
             $this->SetFont('helvetica', 'I', 5);
             $this->Cell(0, 4, $info, 0, 1, 'C');
-            
         }
     }
 
@@ -315,85 +345,57 @@ if (isset($_POST['save_rechnung'])) {
     $pdf->SetAutoPageBreak(TRUE, 25);
     $pdf->AddPage();
 
-    // --- 1. LOGO & ABSENDERZEILE ---
+    // --- LOGO & ABSENDERZEILE ---
     $logoPath = __DIR__ . '/images/Logo.png';
     if (file_exists($logoPath)) {
-        // Logo rechts oben (Breite 50mm)
         $pdf->Image($logoPath, 145, 15, 50);
     }
     
-    // Kleiner Absender (Einzeiler für Fensterkuvert)
     $pdf->SetFont('helvetica', '', 8);
     $pdf->SetXY(15, 42);
     $pdf->Cell(0, 5, FIRMA_NAME . " • " . FIRMA_ADRESSE . " • " . FIRMA_PLZORT, 0, 1, 'L');
 
-	// =====================
-	// EMPFÄNGER LINKS
-	// =====================
-	
+	// --- EMPFÄNGER ---
 	$pdf->SetFont('helvetica', '', 11);
-	
-	// Linke Spalte
 	$leftX = 15;
 	$leftWidth = 100;
-	
 	$pdf->SetXY($leftX, 50);
 	
-	// Anrede
 	if (!empty($_POST['anrede']) && $_POST['anrede'] !== '-') {
 	    $pdf->MultiCell($leftWidth, 6, $_POST['anrede'], 0, 'L');
 	}
 	
-	// Name (fett)
 	$pdf->SetX($leftX);
 	$pdf->SetFont('helvetica', 'B', 11);
 	$pdf->MultiCell($leftWidth, 6, $_POST['name'], 0, 'L');
 	
 	$pdf->SetFont('helvetica', '', 11);
-	
-	// Adresse
 	if (!empty($_POST['adresse'])) {
 	    $pdf->SetX($leftX);
 	    $pdf->MultiCell($leftWidth, 6, $_POST['adresse'], 0, 'L');
 	}
 	
-	// PLZ Ort
 	$pdf->SetX($leftX);
 	$pdf->MultiCell($leftWidth, 6, $_POST['plz'] . ' ' . $_POST['ort'], 0, 'L');
 	
-	
-	// =====================
-	// RECHTSBLOCK (fix rechts)
-	// =====================
-	
-	// Rechte Spalte beginnt fix rechts
+	// --- RECHTSBLOCK ---
 	$rightX = 130;
-	
 	$pdf->SetXY($rightX, 50);
 	
-	// Datum
 	$pdf->Cell(40, 6, 'Datum:', 0, 0, 'R');
 	$pdf->Cell(30, 6, date('d.m.Y'), 0, 1, 'L');
 	
-	// Rechnungsnummer
 	$pdf->SetX($rightX);
 	$pdf->Cell(40, 6, 'Rechnungs-Nr.:', 0, 0, 'R');
 	$pdf->Cell(30, 6, $rechnungsnummer, 0, 1, 'L');
 	
-	
-	// =====================
-	// ABSTAND NACH UNTEN
-	// =====================
 	$pdf->Ln(15);
-
-    $pdf->writeHTML($headerTable, true, false, true, false, '');
 
     // --- TITEL ---
     $pdf->Ln(15);
     $pdf->SetFont('helvetica', 'B', 18);
     $pdf->Cell(0, 10, "Rechnung", 0, 1, 'L');
     $pdf->SetFont('helvetica', '', 11);
-    //$pdf->Cell(0, 5, "über die Feuerlöscherüberprüfung", 0, 1, 'L');
     $pdf->Ln(10);
 
     // --- LEISTUNGSTABELLE ---
@@ -401,7 +403,6 @@ if (isset($_POST['save_rechnung'])) {
     $einzelpreis = floatval($preis);
     $gesamtpreis = $anzahl * $einzelpreis;
 
-    // Definierte Breiten für absolute Fluchtung
     $w_bez = "55%";
     $w_menge = "15%";
     $w_einzel = "15%";
@@ -436,36 +437,35 @@ if (isset($_POST['save_rechnung'])) {
     // --- MWST-HINWEIS ---
     $pdf->Ln(10);
     $pdf->SetFont('helvetica', 'I', 9);
-
     $hinweis = "Hinweis: Als Körperschaft öffentlichen Rechts ist die Freiwillige Feuerwehr gemäß § 2 Abs. 5 UStG nicht umsatzsteuerpflichtig. Der ausgewiesene Betrag entspricht dem Bruttobetrag (0% MwSt).";
     $pdf->MultiCell(0, 5, $hinweis, 0, 'L');
-
 
     // --- ZAHLUNGSINFORMATIONEN ---
     $pdf->Ln(5);
     $zahlungsart = $_POST['zahlungsart'] ?? 'Barzahlung';
-    // Header für Zahlungsart
     $pdf->SetFont('helvetica', 'B', 10);
     $pdf->Cell(0, 6, 'Zahlungsart: ' . $zahlungsart, 0, 1, 'L');
-    // Spezifischer Text je nach Zahlungsart
     $pdf->SetFont('helvetica', '', 10);
     if ($zahlungsart === 'Barzahlung') {
         $pdf->Cell(0, 6, 'Betrag dankend in Bar erhalten.', 0, 1, 'L');
     } elseif ($zahlungsart === 'SumUp' || $zahlungsart === 'Kartenzahlung') {
         $pdf->Cell(0, 6, 'Betrag dankend erhalten.', 0, 1, 'L');
     } else {
-        // Standardfall: Überweisung (oder alles andere)
         $text = "Bitte überweisen Sie den Betrag innerhalb von 14 Tagen ohne Abzug an folgendes Konto:\n"
               . "Empfänger: " . BANK_EMPFAENGER . "\n"
               . "Bank: " . BANK_NAME . " | IBAN: " . BANK_IBAN;
         $pdf->MultiCell(0, 5, $text, 0, 'L');
     }
 
-    // ---DATEI SPEICHERN ---
-    $folder = __DIR__ . '/_Rechnungen';
-    if (!is_dir($folder)) mkdir($folder, 0777, true);
+    // --- DATEI SPEICHERN ---
+    $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
+    $folder = __DIR__ . '/_Rechnungen/' . $dbNameOnly;
+    
+    if (!is_dir($folder)) {
+        mkdir($folder, 0777, true);
+    }
 
-    $filename = $folder.'/Rechnung_'.preg_replace('/[^a-zA-Z0-9_-]/', '', $rechnungsnummer).'.pdf';
+    $filename = $folder . '/Rechnung_' . cleanWindowsFilename($rechnungsnummer, $_POST['name']) . '.pdf';
     $pdf->Output($filename, 'F');
 
     header("Location: " . $_SERVER['PHP_SELF'] . "?success=1&id=" . $lastId);
@@ -473,7 +473,7 @@ if (isset($_POST['save_rechnung'])) {
 }
 
 // =====================
-// PREIS-TYP ERMITTELN (für Edit)
+// PREIS-TYP ERMITTELN
 // =====================
 $currentTyp = '';
 if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
@@ -512,12 +512,8 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
         <div class="d-flex gap-2">
             <a href="rechnungen_anzeigen.php" class="btn btn-outline-info btn-sm">Rechnungsübersicht</a>
-            <a href="index.php" class="btn btn-outline-light btn-sm">
-                Start
-            </a>
-            <a href="?logout=1" class="btn btn-danger btn-sm">
-                Abmelden
-            </a>
+            <a href="index.php" class="btn btn-outline-light btn-sm">Start</a>
+            <a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>
         </div>
     </div>
 </nav>
@@ -626,7 +622,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
     <label class="form-label">&#128179; Zahlungsart</label>
     <select name="zahlungsart" id="zahlungsartSelect" class="form-select highlight">
         <?php 
-        // Barzahlung soll vorausgewählt sein, wenn kein Eintrag geladen wurde (Neu anlegen)
         $selectedZahlungsart = isset($editEntry['zahlungsart']) ? $editEntry['zahlungsart'] : 'Barzahlung'; 
         ?>
         <option value="Barzahlung" <?= ($selectedZahlungsart =='Barzahlung')?'selected':'' ?>>Barzahlung</option>
@@ -645,6 +640,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
     <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
 </div>
 
+<!-- Wechselgeld-Modal ausgelassen für Übersichtlichkeit -->
 <div class="modal fade" id="changeCalculatorModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="changeCalculatorModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -691,29 +687,26 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
 <div class="d-flex gap-2 mb-3 flex-wrap">
 
+    <?php 
+    $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME); 
+    $safePdfName = cleanWindowsFilename($editEntry['rechnungsnummer'], $editEntry['name']);
+    ?>
     <a id="openPdf" 
-       href="_Rechnungen/Rechnung_<?= preg_replace('/[^a-zA-Z0-9_-]/', '', $editEntry['rechnungsnummer']) ?>.pdf" 
+       href="_Rechnungen/<?= $dbNameOnly ?>/Rechnung_<?= $safePdfName ?>.pdf" 
        target="_blank" 
        class="btn btn-info">
          &#128196; PDF Rechnung öffnen
     </a>
 
-    <button type="submit" name="reprint_rechnung" class="btn btn-warning">
-         Bon Nachdrucken
-    </button>
-
-    <button type="button" id="reloadData" class="btn btn-secondary">
-        &#128260; Daten neu laden
-    </button>
+    <button type="submit" name="reprint_rechnung" class="btn btn-warning">Bon Nachdrucken</button>
+    <button type="button" id="reloadData" class="btn btn-secondary">&#128260; Daten neu laden</button>
 
     <button type="submit" name="delete_rechnung_form" class="btn btn-danger" onclick="return confirm('Möchten Sie diese Rechnung wirklich unwiderruflich stornieren und löschen? Das PDF wird ebenfalls gelöscht.');">
         &#128465; Rechnung stornieren
     </button>
 
     <?php if (($editEntry['zahlungsart'] ?? '') === 'SumUp' && defined('SumUp_AVALIABLE') && SumUp_AVALIABLE === 'TRUE' && $editEntry['bezahlt'] === 0): ?>
-        <button type="button" id="sumupBtn" class="btn btn-primary">
-            &#128179; SumUp Zahlung starten
-        </button>
+        <button type="button" id="sumupBtn" class="btn btn-primary">&#128179; SumUp Zahlung starten</button>
     <?php endif; ?>
 
 </div>
@@ -721,11 +714,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 <input type="hidden" name="edit_id" value="<?= $editEntry['id'] ?>">
 
 <?php } else { ?>
-
-<a id="openPdf" href="#" style="display:none;" class="btn btn-info mb-3">
-    &#128196; PDF öffnen
-</a>
-
+<a id="openPdf" href="#" style="display:none;" class="btn btn-info mb-3">&#128196; PDF öffnen</a>
 <?php } ?>
 
 <button class="btn btn-success w-100" name="save_rechnung" id="submitFormBtn">&#128190; Speichern</button>
@@ -735,13 +724,10 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-// 1. PHP-Daten sicher übernehmen
 const preisMap = <?= json_encode($preise) ?>;
 const nextRechnungsnummer = "<?= $nextRechnungsnummer ?>";
 
-// 2. Preis-Update Funktion
 function updatePreis(){
     const typSelect = document.getElementById('typSelect');
     const preisField = document.getElementById('preisField');
@@ -753,7 +739,6 @@ function updatePreis(){
     return preis;
 }
 
-// Hilfsfunktion zur Ermittlung des aktuellen Gesamtpreises
 function getGesamtBetrag() {
     const anzahlInput = document.querySelector('[name="anzahl"]');
     const anzahl = anzahlInput ? parseInt(anzahlInput.value) || 0 : 0;
@@ -761,9 +746,7 @@ function getGesamtBetrag() {
     return anzahl * einzelpreis;
 }
 
-// 3. Hauptlogik beim Laden der Seite
 document.addEventListener('DOMContentLoaded', function() {
-    // Bootstrap Modal initialisieren
     const changeModalEl = document.getElementById('changeCalculatorModal');
     const changeModal = new bootstrap.Modal(changeModalEl);
     
@@ -774,56 +757,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const calcReturnAmount = document.getElementById('calcReturnAmount');
     const confirmChangeCalc = document.getElementById('confirmChangeCalc');
     
-    let bypassModal = false; // Flag, um das Modal beim echten Submit zu überspringen
+    let bypassModal = false;
 
-    // Funktion zum Öffnen und Füllen des Modals
     function openWechselgeldRechner() {
         const gesamt = getGesamtBetrag();
         calcTotalAmount.value = gesamt.toFixed(2).replace('.', ',') + " €";
-        calcGivenAmount.value = ''; // Reset Eingabe
+        calcGivenAmount.value = '';
         calcReturnAmount.innerText = "0,00 €";
         calcReturnAmount.className = "fs-2 fw-bold text-success";
-        
         changeModal.show();
-        
-        // Autofokus auf das "Erhalten"-Feld nach dem Öffnen
         changeModalEl.addEventListener('shown.bs.modal', function () {
             calcGivenAmount.focus();
         }, { once: true });
     }
 
-    // Beim Klick auf den großen "Speichern" Button das Submit abfangen
     rechnungsForm.addEventListener('submit', function(e) {
         const activeSubmitter = e.submitter ? e.submitter.name : '';
         const zahlungsart = document.getElementById('zahlungsartSelect').value;
 
-        // NUR abfangen, wenn:
-        // 1. "Bezahlt" angehakt ist
-        // 2. Exakt "Barzahlung" ausgewählt ist
-        // 3. Wir nicht schon das OK aus dem Modal bekommen haben (bypassModal)
-        // 4. Nicht der "Nachdrucken" Button gedrückt wurde
         if (bezahltCheck.checked && zahlungsart === 'Barzahlung' && !bypassModal && activeSubmitter === 'save_rechnung') {
-            e.preventDefault(); // Stoppt das Speichern vorerst
-            openWechselgeldRechner(); // Zeigt stattdessen das Wechselgeld an
+            e.preventDefault();
+            openWechselgeldRechner();
         }
     });
 
-    // Klick auf "Betrag passt & Speichern" im Modal
     confirmChangeCalc.addEventListener('click', function() {
-        bypassModal = true; // Erlaubt das Durchgehen des Submits
+        bypassModal = true;
         changeModal.hide();
         
-        // Erstellt einen versteckten Input für 'save_rechnung', da e.submitter beim manuellen .submit() verloren geht
         const hiddenSubmit = document.createElement('input');
         hiddenSubmit.type = 'hidden';
         hiddenSubmit.name = 'save_rechnung';
         hiddenSubmit.value = '1';
         rechnungsForm.appendChild(hiddenSubmit);
         
-        rechnungsForm.submit(); // Sendet das Formular jetzt final ab
+        rechnungsForm.submit();
     });
 
-    // Live-Wechselgeld-Berechnung bei der Eingabe
     calcGivenAmount.addEventListener('input', function() {
         const gesamt = getGesamtBetrag();
         const gegeben = parseFloat(this.value) || 0;
@@ -838,7 +808,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- Dynamisches Anzeigen des SumUp Buttons bei Auswahl ---
     const zahlungsartSelect = document.getElementById('zahlungsartSelect');
     if(zahlungsartSelect) {
         zahlungsartSelect.addEventListener('change', function() {
@@ -851,13 +820,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // --- PREIS INITIALISIERUNG ---
     document.getElementById('typSelect').addEventListener('change', updatePreis);
     const anzahlInput = document.querySelector('[name="anzahl"]');
     if(anzahlInput) anzahlInput.addEventListener('input', updatePreis);
     updatePreis();
 
-    // --- FORMULAR LEEREN FUNKTION ---
     const clearBtn = document.getElementById('clearForm');
     if (clearBtn) {
         clearBtn.addEventListener('click', function() {
@@ -866,7 +833,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- ESC-TASTE ZUM LEEREN ---
     document.addEventListener('keydown', (e) => {
         if (e.key === "Escape" || e.keyCode === 27) {
             if (!changeModalEl.classList.contains('show')) {
@@ -879,7 +845,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- SUMUP LOGIK ---
     const sumupBtn = document.getElementById('sumupBtn');
     if (sumupBtn) {
         sumupBtn.addEventListener('click', () => {
@@ -899,7 +864,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- RECHNUNG VIA AJAX NACHLADEN ---
     const reloadBtn = document.getElementById('reloadData');
     if (reloadBtn) {
         reloadBtn.addEventListener('click', () => {
@@ -933,7 +897,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- ERFOLGSMELDUNG BEREINIGEN ---
     if (window.location.search.includes('success=1')) {
         const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
@@ -950,6 +913,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
 </body>
 </html>
