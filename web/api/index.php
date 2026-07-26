@@ -8,7 +8,7 @@ require_once __DIR__ . '/helpers/ErrorLog.php';
 set_exception_handler(function($e) {
     ErrorLog::write("Unhandled Exception: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
     http_response_code(500);
-    echo json_encode(["error" => "Internal Server Error"]);
+    echo json_encode(["error" => "Internal Server Error", "message" => $e->getMessage()]);
     exit;
 });
 
