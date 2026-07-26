@@ -1,6 +1,11 @@
 <?php
 require 'config.php';
 
+if(isset($_GET["ajax"])) {
+    ajax();
+    exit;
+}
+
 // Falls noch kein session_start() in der config.php ist, hier ergänzen:
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -332,7 +337,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         if (!num) return;
 
         try {
-            let response = await fetch(`./add_edit_ajax.php?nummer=${num}`, { cache: 'no-store' });
+            let response = await fetch(`./add_edit.php?nummer=${num}&ajax`, { cache: 'no-store' });
             let data = await response.json();
             if (!data || data.error) return;
 
@@ -384,7 +389,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         if (!num) return;
 
         try {
-            let response = await fetch(`./add_edit_ajax.php?nummer=${num}`, { cache: 'no-store' });
+            let response = await fetch(`./add_edit.php?nummer=${num}&ajax`, { cache: 'no-store' });
             let data = await response.json();
             if (!data || data.error) return;
 
@@ -421,7 +426,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         if (!num) return;
 
         try {
-            let response = await fetch(`./add_edit_ajax.php?nummer=${num}`, { cache: 'no-store' });
+            let response = await fetch(`./add_edit.php?nummer=${num}&ajax`, { cache: 'no-store' });
             let data = await response.json();
             if (!data || data.error) return;
 
@@ -688,6 +693,17 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 						    </label>
 						</div>
                     </div>
+                    
+                    <script>
+                        function triggerAction(form, action) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = action;
+                            input.value = 1;
+                            form.appendChild(input);
+                            form.submit();
+                        }
+                    </script>
 
                     <div class="col-md-6" id="print">
                         <label class="form-label fw-bold small text-uppercase text-muted mb-3">Druck</label>
@@ -705,7 +721,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 						        </span>
 						    </div>
 						
-						    <button type="submit" name="redruck_etikett" class="btn btn-outline-secondary btn-sm w-100" <?= !$isActive ? 'disabled' : '' ?>>
+						    <button type="button" onclick="triggerAction(this.form, 'redruck_etikett')" class="btn btn-outline-secondary btn-sm w-100" <?= !$isActive ? 'disabled' : '' ?>>
 						        &#127991; Nachdrucken
 						    </button>
 						</div>
@@ -723,7 +739,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 						        </span>
 						    </div>
 						
-						    <button type="submit" name="redruck_abholschein" class="btn btn-outline-secondary btn-sm w-100" <?= !$isActive ? 'disabled' : '' ?>>
+						    <button type="button" onclick="triggerAction(this.form, 'redruck_abholschein')" class="btn btn-outline-secondary btn-sm w-100" <?= !$isActive ? 'disabled' : '' ?>>
 						        &#129534; Nachdrucken
 						    </button>
 						</div>
@@ -1084,3 +1100,45 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
+<?php
+
+
+function ajax() {
+    // Sicherheits-Check: Eingeloggt?
+    if (!isset($_SESSION['logged_in'])) {
+        header('Content-Type: application/json');
+        http_response_code(403);
+        echo json_encode(["error" => "Nicht angemeldet"]);
+        exit;
+    }
+
+    $db = getDB();
+    $nummer = $_GET['nummer'] ?? null;
+
+    if (!$nummer) {
+        header('Content-Type: application/json');
+        echo json_encode(["error" => "keine nummer"]);
+        exit;
+    }
+
+    $nummerSafe = (int)$nummer;
+
+    // Daten abrufen
+    $result = $db->query("
+        SELECT * FROM loescher 
+        WHERE CAST(nummer AS INTEGER) = $nummerSafe
+    ");
+
+    $entry = $result ? $result->fetchArray(SQLITE3_ASSOC) : null;
+
+    header('Content-Type: application/json');
+    header('Cache-Control: no-cache');
+
+    if ($entry) {
+        // Gib alle Daten als JSON zurück
+        echo json_encode($entry);
+    } else {
+        echo json_encode(["error" => "nicht gefunden"]);
+    }
+}

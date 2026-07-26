@@ -33,7 +33,7 @@ function renderRow($row) {
     ob_start();
     ?>
     <tr data-id="<?= $row['id'] ?>" class="<?= $rowClass ?> <?= !$row['active'] ? 'row-inactive' : '' ?>">
-        <td><?= htmlspecialchars($row['nummer']) ?></td>
+        <td><button class="btn btn-sm btn-outline-primary btn-edit" onclick="navigation.navigate('add_edit.php?mode=edit&id=<?= $row['id'] ?>')"><strong><?= htmlspecialchars($row['nummer']) ?></strong></button></td>
         <td><?= htmlspecialchars($row['name']) ?></td>
         <td>
             <select class="form-select typ-select" <?= $disabled ?>>
