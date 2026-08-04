@@ -7,7 +7,7 @@ if (!is_dir($dbDir)) {
     mkdir($dbDir, 0755, true);
 }
 
-// 1. Hilfsfunktion zum Ändern der config.php (VOR dem Einlesen der config!)
+// 1. Hilfsfunktion zum Ändern der config.php (Robust & mit OpCache-Leeren)
 function updateConfigDefine($key, $value, $isNumber = false) {
     $configFile = 'config.php';
     if (!file_exists($configFile)) return false;
@@ -20,26 +20,33 @@ function updateConfigDefine($key, $value, $isNumber = false) {
         $replacement = "define('$key', '$escapedValue');";
     }
 
-    $content = preg_replace(
-        "/define\('$key',\s*.*?\);/",
-        $replacement,
-        $content
-    );
+    $pattern = "/define\(\s*['\"]" . preg_quote($key, '/') . "['\"]\s*,\s*(?:'[^']*'|\"[^\"]*\"|[\d.]+)\s*\)\s*;/i";
 
-    return file_put_contents($configFile, $content) !== false;
+    if (preg_match($pattern, $content)) {
+        $content = preg_replace($pattern, $replacement, $content);
+    } else {
+        $content = str_replace('?>', $replacement . "\n?>", $content);
+    }
+
+    $result = file_put_contents($configFile, $content) !== false;
+
+    // OpCache leeren, damit PHP die config.php sofort neu einliest
+    if (function_exists('opcache_invalidate')) {
+        @opcache_invalidate(realpath($configFile), true);
+    }
+
+    return $result;
 }
 
-// --- DATENBANKEN ERSTELLEN / WECHSELN / LÖSCHEN (Vor require 'config.php' auswerten!) ---
+// --- DATENBANKEN ERSTELLEN / WECHSELN / LÖSCHEN ---
 
-// 1. Neue Datenbank anlegen
 if (isset($_POST['create_db'])) {
-    require_once 'config.php'; // Passwort-Konstante holen
+    require_once 'config.php';
     if (!isset($_POST['db_password']) || $_POST['db_password'] !== RESET_PASSWORD) {
         $errorMessage = "Falsches Passwort!";
     } else {
         $newName = trim($_POST['new_db_name']);
         
-        // Validierung auf exakt 4 Ziffern (Jahreszahl)
         if (!preg_match('/^\d{4}$/', $newName)) {
             $errorMessage = sprintf("Ungültiger Datenbankname! Der Name darf nur aus einer 4-stelligen Jahreszahl bestehen (z.B. %s).", date('Y'));
         } else {
@@ -47,34 +54,29 @@ if (isset($_POST['create_db'])) {
             if (file_exists($newDbPath)) {
                 $errorMessage = "Datenbank existiert bereits!";
             } else {
-                // 1. Pfad in config.php aktualisieren
                 updateConfigDefine('DB_FILE', $newDbPath);
                 
-                // 2. Leere SQLite-Datei sofort erzeugen (getDB legt Tabellen beim ersten Zugriff an)
                 $touchDb = new SQLite3($newDbPath);
                 $touchDb->close();
 
-                // 3. Weiterleitung, damit die Seite frisch lädt & getDB() die Tabellen baut
-                header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Datenbank '$newName.db' erfolgreich angelegt!"));
+                header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?success=" . urlencode("Datenbank '$newName.db' erfolgreich angelegt und gewechselt!"));
                 exit;
             }
         }
     }
 }
 
-// 2. Datenbank wechseln
 if (isset($_POST['select_db'])) {
     $selectedDb = $_POST['selected_db'];
     if (file_exists($selectedDb) && strpos(realpath($selectedDb), realpath($dbDir)) === 0) {
         updateConfigDefine('DB_FILE', $selectedDb);
-        header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Erfolgreich zur Datenbank " . basename($selectedDb) . " gewechselt!"));
+        header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?success=" . urlencode("Erfolgreich zur Datenbank " . basename($selectedDb) . " gewechselt!"));
         exit;
     } else {
         $errorMessage = "Ungültige Datenbank-Auswahl!";
     }
 }
 
-// 3. Datenbank löschen (inklusive dazugehörigem PDF-Unterordner)
 if (isset($_POST['delete_db'])) {
     require_once 'config.php';
     if (!isset($_POST['db_password']) || $_POST['db_password'] !== RESET_PASSWORD) {
@@ -85,11 +87,9 @@ if (isset($_POST['delete_db'])) {
             if ($toDelete === DB_FILE) {
                 $errorMessage = "Die aktuell aktive Datenbank kann nicht gelöscht werden!";
             } else {
-                // 1. Namen der Datenbank ohne Endung ermitteln
                 $dbNameOnly = pathinfo($toDelete, PATHINFO_FILENAME);
                 $pdfFolderToDelete = __DIR__ . '/_Rechnungen/' . $dbNameOnly;
 
-                // 2. Hilfsfunktion zum rekursiven Löschen
                 if (!function_exists('rrmdir')) {
                     function rrmdir($dir) {
                         if (!is_dir($dir)) return;
@@ -97,27 +97,21 @@ if (isset($_POST['delete_db'])) {
                             new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
                             RecursiveIteratorIterator::CHILD_FIRST
                         );
-
                         foreach ($files as $file) {
-                            if ($file->isDir()) {
-                                rmdir($file->getRealPath());
-                            } else {
-                                unlink($file->getRealPath());
-                            }
+                            if ($file->isDir()) { rmdir($file->getRealPath()); } 
+                            else { unlink($file->getRealPath()); }
                         }
                         rmdir($dir);
                     }
                 }
 
-                // 3. Dazugehörigen PDF-Ordner löschen, falls er existiert
                 if (is_dir($pdfFolderToDelete)) {
                     rrmdir($pdfFolderToDelete);
                 }
 
-                // 4. Eigentliche .db Datei löschen
                 unlink($toDelete);
                 
-                header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Datenbank " . basename($toDelete) . " und alle zugehörigen PDF-Rechnungen wurden gelöscht!"));
+                header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?success=" . urlencode("Datenbank " . basename($toDelete) . " und alle zugehörigen PDF-Rechnungen wurden gelöscht!"));
                 exit;
             }
         } else {
@@ -126,7 +120,7 @@ if (isset($_POST['delete_db'])) {
     }
 }
 
-// Jetzt EINMALIG regulär config.php laden
+// Config einlesen
 require_once 'config.php';
 
 // Nur eingeloggte Benutzer
@@ -159,14 +153,12 @@ if (isset($_POST['reset_db'])) {
 
         $timestamp = date('Ymd_His');
 
-        // 1. Datenbank sichern
         $currentDbName = basename(DB_FILE, '.db');
         $backupFile = $backupDir . '/backup_' . $currentDbName . '_' . $timestamp . '.db';
         if (file_exists(DB_FILE)) {
             copy(DB_FILE, $backupFile);
         }
 
-        // 2. _Rechnungen Unterordner der AKTIVEN DB sichern
         $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
         $rechnungenDir = '_Rechnungen/' . $dbNameOnly;
         
@@ -192,13 +184,9 @@ if (isset($_POST['reset_db'])) {
                         new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
                         RecursiveIteratorIterator::CHILD_FIRST
                     );
-
                     foreach ($files as $file) {
-                        if ($file->isDir()) {
-                            rmdir($file->getRealPath());
-                        } else {
-                            unlink($file->getRealPath());
-                        }
+                        if ($file->isDir()) { rmdir($file->getRealPath()); } 
+                        else { unlink($file->getRealPath()); }
                     }
                     rmdir($dir);
                 }
@@ -206,11 +194,10 @@ if (isset($_POST['reset_db'])) {
             rrmdir($rechnungenDir);
         }
 
-        // 3. Aktive DB-Datei leeren
         if (file_exists(DB_FILE)) {
             unlink(DB_FILE);
         }
-        $resetDb = getDB(); // Erstellt Tabellen sauber neu
+        $resetDb = getDB(); 
         $resetDb->close();
 
         $successMessage = "Datenbank wurde zurückgesetzt! Backup DB: $backupFile";
@@ -220,7 +207,7 @@ if (isset($_POST['reset_db'])) {
     }
 }
 
-// Einstellungen speichern (In SQLite-Tabelle "einstellungen")
+// Einstellungen speichern
 if (isset($_POST['save_settings'])) {
     if ($_POST['settings_password'] !== RESET_PASSWORD) {
         $errorMessage = "Falsches Passwort!";
@@ -239,12 +226,11 @@ if (isset($_POST['save_settings'])) {
         $stmt->bindValue(':v', (string)$pRab, SQLITE3_TEXT);
         $stmt->execute();
 
-        header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Preise für Datenbank " . basename(DB_FILE) . " gespeichert!"));
+        header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?success=" . urlencode("Preise für Datenbank " . basename(DB_FILE) . " gespeichert!"));
         exit;
     }
 }
 
-// Datenbank-Dateien einlesen
 $dbFiles = glob($dbDir . '/*.db');
 ?>
 
@@ -422,7 +408,7 @@ $dbFiles = glob($dbDir . '/*.db');
 
                                     <hr>
 
-                                    <!-- Neue DB anlegen (Eingeschränkt auf exakt 4 Zahlen) -->
+                                    <!-- Neue DB anlegen -->
                                     <form id="createDbForm" method="post" class="mb-3">
                                         <input type="hidden" name="create_db" value="1">
                                         <input type="hidden" name="db_password" id="create_db_password">
@@ -513,7 +499,6 @@ function confirmDbCreate() {
     const dbNameInput = document.getElementsByName("new_db_name")[0];
     const dbName = dbNameInput.value.trim();
     
-    // JS Vorab-Validierung auf exakt 4 Ziffern
     const regex = /^\d{4}$/;
     if (!regex.test(dbName)) {
         alert("Fehler: Der Datenbankname muss exakt eine 4-stellige Jahreszahl sein (z.B. 2026)!");
@@ -577,7 +562,13 @@ document.addEventListener('DOMContentLoaded', function() {
             alert.style.transition = "opacity 0.8s ease, transform 0.8s ease";
             alert.style.opacity = "0";
             alert.style.transform = "translateY(-10px)";
-            setTimeout(() => alert.remove(), 800);
+            setTimeout(() => {
+                alert.remove();
+                if (window.history && window.history.replaceState) {
+                    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                    window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+                }
+            }, 800);
         }, 3000);
     }
 });
