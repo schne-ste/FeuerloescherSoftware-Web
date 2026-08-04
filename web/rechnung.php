@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require 'config.php';
 
 if (!isset($_SESSION['logged_in'])) {
@@ -110,6 +111,28 @@ if (isset($_GET['action']) && $_GET['action'] === 'reload_data' && isset($_GET['
 
     header('Content-Type: application/json');
     echo json_encode($row);
+    exit;
+}
+
+// =====================
+// AJAX: Anzahl der BEZAHLTEN Löscher zum Namen ermitteln
+// =====================
+if (isset($_GET['action']) && $_GET['action'] === 'get_loescher_count' && !empty($_GET['name'])) {
+    $searchName = mb_strtolower(trim($_GET['name']));
+    
+    // Zählt bezahlte Löscher unabhängig von Groß-/Kleinschreibung
+    $stmt = $db->prepare("
+        SELECT COUNT(*) AS anzahl 
+        FROM loescher 
+        WHERE LOWER(TRIM(name)) = :name 
+          AND (active = 1 OR active = '1') 
+          AND (bezahlt = 1 OR bezahlt = '1')
+    ");
+    $stmt->bindValue(':name', $searchName, SQLITE3_TEXT);
+    $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+
+    header('Content-Type: application/json');
+    echo json_encode(['anzahl' => $res ? (int)$res['anzahl'] : 0]);
     exit;
 }
 
@@ -936,6 +959,51 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                     alertBox.style.transform = "translateY(-20px)";
                     setTimeout(() => alertBox.remove(), 600);
                 }, 2000);
+            }
+
+            const nameInput = document.querySelector('input[name="name"]');
+            const anzahlInputBill = document.querySelector('input[name="anzahl"]');
+
+            if (nameInput && anzahlInputBill) {
+                function fetchPaidCount() {
+                    const val = nameInput.value.trim();
+                    if (!val) return;
+
+                    // Nutzt den relativen Pfad zur aktuellen Datei
+                    fetch(`rechnung.php?action=get_loescher_count&name=${encodeURIComponent(val)}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error(`HTTP-Fehler! Status: ${res.status}`);
+                            return res.json();
+                        })
+                        .then(data => {
+                            console.log("AJAX Antwort für Löscher-Anzahl:", data);
+                            if (data && typeof data.anzahl !== 'undefined') {
+                                // Setzt die Zahl ein (auch wenn sie 0 ist, um Klarheit zu schaffen)
+                                if (data.anzahl > 0) {
+                                    anzahlInputBill.value = data.anzahl;
+                                    if (typeof updatePreis === 'function') {
+                                        updatePreis();
+                                    }
+                                }
+                            }
+                        })
+                        .catch(err => console.error('Fehler beim Abrufen der Löscher-Anzahl:', err));
+                }
+
+                // Feuert beim Auswählen aus der Datalist sowie beim Verlassen des Eingabefeldes
+                nameInput.addEventListener('change', fetchPaidCount);
+                nameInput.addEventListener('blur', fetchPaidCount);
+
+                // Prüft zusätzlich bei der Eingabe, ob der Text exakt mit einem Listeneintrag übereinstimmt
+                nameInput.addEventListener('input', function () {
+                    const datalist = document.getElementById('namenListe');
+                    if (!datalist) return;
+
+                    const options = Array.from(datalist.options).map(opt => opt.value.trim());
+                    if (options.includes(this.value.trim())) {
+                        fetchPaidCount();
+                    }
+                });
             }
         });
     </script>

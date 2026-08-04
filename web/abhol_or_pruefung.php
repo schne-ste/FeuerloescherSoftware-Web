@@ -35,7 +35,6 @@ if (isset($_GET['logout'])) {
 if (isset($_POST['aktion']) && $nummer) {
     $nummerSafe = (int) $nummer;
 
-
     $check = $db->query("
         SELECT bezahlt, defekt, active 
         FROM loescher 
@@ -117,7 +116,7 @@ if ($nummer) {
 }
 
 // =====================
-// INFO SETZEN
+// INFO SETZEN (Schaummittel)
 // =====================
 if (isset($_POST['setInfo']) && $nummer) {
     $nummerSafe = (int) $nummer;
@@ -132,7 +131,7 @@ if (isset($_POST['setInfo']) && $nummer) {
             END
         WHERE CAST(nummer AS INTEGER) = :nummer
     ");
-    $stmt->bindValue(':text', "\nSchaummittel muss getauscht werden");
+    $stmt->bindValue(':text', "\nSchaummittel muss getauscht werden - Kundenentscheidung erforderlich");
     $stmt->bindValue(':nummer', $nummerSafe);
     $stmt->execute();
 
@@ -142,7 +141,38 @@ if (isset($_POST['setInfo']) && $nummer) {
     ");
     $eintrag = $result->fetchArray();
 
-    $message = "&#9888; Hinweis gesetzt!";
+    $message = "&#9888; Hinweis gesetzt (Schaummittel)!";
+    $statusType = "warning";
+    $soundType = "warning";
+}
+
+// =====================
+// INFO SETZEN (Umbau nötig)
+// =====================
+if (isset($_POST['setUmbau']) && $nummer) {
+    $nummerSafe = (int) $nummer;
+
+    $stmt = $db->prepare("
+        UPDATE loescher 
+        SET info = 
+            CASE 
+                WHEN info IS NULL OR info = '' 
+                THEN :text
+                ELSE info || :text
+            END
+        WHERE CAST(nummer AS INTEGER) = :nummer
+    ");
+    $stmt->bindValue(':text', "\nUmbau des Löschers ist nötig - Kundenentscheidung erforderlich");
+    $stmt->bindValue(':nummer', $nummerSafe);
+    $stmt->execute();
+
+    $result = $db->query("
+        SELECT * FROM loescher 
+        WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
+    ");
+    $eintrag = $result->fetchArray();
+
+    $message = "&#9888; Hinweis gesetzt (Umbau nötig)!";
     $statusType = "warning";
     $soundType = "warning";
 }
@@ -303,7 +333,7 @@ if (isset($_POST['setDefekt']) && $nummer) {
             </div>
 
 
-            <!--  RECHTE SPALTE (groß) -->
+            <!-- RECHTE SPALTE (groß) -->
             <div class="col-md-9">
 
                 <?php if ($eintrag && $modus): ?>
@@ -339,12 +369,12 @@ if (isset($_POST['setDefekt']) && $nummer) {
                                 </div>
                             <?php elseif ($modus === "abholen" && $eintrag['active'] && $eintrag['bezahlt'] && $eintrag['defekt']): ?>
                                 <div class="alert alert-warning">
-                                    <h4>&#9888; Defekt – Kunde bekommt Geld retour (Kassa)!</h4>
+                                    <h4>&#9888; Defekt – Kunde bekommt Geld retour (Kassa) ODER Enstsorgung!</h4>
                                 </div>
                             <?php endif; ?>
                         </div>
                         <br>
-                        <? if ($eintrag['active']): ?>
+                        <?php if ($eintrag['active']): ?>
                             <h4 class="d-flex mb-2">
                                 <span class="me-2" style="width:160px;">Prüfstatus:</span>
 
@@ -396,33 +426,50 @@ if (isset($_POST['setDefekt']) && $nummer) {
                             </div>
 
 
-                            <!--  BUTTONS -->
+                            <!-- BUTTONS -->
                             <?php if ($modus === "pruefen"): ?>
                                 <div class="row gap-1">
-                                    <form method="post" class="mt-3 col">
-                                        <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
-                                        <input type="hidden" name="modus" value="<?= $modus ?>">
-                                        <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+                                    <div class="col">
+                                        <form method="post" class="mt-3">
+                                            <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                                            <input type="hidden" name="modus" value="<?= $modus ?>">
+                                            <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
-                                        <button type="submit" name="setInfo" class="btn btn-warning w-100">
-                                            <strong>&#9888; Schaummittel tauschen</strong>
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
-                                <?php if ($modus === "pruefen" && $eintrag['geprueft']): ?>
-                                    <form method="post" class="mt-3 col">
-                                        <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
-                                        <input type="hidden" name="modus" value="<?= $modus ?>">
-                                        <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+                                            <button type="submit" name="setInfo" class="btn btn-warning w-100">
+                                                <strong>&#9888; Schaummittel tauschen</strong>
+                                            </button>
+                                        </form>
+                                    </div>
 
-                                        <button id="defektBtn" type="submit" name="setDefekt"
-                                            class="btn w-100 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
+                                    <div class="col">
+                                        <form method="post" class="mt-3">
+                                            <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                                            <input type="hidden" name="modus" value="<?= $modus ?>">
+                                            <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
-                                            <strong><?= $eintrag['defekt']
-                                                ? '&#128295; Defekt zurücksetzen'
-                                                : '&#9940; Löscher defekt' ?></strong>
-                                        </button>
-                                    </form>
+                                            <button type="submit" name="setUmbau" class="btn btn-warning w-100">
+                                                <strong>&#128295; Umbau nötig</strong>
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <?php if ($eintrag['geprueft']): ?>
+                                        <div class="col">
+                                            <form method="post" class="mt-3">
+                                                <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                                                <input type="hidden" name="modus" value="<?= $modus ?>">
+                                                <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+
+                                                <button id="defektBtn" type="submit" name="setDefekt"
+                                                    class="btn w-100 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
+
+                                                    <strong><?= $eintrag['defekt']
+                                                        ? '&#128295; Defekt zurücksetzen'
+                                                        : '&#9940; Löscher defekt' ?></strong>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             <?php endif; ?>
 
@@ -484,9 +531,6 @@ if (isset($_POST['setDefekt']) && $nummer) {
 
             input.addEventListener("input", function () {
                 this.value = this.value.replace(/\D/g, '');
-                /*if (this.value !== "") {
-                    this.value = this.value.padStart(3, '0');
-                }*/
             });
 
             input.addEventListener("keypress", function (e) {
@@ -754,22 +798,19 @@ if (isset($_POST['setDefekt']) && $nummer) {
                     actionBtn.disabled = disable;
                 }
             }
-            // ALLE Meldungen (Erfolg, Warnung und Fehler) nach x Sekunden schließen
+            // ALLE Meldungen nach x Sekunden schließen
             document.addEventListener('DOMContentLoaded', function () {
-                // Wir wählen alle Elemente mit der Klasse .alert aus
                 const allAlerts = document.querySelectorAll('.alert');
 
                 allAlerts.forEach(function (alert) {
                     setTimeout(function () {
-                        // Prüfung auf Bootstrap-Objekt für sauberes Schließen
                         if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
                             let bsAlert = new bootstrap.Alert(alert);
                             bsAlert.close();
                         } else {
-                            // Fallback: Einfaches Ausblenden, falls JS-Library hakt
                             alert.style.display = 'none';
                         }
-                    }, 3000); // Zeit in Millisekunden
+                    }, 3000);
                 });
             });
         </script>
@@ -811,7 +852,6 @@ function ajax()
     header('Content-Type: application/json');
 
     if ($eintrag) {
-        // Gibt alle Felder (nummer, name, bezahlt, defekt, active, geprueft, abgeholt, info) zurück
         echo json_encode($eintrag);
     } else {
         echo json_encode(["error" => "nicht gefunden"]);

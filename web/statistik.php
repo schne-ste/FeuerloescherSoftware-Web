@@ -43,15 +43,26 @@ $stats = [
 ];
 
 $gesamtVollerPreis = 0;
+$gesamtGewinnFirma = 0;
+$gesamtGewinnFF = 0;
+
+$anzahlEntsorgung = 0;
+$gesamtEntsorgungskosten = 0;
 
 // =====================
 // HELPER
 // =====================
-function getPreis($typ) {
-    switch ($typ) {
+function getPreis($l) {
+    // Falls ein spezifischer Preis in der DB-Spalte 'preis' hinterlegt ist (> 0), diesen bevorzugen
+    if (isset($l['preis']) && floatval($l['preis']) > 0) {
+        return floatval($l['preis']);
+    }
+    
+    // Ansonsten Fallback auf die Preistypen aus der Config/DB-Einstellungen
+    switch ($l['typ']) {
         case 'Standard': return PREIS_STANDARD;
-        case 'Rabatt': return PREIS_RABATT;
-        default: return 0;
+        case 'Rabatt':   return PREIS_RABATT;
+        default:        return 0.0;
     }
 }
 
@@ -83,14 +94,45 @@ foreach ($allLoscher as $l) {
         continue;
     }
 
-    // Preise
-    $vollpreis = getPreis($l['typ']);
+    // Preis ermitteln (aus Spalte 'preis' oder Typ)
+    $dbPreis = getPreis($l);
 
+    // Initialisierung der Anteile
+    $anteilFirma = 0;
+    $anteilFF = 0;
+
+    // BETRAGS-AUFTEILUNG LOGIK:
+    if ($l['bezahlt'] && $l['typ'] !== 'Gratis') {
+        
+        // 1. Defekt & Bezahlt -> Firma bekommt 0, FF bekommt den gesamten Betrag aus der DB
+        if ($l['defekt']) {
+            $anteilFirma = 0;
+            $anteilFF = $dbPreis;
+        } 
+        // 2. OK & Bezahlt
+        elseif ($l['geprueft']) {
+            if ($l['typ'] === 'Standard') {
+                $anteilFirma = PREIS_RABATT;
+                $anteilFF = $dbPreis - PREIS_RABATT;
+            } elseif ($l['typ'] === 'Rabatt') {
+                $anteilFirma = $dbPreis;
+                $anteilFF = 0;
+            }
+        }
+    }
+
+    // Entsorgungskosten erfassen (Defekt UND Bezahlt)
+    if ($l['defekt'] && $l['bezahlt'] && !$l["abgeholt"]) {
+        $anzahlEntsorgung++;
+        $gesamtEntsorgungskosten += $dbPreis;
+    }
+
+    // Verrechenbarkeits-Prüfung für die Statistik-Zähler (NUR wenn nicht defekt, geprüft, bezahlt und nicht gratis)
     $istVerrechenbar = (
-        !$l['defekt'] &&
-        $l['bezahlt'] &&
-        $l['typ'] !== 'Gratis' &&
-        $l['geprueft']
+        !$l['defekt'] && 
+        $l['geprueft'] && 
+        $l['bezahlt'] && 
+        $l['typ'] !== 'Gratis'
     );
 
     // =====================
@@ -104,21 +146,21 @@ foreach ($allLoscher as $l) {
 
     if ($istVerrechenbar) {
         $stats['verrechenbar']++;
-        $gesamtVollerPreis += $vollpreis;
+        $gesamtVollerPreis += $dbPreis;
+        $gesamtGewinnFirma += $anteilFirma;
+        $gesamtGewinnFF += $anteilFF;
     } else {
         $stats['nicht_verrechenbar']++;
     }
 
-    // Werte anhängen
+    // Werte für die Ansicht/Tabelle speichern
     $l['statusText'] = $statusText;
-    $l['vollpreis'] = $vollpreis;
+    $l['vollpreis'] = $dbPreis;
+    $l['anteilFirma'] = $anteilFirma;
+    $l['anteilFF'] = $anteilFF;
 
     $gefilterteLoscher[] = $l;
 }
-
-// Gewinn
-$gesamtGewinnFirma = $stats['verrechenbar'] * PREIS_RABATT;
-$gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
 ?>
 
 <!DOCTYPE html>
@@ -135,16 +177,24 @@ $gesamtGewinnFF = $gesamtVollerPreis - $gesamtGewinnFirma;
 .status-ok { background-color: #d4edda !important; }       /* grün */
 .status-defekt { background-color: #f8d7da !important; }   /* rot */
 .status-nicht { background-color: #fff3cd !important; }    /* orange */
+.status-defekt-bezahlt { background-color: #e4edd4 !important; } /* hellgrün/dezenter Ton */
+
+/* Statusfarben für die Tabelle */
+.status-orange { background-color: #fff3cd !important; }   /* Orange (Nicht geprüft) */
+.status-hellgruen { background-color: #e4edd4 !important; }/* Hellgrün */
+.status-gruen { background-color: #d4edda !important; }    /* Grün */
+.status-rot { background-color: #f8d7da !important; }      /* Rot (alles andere) */
 
 /* Optional: Hover-Effekt für alle Status-Zeilen */
 tr.status-ok:hover,
 tr.status-defekt:hover,
-tr.status-nicht:hover {
+tr.status-nicht:hover,
+tr.status-defekt-bezahlt:hover {
     opacity: 0.85;
     transition: 0.2s;
 }
 
-/* Optional: zentrierte Zahlen in der Tabelle */
+/* Zentrierte Ausrichtung in Tabellenzellen */
 td {
     vertical-align: middle;
 }
@@ -236,12 +286,14 @@ td {
     </div>
 
     <table class="table table-bordered w-100">
-        <tr><th>Gesamt</th><td><?= $stats['gesamt'] ?></td></tr>
-        <tr><th>Verrechenbar</th><td><?= $stats['verrechenbar'] ?></td></tr>
-        <tr><th>Nicht verrechenbar</th><td><?= $stats['nicht_verrechenbar'] ?></td></tr>
-        <tr><th>Nicht geprüft</th><td><?= $stats['nicht_geprueft'] ?></td></tr>
-        <tr><th>OK</th><td><?= $stats['ok'] ?></td></tr>
-        <tr><th>Defekt</th><td><?= $stats['defekt'] ?></td></tr>
+        <tr><th>Gesamt</th><td><?= $stats['gesamt'] ?> Stück</td></tr>
+        <tr><th>Verrechenbar</th><td><?= $stats['verrechenbar'] ?> Stück</td></tr>
+        <tr><th>Nicht verrechenbar</th><td><?= $stats['nicht_verrechenbar'] ?> Stück</td></tr>
+        <tr><th>Nicht geprüft</th><td><?= $stats['nicht_geprueft'] ?> Stück</td></tr>
+        <tr><th>OK</th><td><?= $stats['ok'] ?> Stück</td></tr>
+        <tr><th>Defekt</th><td><?= $stats['defekt'] ?> Stück</td></tr>
+        <tr><th>Entsorgung (Defekt & Geld nicht retour)</th><td><?= $anzahlEntsorgung ?> Stück</td></tr>
+        <tr><th>Entsorgungskosten gesamt</th><td><?= number_format($gesamtEntsorgungskosten, 2) ?> €</td></tr>
         <tr><th>Geld gesamt</th><td><?= number_format($gesamtVollerPreis,2) ?> €</td></tr>
         <tr><th>Gewinn Firma</th><td><?= number_format($gesamtGewinnFirma,2) ?> €</td></tr>
         <tr><th>Gewinn FF</th><td><?= number_format($gesamtGewinnFF,2) ?> €</td></tr>
@@ -253,33 +305,50 @@ td {
         <tr>
             <th>Nr</th>
             <th>Name</th>
-            <th>Abgeholt</th>
             <th>Preis</th>
+            <th>Bezahlt</th>
             <th>Status</th>
+            <th>Abgeholt</th>
         </tr>
     </thead>
     <tbody>
         <?php foreach ($gefilterteLoscher as $v): ?>
-            <?php
-            // Status-Klasse bestimmen
-            if ($v['defekt']) {
-                $class = 'status-defekt'; // rot
-            } elseif (!$v['geprueft']) {
-                $class = 'status-nicht';  // orange
-            } else {
-                $class = 'status-ok';     /* grün */
-            }
-            ?>
-            <tr>
-                <td class="<?= $class ?>"><?= sprintf("%03d", $v['nummer']) ?></td>
-                <td class="<?= $class ?>"><?= htmlspecialchars($v['name']) ?></td>
-                <td class="<?= $class ?>">
-                    <?= $v['abgeholt'] == 1 ? 'Abgeholt' : 'Nicht abgeholt &#10060;' ?>
-                </td>
-                <td class="<?= $class ?>"><?= number_format($v['vollpreis'],2) ?> €</td>
-                <td class="<?= $class ?>"><?= $v['statusText'] ?></td>
-            </tr>
-        <?php endforeach; ?>
+    <?php
+    $isGeprueft = (bool)$v['geprueft'];
+    $isBezahlt = (bool)$v['bezahlt'];
+    $isDefekt = (bool)$v['defekt'];
+    $isAbgeholt = (bool)$v['abgeholt'];
+
+    if (!$isGeprueft) {
+        // 1. Nicht geprüft -> Orange
+        $class = 'status-orange';
+    } elseif ($isBezahlt && $isDefekt && !$isAbgeholt) {
+        // 2. Bezahlt, defekt, nicht abgeholt -> Hellgrün
+        $class = 'status-hellgruen';
+    } elseif (!$isBezahlt && $isDefekt && $isAbgeholt) {
+        // 3. Nicht bezahlt, defekt, abgeholt -> Hellgrün
+        $class = 'status-hellgruen';
+    } elseif ($isBezahlt && !$isDefekt && $isAbgeholt) {
+        // 4. Bezahlt, ok (nicht defekt), abgeholt -> Grün
+        $class = 'status-gruen';
+    } else {
+        // 5. Alles andere -> Rot
+        $class = 'status-rot';
+    }
+    ?>
+    <tr>
+        <td class="<?= $class ?>"><?= sprintf("%03d", $v['nummer']) ?></td>
+        <td class="<?= $class ?>"><?= htmlspecialchars($v['name']) ?></td>
+        <td class="<?= $class ?>"><?= number_format($v['vollpreis'],2) ?> €</td>
+        <td class="<?= $class ?>">
+            <?= $v['bezahlt'] == 1 ? 'Ja &#10004;' : 'Nein &#10060;' ?>
+        </td>
+        <td class="<?= $class ?>"><?= $v['statusText'] ?></td>
+        <td class="<?= $class ?>">
+            <?= $v['abgeholt'] == 1 ? 'Abgeholt' : 'Nicht abgeholt &#10060;' ?>
+        </td>
+    </tr>
+<?php endforeach; ?>
     </tbody>
 </table>
 

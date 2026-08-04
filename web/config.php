@@ -1,14 +1,10 @@
 <?php
 session_start();
 
-define('DB_FILE', 'databases/2025.db');
+define('DB_FILE', 'databases/0000.db');
 define('PASSWORD', '123'); // ändern!
 define('RESET_PASSWORD', '123'); // ändern!
 define('API_TOKEN', '123'); // ändern!
-
-define('PREIS_STANDARD', 15);
-define('PREIS_RABATT', 8);
-define('PREIS_GRATIS', 0);
 
 define('RECHNUNGS_PREFIX', 'FLU' . date('y') . '-'); // Prefix für Rechnungsnummern (z.B. FLU26-001)
 
@@ -28,23 +24,14 @@ define('SumUp_PRICE_FAKTOR', 1.020);
 
 if (!defined('API_MODE')) {
     function getDB() {
-        // Pfad dynamisch aus der definierten Konstante DB_FILE laden
         $dbPath = __DIR__ . '/' . DB_FILE; 
-        
-        // Verbindung zur SQLite3-Datenbank herstellen
         $db = new SQLite3($dbPath);
-        
-        // Fehlerberichterstattung aktivieren
         $db->enableExceptions(true);
 
-        // ==========================================
-        // AUTOMATISCHE TABELLENERSTELLUNG (Schema)
-        // ==========================================
-        
         // 1. Tabelle: loescher
         $db->exec("CREATE TABLE IF NOT EXISTS loescher (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nummer INTEGER NOT NULL,
+            nummer TEXT UNIQUE,
             name TEXT NOT NULL,
             typ TEXT,
             preis REAL DEFAULT 0,
@@ -58,6 +45,7 @@ if (!defined('API_MODE')) {
             abgeholt INTEGER DEFAULT 0,
             defekt INTEGER DEFAULT 0,
             active INTEGER DEFAULT 1,
+            telefon TEXT,
             info TEXT,
             zeitstempel TEXT
         );");
@@ -72,13 +60,25 @@ if (!defined('API_MODE')) {
             ort TEXT,
             anzahl_loescher INTEGER DEFAULT 1,
             preis_pro_loescher REAL DEFAULT 0.0,
-            rechnungsnummer TEXT UNIQUE NOT NULL,
-            zahlungsart TEXT,
-            bezahlt INTEGER DEFAULT 0,
+            rechnungsnummer TEXT NOT NULL,
+            zahlungsart TEXT DEFAULT 'Barzahlung',  -- Barzahlung, Kartenzahlung, SumUp
+            bezahlt INTEGER DEFAULT 0, -- 0 = nicht bezahlt, 1 = bezahlt
             rechnung_gedruckt INTEGER DEFAULT 0,
             zeitstempel_gedruckt TEXT,
-            zeitstempel_erstellung TEXT
+            zeitstempel_erstellung TEXT,
+            sumup_transaction_id TEXT,
+            sumup_status TEXT
         );");
+
+        // 3. Tabelle: einstellungen (für DB-spezifische Preise)
+        $db->exec("CREATE TABLE IF NOT EXISTS einstellungen (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        );");
+
+        // Standard-Preise in Tabelle eintragen, falls noch nicht vorhanden
+        $db->exec("INSERT OR IGNORE INTO einstellungen (key, value) VALUES ('preis_standard', '18');");
+        $db->exec("INSERT OR IGNORE INTO einstellungen (key, value) VALUES ('preis_rabatt', '11');");
 
         return $db;
     }
@@ -89,5 +89,26 @@ if (!defined('API_MODE')) {
         $row = $result->fetchArray();
         $next = $row['max_id'] + 1;
         return str_pad($next, 3, "0", STR_PAD_LEFT);
+    }
+
+    // ==========================================
+    // PREISE AUS DER AKTIVEN DATENBANK LADEN
+    // ==========================================
+    try {
+        $_tmpDb = getDB();
+        $_resStd = $_tmpDb->querySingle("SELECT value FROM einstellungen WHERE key = 'preis_standard'");
+        $_resRab = $_tmpDb->querySingle("SELECT value FROM einstellungen WHERE key = 'preis_rabatt'");
+
+        define('PREIS_STANDARD', $_resStd !== null && $_resStd !== false ? floatval($_resStd) : 18.0);
+        define('PREIS_RABATT', $_resRab !== null && $_resRab !== false ? floatval($_resRab) : 11.0);
+        define('PREIS_GRATIS', 0.0);
+        
+        $_tmpDb->close();
+        unset($_tmpDb, $_resStd, $_resRab);
+    } catch (Exception $e) {
+        // Fallback falls Datenbankzugriff beim ersten Laden scheitert
+        define('PREIS_STANDARD', 20.0);
+        define('PREIS_RABATT', 11.0);
+        define('PREIS_GRATIS', 0.0);
     }
 }

@@ -24,16 +24,38 @@ if (!function_exists('percent')) {
     }
 }
 
+function getRowStatusClass($row) {
+    $isGeprueft = (bool)$row['geprueft'];
+    $isBezahlt = (bool)$row['bezahlt'];
+    $isDefekt = (bool)$row['defekt'];
+    $isAbgeholt = (bool)$row['abgeholt'];
+
+    if (!$isGeprueft) {
+        // 1. Nicht geprüft -> Orange (#fff3cd)
+        return 'status-orange';
+    } elseif ($isBezahlt && $isDefekt && !$isAbgeholt) {
+        // 2. Bezahlt, defekt, nicht abgeholt -> Hellgrün (#e4edd4)
+        return 'status-hellgruen';
+    } elseif (!$isBezahlt && $isDefekt && $isAbgeholt) {
+        // 3. Nicht bezahlt, defekt, abgeholt -> Hellgrün (#e4edd4)
+        return 'status-hellgruen';
+    } elseif ($isBezahlt && !$isDefekt && $isAbgeholt) {
+        // 4. Bezahlt, ok (nicht defekt), abgeholt -> Grün (#d4edda)
+        return 'status-gruen';
+    } else {
+        // 5. Alles andere -> Rot (#f8d7da)
+        return 'status-rot';
+    }
+}
+
 function renderRow($row) {
-    $rowClass = !$row['geprueft'] ? "table-warning" : (!$row['abgeholt'] ? "table-warning" : "table-info");
-    if ($row['geprueft'] && $row['abgeholt'] && $row['bezahlt'] && !$row['defekt']) $rowClass = "table-success";
-    if ($row['defekt']) $rowClass = "table-danger";
+    $rowClass = getRowStatusClass($row);
     $disabled = ($row['active'] == 0) ? 'disabled' : '';
 
     ob_start();
     ?>
     <tr data-id="<?= $row['id'] ?>" class="<?= $rowClass ?> <?= !$row['active'] ? 'row-inactive' : '' ?>">
-        <td><button class="btn btn-sm btn-outline-primary btn-edit" onclick="navigation.navigate('add_edit.php?mode=edit&id=<?= $row['id'] ?>')"><strong><?= htmlspecialchars($row['nummer']) ?></strong></button></td>
+        <td><button class="btn btn-sm btn-outline-primary btn-edit" onclick="window.open('add_edit.php?mode=edit&id=<?= $row['id'] ?>', '_blank')"><strong><?= htmlspecialchars($row['nummer']) ?></strong></button></td>
         <td><?= htmlspecialchars($row['name']) ?></td>
         <td>
             <select class="form-select typ-select" <?= $disabled ?>>
@@ -45,13 +67,6 @@ function renderRow($row) {
         <td><input type="checkbox" class="cb-bezahlt" <?= $row['bezahlt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
         <td><input type="checkbox" class="cb-geprueft" <?= $row['geprueft'] ? 'checked' : '' ?> <?= $disabled ?>></td>
         <td><input type="checkbox" class="cb-defekt" <?= $row['defekt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
-        <!--<td>
-            <?php if ($row['geprueft']): ?>
-                <input type="checkbox" class="cb-defekt" <?= $row['defekt'] ? 'checked' : '' ?> <?= $disabled ?>>
-            <?php else: ?>
-                <span class="text-muted">—</span>
-            <?php endif; ?>
-        </td>-->
         <td><input type="checkbox" class="cb-abgeholt" <?= $row['abgeholt'] ? 'checked' : '' ?> <?= $disabled ?>></td>
         <td><?= nl2br(htmlspecialchars($row['info'])) ?></td>
         <td>
@@ -68,7 +83,7 @@ function renderRow($row) {
 
 function renderRows($result) {
     $html = '';
-    while ($row = $result->fetchArray()) {
+    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
         $html .= renderRow($row);
     }
     return $html;
@@ -76,7 +91,6 @@ function renderRows($result) {
 
 function getStats($db) {
     $stats = [];
-    // Nur aktive Löscher zählen
     $stats['gesamt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE active = 1");
     
     $stats['geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND active = 1");
@@ -91,9 +105,6 @@ function getStats($db) {
     $stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 0 AND active = 1");
     $stats['defekt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 1 AND active = 1");
 
-    
-    
-    // Prozente basierend auf den neuen aktiven Zahlen berechnen
     $stats['gesamt_ok'] = $stats['gesamt'] - $stats['defekt'];
 
     $stats['p_defekt'] = percent($stats['defekt'], $stats['gesamt']);
@@ -127,7 +138,6 @@ if (isset($_POST['ajax_update'])) {
         $stmt->execute();
     } else {
 
-        // LÖSCHEN
         if ($field === 'active' && $value == 0) {
             $stmt = $db->prepare("
                 UPDATE loescher 
@@ -142,7 +152,6 @@ if (isset($_POST['ajax_update'])) {
             $stmt->bindValue(':id', $id, SQLITE3_INTEGER);
             $stmt->execute();
 
-        // WIEDERHERSTELLEN
         } elseif ($field === 'active' && $value == 1) {
             $stmt = $db->prepare("
                 UPDATE loescher 
@@ -196,12 +205,36 @@ $stats = getStats($db);
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>&#128293; Feuerlöscher Software</title>
-<link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
-<link rel="shortcut icon" href="./images/Feuerlöscher.ico">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>&#128293; Feuerlöscher Software</title>
+    <link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="./images/Feuerlöscher.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Farbdefinitionen für die Tabellenzeilen */
+        tr.status-orange, tr.status-orange > td {
+            background-color: #fff3cd !important;
+        }
+        tr.status-hellgruen, tr.status-hellgruen > td {
+            background-color: #e4edd4 !important;
+        }
+        tr.status-gruen, tr.status-gruen > td {
+            background-color: #d4edda !important;
+        }
+        tr.status-rot, tr.status-rot > td {
+            background-color: #f8d7da !important;
+        }
+
+        /* Hover-Effekt */
+        tr.status-orange:hover,
+        tr.status-hellgruen:hover,
+        tr.status-gruen:hover,
+        tr.status-rot:hover {
+            filter: brightness(0.95);
+            transition: filter 0.2s;
+        }
+    </style>
 </head>
 
 <body class="bg-light">
@@ -215,12 +248,8 @@ $stats = getStats($db);
 
         <div class="d-flex gap-2">
             <a href="add_edit.php" class="btn btn-success btn-sm">+ Neuen Löscher anlegen</a>
-            <a href="index.php" class="btn btn-outline-light btn-sm">
-                Start
-            </a>
-            <a href="?logout=1" class="btn btn-danger btn-sm">
-                Abmelden
-            </a>
+            <a href="index.php" class="btn btn-outline-light btn-sm">Start</a>
+            <a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>
         </div>
     </div>
 </nav>
@@ -316,7 +345,7 @@ $stats = getStats($db);
     </div>
 </form>
 
-<table class="table table-bordered table-striped align-middle">
+<table class="table table-bordered align-middle">
     <thead>
         <tr>
             <th>ID</th>
@@ -333,32 +362,39 @@ $stats = getStats($db);
     <tbody>
         <tr><td colspan="9" class="text-center">Liste wird geladen...</td></tr>
     </tbody>
-    </table>
+</table>
 
 </div>
 
 <script>
-// Hilfsfunktion für Zeilenfarben (Exakt nach Logik der Vorgabe)
+// Exakte Farbzuweisung im Frontend per JavaScript
 function updateRowClass(row){
-    const geprueft = row.querySelector('.cb-geprueft').checked;
-    const abgeholt = row.querySelector('.cb-abgeholt').checked;
-    const bezahlt = row.querySelector('.cb-bezahlt').checked;
+    const geprueft = row.querySelector('.cb-geprueft')?.checked ?? false;
+    const abgeholt = row.querySelector('.cb-abgeholt')?.checked ?? false;
+    const bezahlt = row.querySelector('.cb-bezahlt')?.checked ?? false;
     const defekt = row.querySelector('.cb-defekt')?.checked ?? false;
 
-    row.classList.remove('table-danger','table-warning','table-info','table-success');
+    // Alle möglichen Statusklassen entfernen
+    row.classList.remove('status-orange', 'status-hellgruen', 'status-gruen', 'status-rot', 'table-danger', 'table-warning', 'table-info', 'table-success');
 
-    if (defekt) {
-        row.classList.add('table-danger');
-    } else if (geprueft && abgeholt && bezahlt) {
-        row.classList.add('table-success');
-    } else if (!geprueft || !abgeholt) {
-        row.classList.add('table-warning');
+    if (!geprueft) {
+        // 1. Nicht geprüft -> Orange
+        row.classList.add('status-orange');
+    } else if (bezahlt && defekt && !abgeholt) {
+        // 2. Bezahlt, defekt, nicht abgeholt -> Hellgrün
+        row.classList.add('status-hellgruen');
+    } else if (!bezahlt && defekt && abgeholt) {
+        // 3. Nicht bezahlt, defekt, abgeholt -> Hellgrün
+        row.classList.add('status-hellgruen');
+    } else if (bezahlt && !defekt && abgeholt) {
+        // 4. Bezahlt, ok (nicht defekt), abgeholt -> Grün
+        row.classList.add('status-gruen');
     } else {
-        row.classList.add('table-info');
+        // 5. Alles andere -> Rot
+        row.classList.add('status-rot');
     }
 }
 
-// Live-Update der Statistik-Anzeige
 function updateStatsDOM(stats){
     document.getElementById('stat-gesamt').innerText = stats.gesamt;
     document.getElementById('stat-geprueft').innerText = `✅ ${stats.geprueft} | ❌ ${stats.nicht_geprueft}`;
@@ -366,7 +402,6 @@ function updateStatsDOM(stats){
     document.getElementById('stat-bezahlt').innerText = `✅ ${stats.bezahlt} | ❌ ${stats.nicht_bezahlt}`;
     document.getElementById('stat-ok').innerText = `✅ ${stats.ok} | ❌ ${stats.defekt}`;
 
-    // Balken und Prozent-Labels
     document.getElementById('bar-geprueft').style.width = stats.p_geprueft+'%';
     document.getElementById('label-p-geprueft').innerText = stats.p_geprueft;
     

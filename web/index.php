@@ -33,7 +33,7 @@ function updateConfigDefine($key, $value, $isNumber = false) {
 
 // 1. Neue Datenbank anlegen
 if (isset($_POST['create_db'])) {
-    require 'config.php'; // Passwort-Konstante holen
+    require_once 'config.php'; // Passwort-Konstante holen
     if (!isset($_POST['db_password']) || $_POST['db_password'] !== RESET_PASSWORD) {
         $errorMessage = "Falsches Passwort!";
     } else {
@@ -41,23 +41,21 @@ if (isset($_POST['create_db'])) {
         
         // Validierung auf exakt 4 Ziffern (Jahreszahl)
         if (!preg_match('/^\d{4}$/', $newName)) {
-            $errorMessage = "Ungültiger Datenbankname! Der Name darf nur aus einer 4-stelligen Jahreszahl bestehen (z.B. 2026).";
+            $errorMessage = sprintf("Ungültiger Datenbankname! Der Name darf nur aus einer 4-stelligen Jahreszahl bestehen (z.B. %s).", date('Y'));
         } else {
             $newDbPath = $dbDir . '/' . $newName . '.db';
             if (file_exists($newDbPath)) {
                 $errorMessage = "Datenbank existiert bereits!";
             } else {
-                // Temporäre Konstante setzen, damit getDB() die neue Datenbank anspricht
-                define('TEMP_INIT_DB', $newDbPath);
-                
-                // Neue Struktur initialisieren (Nutzt jetzt TEMP_INIT_DB)
-                require 'init_db.php';
-                
-                // config.php aktualisieren
+                // 1. Pfad in config.php aktualisieren
                 updateConfigDefine('DB_FILE', $newDbPath);
                 
-                // Seite neu laden, damit die neue DB_FILE geladen wird
-                header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Datenbank '$newName.db' erfolgreich angelegt und aktiviert!"));
+                // 2. Leere SQLite-Datei sofort erzeugen (getDB legt Tabellen beim ersten Zugriff an)
+                $touchDb = new SQLite3($newDbPath);
+                $touchDb->close();
+
+                // 3. Weiterleitung, damit die Seite frisch lädt & getDB() die Tabellen baut
+                header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Datenbank '$newName.db' erfolgreich angelegt!"));
                 exit;
             }
         }
@@ -78,7 +76,7 @@ if (isset($_POST['select_db'])) {
 
 // 3. Datenbank löschen (inklusive dazugehörigem PDF-Unterordner)
 if (isset($_POST['delete_db'])) {
-    require 'config.php';
+    require_once 'config.php';
     if (!isset($_POST['db_password']) || $_POST['db_password'] !== RESET_PASSWORD) {
         $errorMessage = "Falsches Passwort!";
     } else {
@@ -87,11 +85,11 @@ if (isset($_POST['delete_db'])) {
             if ($toDelete === DB_FILE) {
                 $errorMessage = "Die aktuell aktive Datenbank kann nicht gelöscht werden!";
             } else {
-                // 1. Namen der Datenbank ohne Endung ermitteln (z.B. "Test1")
+                // 1. Namen der Datenbank ohne Endung ermitteln
                 $dbNameOnly = pathinfo($toDelete, PATHINFO_FILENAME);
                 $pdfFolderToDelete = __DIR__ . '/_Rechnungen/' . $dbNameOnly;
 
-                // 2. Hilfsfunktion zum rekursiven Löschen definieren (falls nicht bereits geladen)
+                // 2. Hilfsfunktion zum rekursiven Löschen
                 if (!function_exists('rrmdir')) {
                     function rrmdir($dir) {
                         if (!is_dir($dir)) return;
@@ -128,8 +126,8 @@ if (isset($_POST['delete_db'])) {
     }
 }
 
-// Jetzt regulär config.php laden
-require 'config.php';
+// Jetzt EINMALIG regulär config.php laden
+require_once 'config.php';
 
 // Nur eingeloggte Benutzer
 if (!isset($_SESSION['logged_in'])) {
@@ -168,7 +166,6 @@ if (isset($_POST['reset_db'])) {
             copy(DB_FILE, $backupFile);
         }
 
-
         // 2. _Rechnungen Unterordner der AKTIVEN DB sichern
         $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
         $rechnungenDir = '_Rechnungen/' . $dbNameOnly;
@@ -188,7 +185,6 @@ if (isset($_POST['reset_db'])) {
                 $zip->close();
             }
             
-            // Hilfsfunktion zum rekursiven Löschen
             if (!function_exists('rrmdir')) {
                 function rrmdir($dir) {
                     if (!is_dir($dir)) return;
@@ -207,12 +203,15 @@ if (isset($_POST['reset_db'])) {
                     rmdir($dir);
                 }
             }
-            // Nur den spezifischen Unterordner leeren/löschen
             rrmdir($rechnungenDir);
         }
 
-        // 3. Datenbank initialisieren (Hier wird die aktive DB geleert und neu aufgebaut)
-        require 'init_db.php';
+        // 3. Aktive DB-Datei leeren
+        if (file_exists(DB_FILE)) {
+            unlink(DB_FILE);
+        }
+        $resetDb = getDB(); // Erstellt Tabellen sauber neu
+        $resetDb->close();
 
         $successMessage = "Datenbank wurde zurückgesetzt! Backup DB: $backupFile";
         if (isset($zipFile)) {
@@ -221,14 +220,26 @@ if (isset($_POST['reset_db'])) {
     }
 }
 
-// Einstellungen speichern
+// Einstellungen speichern (In SQLite-Tabelle "einstellungen")
 if (isset($_POST['save_settings'])) {
     if ($_POST['settings_password'] !== RESET_PASSWORD) {
         $errorMessage = "Falsches Passwort!";
     } else {
-        updateConfigDefine('PREIS_STANDARD', $_POST['preis_standard'], true);
-        updateConfigDefine('PREIS_RABATT', $_POST['preis_rabatt'], true);
-        header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Einstellungen gespeichert!"));
+        $db = getDB();
+        $pStd = floatval($_POST['preis_standard']);
+        $pRab = floatval($_POST['preis_rabatt']);
+
+        $stmt = $db->prepare("INSERT INTO einstellungen (key, value) VALUES (:k, :v) ON CONFLICT(key) DO UPDATE SET value = :v");
+        
+        $stmt->bindValue(':k', 'preis_standard', SQLITE3_TEXT);
+        $stmt->bindValue(':v', (string)$pStd, SQLITE3_TEXT);
+        $stmt->execute();
+
+        $stmt->bindValue(':k', 'preis_rabatt', SQLITE3_TEXT);
+        $stmt->bindValue(':v', (string)$pRab, SQLITE3_TEXT);
+        $stmt->execute();
+
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=" . urlencode("Preise für Datenbank " . basename(DB_FILE) . " gespeichert!"));
         exit;
     }
 }
@@ -380,6 +391,9 @@ $dbFiles = glob($dbDir . '/*.db');
                                         <a href="oenormf1053.php" target="_blank" class="btn btn-outline-danger w-100">
                                             ÖNORM F 1053 Flyer generieren
                                         </a>
+                                        <a href="ablauf_flyer.php" target="_blank" class="btn btn-outline-danger w-100">
+                                            Kunden-Flyer generieren
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -415,7 +429,7 @@ $dbFiles = glob($dbDir . '/*.db');
                                         <label class="small text-muted">Neue DB erstellen (Nur 4-stellige Jahreszahl):</label>
                                         <div class="input-group">
                                             <input type="text" name="new_db_name" class="form-control form-control-sm" 
-                                                   placeholder="z.B. 2026" required 
+                                                   placeholder="z.B. <?= date('Y') ?>" required
                                                    pattern="[0-9]{4}" maxlength="4" minlength="4">
                                             <button type="button" class="btn btn-sm btn-success" onclick="confirmDbCreate()">Erstellen</button>
                                         </div>
@@ -467,14 +481,14 @@ $dbFiles = glob($dbDir . '/*.db');
                                         <input type="hidden" name="save_settings" value="1">
                                         <input type="hidden" name="settings_password" id="settings_password">
 
-                                        <h5 class="text-center">&#9881; Preise</h5>
+                                        <h5 class="text-center">&#9881; Preise (DB: <?php echo basename(DB_FILE); ?>)</h5>
 
-                                        <label class="small">Standard</label>
+                                        <label class="small">Standard (€)</label>
                                         <input type="number" step="0.01" name="preis_standard"
                                                value="<?php echo PREIS_STANDARD; ?>"
                                                class="form-control form-control-sm mb-2" required>
 
-                                        <label class="small">Rabatt</label>
+                                        <label class="small">Rabatt (€)</label>
                                         <input type="number" step="0.01" name="preis_rabatt"
                                                value="<?php echo PREIS_RABATT; ?>"
                                                class="form-control form-control-sm mb-2" required>

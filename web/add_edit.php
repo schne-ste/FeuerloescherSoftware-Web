@@ -140,6 +140,7 @@ if ($mode === 'edit' && isset($_POST['save_entry']) && isset($_POST['edit_id']))
     $stmt = $db->prepare("
         UPDATE loescher SET
             name = :name,
+            telefon = :telefon,
             typ = :typ,
             preis = :preis,
             loeschertyp = :loeschertyp,
@@ -154,6 +155,7 @@ if ($mode === 'edit' && isset($_POST['save_entry']) && isset($_POST['edit_id']))
     ");
 
     $stmt->bindValue(':name', $_POST['name']);
+    $stmt->bindValue(':telefon', $_POST['telefon'] ?? '');
     $stmt->bindValue(':typ', $typ);
     $stmt->bindValue(':preis', $preis);
     $stmt->bindValue(':loeschertyp', $_POST['loeschertyp'] ?? '');
@@ -198,17 +200,18 @@ if ($mode === 'add' && isset($_POST['add_loscher'])) {
         $nummern[] = $nummer;
         $stmt = $db->prepare("
             INSERT INTO loescher (
-                nummer, name, typ, preis, loeschertyp,
+                nummer, name, telefon, typ, preis, loeschertyp,
                 menge, einheit, etikett_gedruckt,
                 abholschein_gedruckt, bezahlt, geprueft, abgeholt, defekt, active, info, zeitstempel
             ) VALUES (
-                :nummer, :name, :typ, :preis, :loeschertyp,
+                :nummer, :name, :telefon, :typ, :preis, :loeschertyp,
                 :menge, :einheit, 0, 0, :bezahlt, 0, 0, 0, 1, :info, :zeitstempel
             )
         ");
 
         $stmt->bindValue(':nummer', $nummer);
         $stmt->bindValue(':name', $_POST['name']);
+        $stmt->bindValue(':telefon', $_POST['telefon'] ?? '');
         $stmt->bindValue(':typ', $typ);
         $stmt->bindValue(':preis', $preis);
         $stmt->bindValue(':loeschertyp', $_POST['loeschertyp'] ?? '');
@@ -637,6 +640,12 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                         </div>
 
                         <div class="mb-3">
+                            <label class="form-label">&#128222; Telefonnummer</label>
+                            <input type="tel" name="telefon" class="form-control"
+                                value="<?= htmlspecialchars($editEntry['telefon'] ?? '') ?>" <?= !$isActive ? 'disabled' : '' ?>>
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label">&#128176; Preis je Löscher</label>
                             <select name="typ" class="form-select mb-1" id="editTypSelect" <?= !$isActive ? 'disabled' : '' ?>>
                                 <?php foreach ($preise as $k => $v): ?>
@@ -768,7 +777,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     <div class="d-flex gap-2">
                         <?php if ($editEntry['bezahlt'] && $editEntry['defekt']): ?>
                             <button type="submit" class="btn btn-warning" name="geld_retour" <?= !$isActive ? 'disabled' : '' ?>>
-                                &#128176; Geld retour gegeben
+                                &#128176; Geld retour gegeben (Nicht bei Entsorgung)
                             </button>
                         <?php endif; ?>
                         <button type="button" id="prevBtn" class="btn btn-outline-secondary"
@@ -785,26 +794,33 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
         <?php if ($mode === 'add'): ?>
             <script>
                 function enterWeiter(event) {
-                    console.log(event.key);
                     if (event.key !== "Enter") return;
 
                     event.preventDefault();
 
-                    switch (event.target.name) {
-                        case "anzahl":
-                            event.target.form.submit();
-                            return;
+                    if (event.target.name === "telefon") {
+                        const anzField = document.getElementsByName('anzahl')[0];
+                        if (anzField) {
+                            anzField.focus();
+                            anzField.select?.();
+                        }
+                        return; 
                     }
 
+                    if (event.target.name === "anzahl") {
+                        document.getElementById('submitAddBtn')?.click();
+                        return;
+                    }
+                  
+                    //Standard-Verhalten für alle anderen Felder (Name, etc.): Nächstes Eingabefeld fokussieren
                     const form = event.target.form;
-
                     const felder = [...form.querySelectorAll(
                         'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])'
                     )].filter(el => el.offsetParent !== null);
 
                     const index = felder.indexOf(event.target);
 
-                    if (index < felder.length - 1) {
+                    if (index !== -1 && index < felder.length - 1) {
                         felder[index + 1].focus();
                         felder[index + 1].select?.();
                     }
@@ -818,6 +834,11 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 <div class="mb-3">
                     <label class="form-label">&#128100; Name</label>
                     <input type="text" name="name" class="form-control highlight" onkeydown="enterWeiter(event)" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">&#128222; Telefonnummer</label>
+                    <input type="tel" name="telefon" class="form-control highlight" onkeydown="enterWeiter(event)">
                 </div>
 
                 <div class="mb-3">
