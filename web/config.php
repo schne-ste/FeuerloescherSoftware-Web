@@ -22,6 +22,8 @@ define('SumUp_URL', 'http://10.122.122.66:8080/api/transactions.php');
 define('SumUp_API_KEY', 'd0b7062671b7d6c3063701796a7013679f2e332d220f3eea4a203f5110e1ffa2');
 define('SumUp_PRICE_FAKTOR', 1.02);
 
+define('EVENT_NAME', 'Feuerlöscherüberprüfung 0000');
+
 if (!defined('API_MODE')) {
     function getDB() {
         $dbPath = __DIR__ . '/' . DB_FILE; 

@@ -70,6 +70,12 @@ if (isset($_POST['select_db'])) {
     $selectedDb = $_POST['selected_db'];
     if (file_exists($selectedDb) && strpos(realpath($selectedDb), realpath($dbDir)) === 0) {
         updateConfigDefine('DB_FILE', $selectedDb);
+
+        // --- EVENT_NAME beim Datenbankwechsel aktualisieren ---
+        $dbNameOnly = basename($selectedDb, '.db');
+        $fullEventName = "Feuerlöscherüberprüfung " . $dbNameOnly;
+        updateConfigDefine('EVENT_NAME', $fullEventName, false);
+
         header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?success=" . urlencode("Erfolgreich zur Datenbank " . basename($selectedDb) . " gewechselt!"));
         exit;
     } else {
@@ -229,6 +235,13 @@ if (isset($_POST['save_settings'])) {
 
         // 2. SumUp Einstellungen in config.php aktualisieren
         $sumUpAvailable = isset($_POST['sumup_available']) ? 'TRUE' : 'FALSE';
+
+        // --- NEU HINZUFÜGEN: EVENT_NAME ---
+        $dbNameOnly = basename(DB_FILE, '.db');
+        // Baue den String zusammen
+        $fullEventName = "Feuerlöscherüberprüfung " . $dbNameOnly;
+        // Speichere es als define in der config.php
+        updateConfigDefine('EVENT_NAME', $fullEventName, false);
         
         // Transaktionsgebühr in % umrechnen in Faktor (z.B. 2.0% -> 1.020)
         $gebuehrProzent = floatval($_POST['sumup_fee_percent']);

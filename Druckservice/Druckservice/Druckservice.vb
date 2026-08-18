@@ -34,6 +34,7 @@ Public Class Druckservice
     Private bank_name As String = ""
     Private bank_iban As String = ""
     Private bank_empfaenger As String = ""
+    Private event_name As String = ""
 
     ' ===== Log-Methode (Konsole + Datei) =====
     Private Sub Log(msg As String)
@@ -251,9 +252,11 @@ Public Class Druckservice
                     bank_name = GetVal("BANK_NAME")
                     bank_iban = GetVal("BANK_IBAN")
                     bank_empfaenger = GetVal("BANK_EMPFAENGER")
+                    event_name = GetVal("EVENT_NAME")
 
 
                     'Log("------------------------- Konfiguration geladen ----------------------------")
+                    Log(event_name)
                     Log($"Firma: {firma_name}")
                     Log($"Adresse: {firma_adresse}")
                     Log($"PLZ/Ort: {firma_plzort}")
@@ -637,7 +640,7 @@ Public Class Druckservice
             End If
 
             p.WriteLine()
-            p.WriteLine("Feuerlöscherüberprüfung " + Format(Now, "yyyy"))
+            p.WriteLine(event_name)
             p.WriteLine()
             p.WriteLine(firma_name)
             p.WriteLine(firma_adresse)
@@ -739,7 +742,7 @@ Public Class Druckservice
                 End If
             End If
 
-            p.WriteLine("Feuerlöscherüberprüfung " + Format(Now, "yyyy"))
+            p.WriteLine(event_name)
             p.WriteLine()
             p.WriteLine(firma_name)
             p.WriteLine(firma_adresse)
@@ -804,7 +807,7 @@ Public Class Druckservice
             p.WriteLine("=".PadRight(42, "="))
             p.WriteLine()
             p.WriteLine("Betrag dankend erhalten!")
-            p.WriteLine("Gedruckt: " + gedruckt)
+            'p.WriteLine("Gedruckt: " + gedruckt)
             p.WriteLine()
             p.WriteLine("Danke für Ihren Besuch!")
             p.WriteLine()
