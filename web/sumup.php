@@ -30,30 +30,45 @@ function apiRequest($method, $endpoint = "", $data = null) {
 
 $db = getDB();
 $action = $_GET['action'] ?? null;
+$rechnung_id = isset($_REQUEST['rechnung_id']) && $_REQUEST['rechnung_id'] !== '' ? (int)$_REQUEST['rechnung_id'] : 0;
 
 if ($action) {
     header("Content-Type: application/json");
-    $rechnung_id = (int)($_REQUEST['rechnung_id'] ?? 0);
 
     // 1. TRANSAKTION ERSTELLEN
     if ($action === "create") {
-        $row = $db->query("SELECT rechnungsnummer, anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
-        if (!$row) die(json_encode(["error" => "Rechnung nicht gefunden"]));
+        $title = "Löscherprüfung";
+        $baseAmount = 0.00;
 
-        // API erwartet Betrag in Cents (Integer)
-        $baseAmount = (float)($row['anzahl_loescher'] * $row['preis_pro_loescher']);
+        if ($rechnung_id > 0) {
+            $row = $db->query("SELECT rechnungsnummer, anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
+            if ($row) {
+                $title = $row['rechnungsnummer'];
+                $baseAmount = (float)($row['anzahl_loescher'] * $row['preis_pro_loescher']);
+            } else {
+                echo json_encode(["error" => "Rechnung nicht gefunden"]);
+                exit;
+            }
+        } else {
+            // Falls direkt ein Betrag übergeben wurde (ohne Rechnungs-ID)
+            $baseAmount = (float)($_GET['amount'] ?? 0.00);
+        }
+
+        // API erwartet Betrag (inkl. Faktor)
         $amount = $baseAmount * (defined('SumUp_PRICE_FAKTOR') ? (float)SumUp_PRICE_FAKTOR : 1.0);
         
         $res = apiRequest("POST", "", [
-            "title" => $row['rechnungsnummer'], 
+            "title" => $title, 
             "amount" => $amount 
         ]);
 
         if (!empty($res['id'])) {
-            $stmt = $db->prepare("UPDATE rechnungen SET sumup_transaction_id = :tid, sumup_status = 'pending' WHERE id = :id");
-            $stmt->bindValue(':tid', $res['id']);
-            $stmt->bindValue(':id', $rechnung_id);
-            $stmt->execute();
+            if ($rechnung_id > 0) {
+                $stmt = $db->prepare("UPDATE rechnungen SET sumup_transaction_id = :tid, sumup_status = 'pending' WHERE id = :id");
+                $stmt->bindValue(':tid', $res['id']);
+                $stmt->bindValue(':id', $rechnung_id);
+                $stmt->execute();
+            }
             echo json_encode(["success" => true, "transaction_id" => $res['id']]);
         } else {
             echo json_encode(["error" => "API Fehler beim Erstellen", "details" => $res]);
@@ -63,23 +78,31 @@ if ($action) {
 
     // 2. STATUS ABFRAGEN
     if ($action === "status") {
-        $row = $db->query("SELECT sumup_transaction_id, bezahlt FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
-        
-        if (!$row || empty($row['sumup_transaction_id'])) {
-            echo json_encode(["status" => "failed", "error" => "Keine Transaktions-ID"]);
+        if ($rechnung_id > 0) {
+            $row = $db->query("SELECT sumup_transaction_id, bezahlt FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
+            if (!$row || empty($row['sumup_transaction_id'])) {
+                echo json_encode(["status" => "failed", "error" => "Keine Transaktions-ID"]);
+                exit;
+            }
+            $tx_id = $row['sumup_transaction_id'];
+        } else {
+            // Ohne DB-ID kann der Status hier direkt übergeben oder separat gehalten werden
+            echo json_encode(["status" => "pending"]);
             exit;
         }
 
-        $res = apiRequest("GET", "?id=" . $row['sumup_transaction_id']);
+        $res = apiRequest("GET", "?id=" . $tx_id);
         
         if (isset($res['error']) || (isset($res['hidden']) && $res['hidden'] == 1)) {
-            $db->exec("UPDATE rechnungen SET sumup_status = 'cancelled', sumup_transaction_id = NULL WHERE id = $rechnung_id");
+            if ($rechnung_id > 0) {
+                $db->exec("UPDATE rechnungen SET sumup_status = 'cancelled', sumup_transaction_id = NULL WHERE id = $rechnung_id");
+            }
             echo json_encode(["status" => "failed", "error" => "Zahlung wurde abgebrochen"]);
             exit;
         }
 
         $paid = !empty($res['paid']);
-        if ($paid && !$row['bezahlt']) {
+        if ($paid && $rechnung_id > 0 && !$row['bezahlt']) {
             $db->exec("UPDATE rechnungen SET bezahlt = 1, sumup_status = 'paid' WHERE id = $rechnung_id");
         }
         echo json_encode(["paid" => $paid, "status" => $paid ? 'paid' : 'pending']);
@@ -88,11 +111,12 @@ if ($action) {
 
     // 3. STORNIEREN (DELETE)
     if ($action === "cancel") {
-        $row = $db->query("SELECT sumup_transaction_id FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
-        
-        if ($row && !empty($row['sumup_transaction_id'])) {
-            apiRequest("DELETE", "", ["id" => $row['sumup_transaction_id']]);
-            $db->exec("UPDATE rechnungen SET sumup_status = 'cancelled', sumup_transaction_id = NULL WHERE id = $rechnung_id");
+        if ($rechnung_id > 0) {
+            $row = $db->query("SELECT sumup_transaction_id FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
+            if ($row && !empty($row['sumup_transaction_id'])) {
+                apiRequest("DELETE", "", ["id" => $row['sumup_transaction_id']]);
+                $db->exec("UPDATE rechnungen SET sumup_status = 'cancelled', sumup_transaction_id = NULL WHERE id = $rechnung_id");
+            }
         }
         echo json_encode(["success" => true]);
         exit;
@@ -100,9 +124,12 @@ if ($action) {
 }
 
 // FRONTEND-BERECHHNUNG
-$rechnung_id = (int)$_GET['rechnung_id'];
-$row = $db->query("SELECT anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
-$baseAmount = $row['anzahl_loescher'] * $row['preis_pro_loescher'];
+if ($rechnung_id > 0) {
+    $row = $db->query("SELECT anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
+    $baseAmount = $row ? ($row['anzahl_loescher'] * $row['preis_pro_loescher']) : 0.00;
+} else {
+    $baseAmount = (float)($_GET['amount'] ?? 0.00);
+}
 
 $faktor = defined('SumUp_PRICE_FAKTOR') ? (float)SumUp_PRICE_FAKTOR : 1.0;
 $finalAmount = $baseAmount * $faktor;
@@ -143,15 +170,20 @@ if ($faktor > 1) {
 
     <script>
         const rid = <?= $rechnung_id ?>;
+        const amount = <?= $finalAmount ?>;
         const gebuehrProzent = <?= $gebuehrProzent ?>;
         let interval = null;
         
         async function init() {
             try {
-                let res = await fetch(`sumup.php?action=create&rechnung_id=${rid}`);
+                let url = `sumup.php?action=create&rechnung_id=${rid}`;
+                if (rid === 0) {
+                    url += `&amount=${amount}`;
+                }
+                
+                let res = await fetch(url);
                 let data = await res.json();
                 if(data.success) {
-                    // Setzt den Text und hängt den Gebührenhinweis unten an, falls vorhanden
                     let statusHtml = "Transaktion erstellt.<br><br>Bitte in der SumUp-Adapter-App fortsetzen.<br><br>Warte auf Zahlung...";
                     if(gebuehrProzent > 0) {
                         statusHtml += `<span class="fee-notice">(Inkl. ${gebuehrProzent.toString().replace('.', ',')}% Kartenzahlungsgebühr)</span>`;

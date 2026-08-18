@@ -8,6 +8,13 @@ if (!isset($_SESSION['logged_in'])) {
 
 $db = getDB();
 
+// PREISE DEFINIEREN (Identisch zu rechnung.php)
+$preise = [
+    'Standard' => PREIS_STANDARD,
+    'Rabatt' => PREIS_RABATT,
+    'Gratis' => PREIS_GRATIS
+];
+
 // =====================
 // DATEN ABFRAGEN
 // =====================
@@ -68,7 +75,7 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
         <h2>Alle Rechnungen</h2>
         <span class="badge bg-secondary"><?= count($rechnungen) ?> Einträge gesamt</span>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 mb-4">
         <a href="rechnung.php" class="btn btn-success btn-sm">+ Neue Rechnung</a>
         <a href="rechnungen_download_zip.php" class="btn btn-primary btn-sm">
             &#128229; Alle Rechnungen als ZIP herunterladen
@@ -98,7 +105,33 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                 </thead>
                 <tbody>
                     <?php foreach ($rechnungen as $r): 
-                        $gesamt = $r['anzahl_loescher'] * $r['preis_pro_loescher'];
+                        // Live-Berechnung der Summe pro Typ aus der Löscher-DB
+                        $kName = trim($r['name']);
+                        $stmtT = $db->prepare("
+                            SELECT typ, COUNT(*) as anzahl 
+                            FROM loescher 
+                            WHERE LOWER(TRIM(name)) = LOWER(:name) 
+                              AND (active = 1 OR active = '1') 
+                            GROUP BY typ
+                        ");
+                        $stmtT->bindValue(':name', $kName, SQLITE3_TEXT);
+                        $resT = $stmtT->execute();
+                        
+                        $gesamt = 0;
+                        $hatLoescher = false;
+                        
+                        while($tRow = $resT->fetchArray(SQLITE3_ASSOC)) {
+                            $hatLoescher = true;
+                            $pTyp = $tRow['typ'];
+                            $pMenge = (int)$tRow['anzahl'];
+                            $einzelp = $preise[$pTyp] ?? 0;
+                            $gesamt += ($pMenge * $einzelp);
+                        }
+                        
+                        // Fallback: Falls keine Löscher verknüpft sind, alten Preis nehmen
+                        if (!$hatLoescher) {
+                            $gesamt = $r['anzahl_loescher'] * $r['preis_pro_loescher'];
+                        }
                     ?>
                     <tr onclick="window.location.href='rechnung.php?id=<?= $r['id'] ?>'">
                         <td class="fw-bold"><?= htmlspecialchars($r['rechnungsnummer']) ?></td>
@@ -130,11 +163,9 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 </div>
 
 <script>
-// Echtzeit-Suche in der Tabelle
 document.getElementById('tableSearch').addEventListener('keyup', function() {
     let filter = this.value.toLowerCase();
     let rows = document.querySelectorAll('#rechnungsTabelle tbody tr');
-
     rows.forEach(row => {
         let text = row.innerText.toLowerCase();
         row.style.display = text.includes(filter) ? '' : 'none';

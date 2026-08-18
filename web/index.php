@@ -207,11 +207,12 @@ if (isset($_POST['reset_db'])) {
     }
 }
 
-// Einstellungen speichern
+// Einstellungen speichern (Preise & SumUp)
 if (isset($_POST['save_settings'])) {
     if ($_POST['settings_password'] !== RESET_PASSWORD) {
         $errorMessage = "Falsches Passwort!";
     } else {
+        // 1. Preise in der aktiven Datenbank speichern
         $db = getDB();
         $pStd = floatval($_POST['preis_standard']);
         $pRab = floatval($_POST['preis_rabatt']);
@@ -226,7 +227,17 @@ if (isset($_POST['save_settings'])) {
         $stmt->bindValue(':v', (string)$pRab, SQLITE3_TEXT);
         $stmt->execute();
 
-        header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?success=" . urlencode("Preise für Datenbank " . basename(DB_FILE) . " gespeichert!"));
+        // 2. SumUp Einstellungen in config.php aktualisieren
+        $sumUpAvailable = isset($_POST['sumup_available']) ? 'TRUE' : 'FALSE';
+        
+        // Transaktionsgebühr in % umrechnen in Faktor (z.B. 2.0% -> 1.020)
+        $gebuehrProzent = floatval($_POST['sumup_fee_percent']);
+        $sumUpFaktor = 1.0 + ($gebuehrProzent / 100.0);
+
+        updateConfigDefine('SumUp_AVALIABLE', $sumUpAvailable, false);
+        updateConfigDefine('SumUp_PRICE_FAKTOR', $sumUpFaktor, true);
+
+        header("Location: " . strtok($_SERVER['REQUEST_URI'], '?') . "?success=" . urlencode("Einstellungen gespeichert!"));
         exit;
     }
 }
@@ -353,6 +364,7 @@ $dbFiles = glob($dbDir . '/*.db');
             </div>
 
             <div id="settingsAll" class="collapse">
+                <p class="small text-muted mb-0" style="text-align: center;">Veranstalterdaten (Name, Adresse, Bankdaten) und Präfix für Rechnungsnummern in config.php eintragen</p>
                 <div class="card-body">
                     <div class="row g-4">
 
@@ -459,7 +471,7 @@ $dbFiles = glob($dbDir . '/*.db');
                             </div>
                         </div>
 
-                        <!-- EINSTELLUNGEN (Preise) -->
+                        <!-- EINSTELLUNGEN (Preise & SumUp) -->
                         <div class="col-md-4">
                             <div class="card shadow-sm h-100">
                                 <div class="card-body">
@@ -469,15 +481,39 @@ $dbFiles = glob($dbDir . '/*.db');
 
                                         <h5 class="text-center">&#9881; Preise (DB: <?php echo basename(DB_FILE); ?>)</h5>
 
-                                        <label class="small">Standard (€)</label>
+                                        <label class="small fw-bold">Standard (€)</label>
                                         <input type="number" step="0.01" name="preis_standard"
                                                value="<?php echo PREIS_STANDARD; ?>"
                                                class="form-control form-control-sm mb-2" required>
 
-                                        <label class="small">Rabatt (€)</label>
+                                        <label class="small fw-bold">Rabatt (€)</label>
                                         <input type="number" step="0.01" name="preis_rabatt"
                                                value="<?php echo PREIS_RABATT; ?>"
                                                class="form-control form-control-sm mb-2" required>
+
+                                        <hr class="my-3">
+
+                                        <h5 class="text-center">&#128179; SumUp Kartenzahlung</h5>
+
+                                        <?php 
+                                            $isSumUpActive = defined('SumUp_AVALIABLE') && (strtoupper((string)SumUp_AVALIABLE) === 'TRUE' || SumUp_AVALIABLE === true);
+                                            $currentFaktor = defined('SumUp_PRICE_FAKTOR') ? floatval(SumUp_PRICE_FAKTOR) : 1.0;
+                                            $currentFeePercent = round(($currentFaktor - 1.0) * 100, 2);
+                                        ?>
+
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="sumup_available" id="sumup_available" value="1" <?php echo $isSumUpActive ? 'checked' : ''; ?>>
+                                            <label class="form-check-label small fw-bold" for="sumup_available">SumUp aktivieren</label>
+                                            <p class="small text-muted mb-0">URL und Token in config.php eintragen</p>
+                                        </div>
+
+                                        <label class="small fw-bold">Transaktionsgebühr (%)</label>
+                                        <div class="input-group input-group-sm mb-3">
+                                            <input type="number" step="0.01" min="0" name="sumup_fee_percent"
+                                                   value="<?php echo $currentFeePercent; ?>"
+                                                   class="form-control" required>
+                                            <span class="input-group-text">%</span>
+                                        </div>
 
                                         <button type="button" class="btn btn-success btn-sm w-100" onclick="confirmSettingsSave()">
                                             &#128190; Speichern

@@ -6,7 +6,6 @@ if (isset($_GET["ajax"])) {
     exit;
 }
 
-// Falls noch kein session_start() in der config.php ist, hier ergänzen:
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -54,12 +53,10 @@ if (!isset($successMessage) || $successMessage === '') {
 // =====================
 $editEntry = null;
 if ($mode === 'edit') {
-    // Versuche die ID aus URL zu laden
     $editId = $_GET['id'] ?? null;
     if ($editId) {
         $editEntry = $db->querySingle("SELECT * FROM loescher WHERE id = " . (int) $editId, true);
     }
-    // Falls nicht gefunden oder keine ID, fallback auf add mode
     if (!$editEntry) {
         $mode = 'add';
     }
@@ -97,14 +94,13 @@ if (isset($_POST['suche_nummer'])) {
                 $rows[] = $row;
             }
             if (count($rows) === 1) {
-                // Direkt zu edit mode navigieren
                 header("Location: ?mode=edit&id=" . $rows[0]['id']);
                 exit;
             } elseif (count($rows) > 1) {
                 $searchResults = $rows;
             } else {
                 $successMessage = "&#10060; Kein Datensatz für '$input' gefunden!";
-                $messageType = "danger"; // Rot bei Fehler
+                $messageType = "danger";
             }
         }
     }
@@ -115,7 +111,6 @@ if (isset($_POST['suche_nummer'])) {
 // =====================
 if (isset($_POST['select_entry'])) {
     $selectedId = (int) $_POST['selected_entry'];
-    // Navigiere zu edit mode mit der ID
     header("Location: ?mode=edit&id=" . $selectedId);
     exit;
 }
@@ -170,7 +165,6 @@ if ($mode === 'edit' && isset($_POST['save_entry']) && isset($_POST['edit_id']))
 
     $stmt->execute();
 
-    // Erfolgsmeldung in Session speichern und zur gleichen Edit-Seite navigieren
     $_SESSION['success_msg'] = "&#9989; Datensatz " . sprintf("%03d", $nummer) . " erfolgreich aktualisiert!";
     $_SESSION['msg_type'] = "success";
     header("Location: ?mode=edit&id=" . (int) $_POST['edit_id']);
@@ -224,12 +218,10 @@ if ($mode === 'add' && isset($_POST['add_loscher'])) {
         $result = $stmt->execute();
     }
 
-    // Erfolg in Session speichern
     $_SESSION['success_msg'] = "&#9989; $anzahl Löscher erfolgreich hinzugefügt! [" . implode(", ", $nummern) . "]";
     $_SESSION['msg_type'] = "success";
     $_SESSION['focus_suchfeld'] = true;
 
-    // Zurück zum add mode
     header("Location: ?mode=add");
     exit;
 }
@@ -353,7 +345,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 let data = await response.json();
                 if (!data || data.error) return;
 
-                // Update Etikette und Abholschein anhand des sichtbaren Labels
                 let printContainer = document.getElementById('print');
                 if (printContainer) {
                     let printDivs = Array.from(printContainer.querySelectorAll('.mb-3'));
@@ -405,7 +396,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 let data = await response.json();
                 if (!data || data.error) return;
 
-                // Update Checkboxen
                 let bezahltCheck = document.getElementById('bezahltCheck');
                 if (bezahltCheck) {
                     bezahltCheck.checked = data.bezahlt == 1;
@@ -442,7 +432,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 let data = await response.json();
                 if (!data || data.error) return;
 
-                // Update Info-Textarea
                 let infoTextarea = document.querySelector('#infotext textarea');
                 if (infoTextarea) {
                     infoTextarea.value = data.info || '';
@@ -491,10 +480,10 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
         window.onload = setupPolling;
 
-        // ESC-Taste: Fokus auf Suchfeld setzen (nur wenn Modal nicht offen ist)
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
-                if (document.getElementById('wechselgeldModal')?.classList.contains('show')) {
+                if (document.getElementById('wechselgeldModal')?.classList.contains('show') || 
+                    document.getElementById('duplicateNameModal')?.classList.contains('show')) {
                     return;
                 }
                 const suchfeld = document.getElementById('suchfeld');
@@ -505,7 +494,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
             }
         });
 
-        // Beim Laden im add-Modus: Suchfeld fokussieren und selektieren
         window.addEventListener('load', function () {
             <?php if ($mode === 'add'): ?>
                 const suchfeld = document.getElementById('suchfeld');
@@ -591,7 +579,9 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 </select>
                 <button type="submit" name="select_entry" class="btn btn-primary">Datensatz laden</button>
             </form>
-        <?php endif; ?><?php if ($mode === 'edit' && $editEntry): ?>
+        <?php endif; ?>
+
+        <?php if ($mode === 'edit' && $editEntry): ?>
             <div class="row g-2 mb-3" id="editButtons">
                 <div class="col-6">
                     <a href="?mode=add" class="btn btn-secondary w-100">
@@ -617,7 +607,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
                 <h3 id="pageTitle">&#9999; Bearbeiten</h3>
                 <hr>
-
 
                 <?php if (!$isActive): ?>
                     <div class="alert alert-danger">
@@ -660,7 +649,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                             <label class="form-label">&#128161; Info</label>
                             <?php
                             $infoText = $editEntry['info'] ?? '';
-                            // Berechne Zeilen, mindestens 1
                             $rowCount = max(1, substr_count($infoText, "\n") + 1);
                             ?>
                             <textarea name="info" onfocus="pausePolling()" onblur="resumePolling()"
@@ -811,8 +799,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                         document.getElementById('submitAddBtn')?.click();
                         return;
                     }
-                  
-                    //Standard-Verhalten für alle anderen Felder (Name, etc.): Nächstes Eingabefeld fokussieren
+
                     const form = event.target.form;
                     const felder = [...form.querySelectorAll(
                         'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])'
@@ -829,7 +816,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
             <form method="post" class="card shadow p-3 mb-4" id="addForm">
                 <h3 id="pageTitle">&#10133; Neu Anlegen</h3>
                 <hr>
-
 
                 <div class="mb-3">
                     <label class="form-label">&#128100; Name</label>
@@ -870,11 +856,13 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
                 <div class="text-start">
                     <input type="hidden" name="add_loscher" value="1">
+                    <input type="hidden" name="force_add" id="forceAddInput" value="0">
                     <button type="button" id="submitAddBtn" class="btn btn-success px-2">&#128190; Speichern</button>
                 </div>
             </form>
         <?php endif; ?>
 
+        <!-- Modal für Wechselgeld -->
         <div class="modal fade" id="wechselgeldModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
             aria-labelledby="wechselgeldModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -911,6 +899,24 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
             </div>
         </div>
 
+        <!-- Modal für Namens-Duplikat-Bestätigung -->
+        <div class="modal fade" id="duplicateNameModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">&#9888;&#65039; Kunde existiert bereits</h5>
+                    </div>
+                    <div class="modal-body fs-5" id="duplicateNameModalBody">
+                        Ein Kunde mit diesem Namen ist bereits gespeichert. Sollen die neuen Löscher wirklich zu diesem Namen hinzugefügt werden?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="confirmDuplicateNoBtn">Nein, abbrechen</button>
+                        <button type="button" class="btn btn-primary" id="confirmDuplicateYesBtn">Ja, hinzufügen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <?php include 'massenverwaltung.php'; ?>
     </div>
 
@@ -942,20 +948,19 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 document.getElementById('addPreisField').value = preisString;
             });
 
-            // --- POPUP-WECHSELGELD LOGIK BEIM SPEICHERN ---
+            // --- SPEICHERN & POPUP LOGIK (WECHSELGELD + DUPLIKAT-PRÜFUNG) ---
             document.addEventListener('DOMContentLoaded', () => {
                 const submitAddBtn = document.getElementById('submitAddBtn');
                 const addForm = document.getElementById('addForm');
                 const addBezahltCheck = document.getElementById('addBezahltCheck');
                 const addTypSelect = document.getElementById('addTypSelect');
                 const addAnzahlField = document.getElementById('addAnzahlField');
+                const nameInput = document.querySelector('input[name="name"]');
+                const forceAddInput = document.getElementById('forceAddInput');
 
-                // Modal Elemente
+                // Modal Elemente: Wechselgeld
                 const wechselgeldModalEl = document.getElementById('wechselgeldModal');
-                let wechselgeldModal = null;
-                if (wechselgeldModalEl) {
-                    wechselgeldModal = new bootstrap.Modal(wechselgeldModalEl);
-                }
+                let wechselgeldModal = wechselgeldModalEl ? new bootstrap.Modal(wechselgeldModalEl) : null;
 
                 const modalGesamtpreisField = document.getElementById('modalGesamtpreisField');
                 const modalGegebenField = document.getElementById('modalGegebenField');
@@ -964,9 +969,15 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 const closeModalBtn = document.getElementById('closeModalBtn');
                 const closeModalCrossBtn = document.getElementById('closeModalCrossBtn');
 
+                // Modal Elemente: Duplikat Name
+                const duplicateModalEl = document.getElementById('duplicateNameModal');
+                let duplicateModal = duplicateModalEl ? new bootstrap.Modal(duplicateModalEl) : null;
+                const confirmDuplicateYesBtn = document.getElementById('confirmDuplicateYesBtn');
+                const confirmDuplicateNoBtn = document.getElementById('confirmDuplicateNoBtn');
+
                 let currentGesamtpreis = 0;
 
-                // Funktion zur Live-Berechnung im Modal
+                // Live-Berechnung Wechselgeld
                 function calculateModalWechselgeld() {
                     let gegeben = parseFloat(modalGegebenField.value) || 0;
                     let wechselgeld = gegeben - currentGesamtpreis;
@@ -989,15 +1000,8 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     }
                 }
 
-                // Wenn der Speichern-Button geklickt wird
-                submitAddBtn?.addEventListener('click', (e) => {
-                    // Validiere zuerst das HTML5 Formular (z.B. Name required)
-                    if (!addForm.checkValidity()) {
-                        addForm.reportValidity();
-                        return;
-                    }
-
-                    // Falls bezahlt angehakt ist -> Öffne Wechselgeldrechner Modal
+                // Weiterleitung zum Wechselgeld-Dialog oder direkte Übermittlung
+                function proceedToSaveOrWechselgeld() {
                     if (addBezahltCheck && addBezahltCheck.checked && wechselgeldModal) {
                         let einzelpreis = preisMap[addTypSelect.value] ?? 0;
                         if (typeof einzelpreis === "string") einzelpreis = parseFloat(einzelpreis);
@@ -1006,7 +1010,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
                         currentGesamtpreis = einzelpreis * anzahl;
 
-                        // Modal Felder zurücksetzen / befüllen
                         modalGesamtpreisField.value = currentGesamtpreis.toLocaleString(navigator.language, {
                             minimumFractionDigits: 2, maximumFractionDigits: 2
                         }) + " €";
@@ -1016,21 +1019,66 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
                         wechselgeldModal.show();
 
-                        // Fokus automatisch auf das Gegeben-Feld setzen sobald das Modal sichtbar ist
                         wechselgeldModalEl.addEventListener('shown.bs.modal', () => {
                             modalGegebenField.focus();
                         }, { once: true });
 
                     } else {
-                        // Falls bezahlt NICHT angehakt ist -> direkt wegspeichern
                         addForm.submit();
+                    }
+                }
+
+                // Speichern-Button Klick
+                submitAddBtn?.addEventListener('click', async (e) => {
+                    if (!addForm.checkValidity()) {
+                        addForm.reportValidity();
+                        return;
+                    }
+
+                    const nameVal = nameInput ? nameInput.value.trim() : '';
+
+                    // Falls vom Nutzer schon bestätigt ODER kein Name angegeben
+                    if (forceAddInput.value === "1" || !nameVal) {
+                        proceedToSaveOrWechselgeld();
+                        return;
+                    }
+
+                    // AJAX Prüf-Request
+                    try {
+                        let resp = await fetch(`./add_edit.php?check_name=${encodeURIComponent(nameVal)}&ajax`, { cache: 'no-store' });
+                        let resData = await resp.json();
+
+                        if (resData.exists) {
+                            document.getElementById('duplicateNameModalBody').textContent = 
+                                `Ein Kunde mit dem Namen "${nameVal}" existiert bereits. Möchtest du diese Löscher wirklich zu diesem Namen hinzufügen?`;
+                            duplicateModal.show();
+                        } else {
+                            proceedToSaveOrWechselgeld();
+                        }
+                    } catch (err) {
+                        console.error("Fehler beim Prüfen des Namens:", err);
+                        proceedToSaveOrWechselgeld();
                     }
                 });
 
-                // Event Listener für Eingaben im Modal
+                // Klick auf "Ja, hinzufügen" im Duplikat-Modal
+                confirmDuplicateYesBtn?.addEventListener('click', () => {
+                    forceAddInput.value = "1";
+                    duplicateModal.hide();
+                    proceedToSaveOrWechselgeld();
+                });
+
+                // Klick auf "Nein, abbrechen" im Duplikat-Modal
+                confirmDuplicateNoBtn?.addEventListener('click', () => {
+                    duplicateModal.hide();
+                    if (nameInput) {
+                        nameInput.focus();
+                        nameInput.select();
+                    }
+                });
+
                 modalGegebenField?.addEventListener('input', calculateModalWechselgeld);
 
-                // TABULATOR WORKFLOW: Beim Drücken von Tabulator direkt zum Speichern-Button springen
                 modalGegebenField?.addEventListener('keydown', (e) => {
                     if (e.key === 'Tab' && !e.shiftKey) {
                         e.preventDefault();
@@ -1038,7 +1086,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     }
                 });
 
-                // SMART ENTER: Enter-Taste im Gegeben-Feld triggert Abschluss (trägt Gesamtpreis ein falls leer)
                 modalGegebenField?.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -1049,7 +1096,6 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     }
                 });
 
-                // ESCAPE-ABBRUCH: Schließt das Modal sauber und bricht ab
                 wechselgeldModalEl?.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
                         e.preventDefault();
@@ -1058,23 +1104,19 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     }
                 });
 
-                // Endgültiges Absenden des Formulars beim Klick im Modal
                 confirmKassierenBtn?.addEventListener('click', () => {
                     addForm.submit();
                 });
 
-                // Fallback falls abgebrochen wird, Fokus zurück auf Speichern Button setzen
                 const focusBack = () => { submitAddBtn?.focus(); };
                 closeModalBtn?.addEventListener('click', focusBack);
                 closeModalCrossBtn?.addEventListener('click', focusBack);
             });
 
-
-            // Escape-Taste überwachen, um zum Add-Modus zu wechseln
             document.addEventListener("keydown", function (e) {
                 if (e.key === "Escape") {
-                    // Falls das Modal geöffnet ist, Escape nicht abfangen, damit das Modal schließt
-                    if (document.getElementById('wechselgeldModal').classList.contains('show')) {
+                    if (document.getElementById('wechselgeldModal').classList.contains('show') || 
+                        document.getElementById('duplicateNameModal').classList.contains('show')) {
                         return;
                     }
                     e.preventDefault();
@@ -1084,16 +1126,14 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
             }, true);
 
             document.getElementById('searchForm')?.addEventListener('submit', function (e) {
-                // Nach dem Absenden das Feld leeren
                 setTimeout(() => {
                     const searchField = document.getElementById('suchfeld');
                     if (searchField) searchField.value = '';
-                }, 50); // kleine Verzögerung, damit das Formular noch gesendet wird
+                }, 50);
             });
 
-            // Automatisch Erfolgsmeldungen nach 3 Sekunden schließen
             document.addEventListener('DOMContentLoaded', function () {
-                const alerts = document.querySelectorAll('.alert'); // Betrifft alle Alerts
+                const alerts = document.querySelectorAll('.alert');
                 alerts.forEach(function (alert) {
                     setTimeout(function () {
                         let bsAlert = new bootstrap.Alert(alert);
@@ -1102,14 +1142,12 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 });
             });
 
-            // Vor und Zurück Button für Edit-Modus
             document.addEventListener('DOMContentLoaded', function () {
                 let prevBtn = document.getElementById('prevBtn');
                 let nextBtn = document.getElementById('nextBtn');
-                let currentNumberInput = document.querySelector('.form-control.bg-light'); // disabled input with current number
+                let currentNumberInput = document.querySelector('.form-control.bg-light');
                 let suchfeld = document.getElementById('suchfeld');
 
-                // Event-Listener für "Nächster"
                 nextBtn?.addEventListener('click', function () {
                     let currentNumber = parseInt(currentNumberInput.value.trim());
 
@@ -1121,13 +1159,11 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     let nextNumber = currentNumber + 1;
                     suchfeld.value = nextNumber;
 
-                    // Suche simulieren
                     if (document.querySelector('button[name="suche_nummer"]')) {
                         document.querySelector('button[name="suche_nummer"]').click();
                     }
                 });
 
-                // Event-Listener für "Vorheriger"
                 prevBtn?.addEventListener('click', function () {
                     let currentNumber = parseInt(currentNumberInput.value.trim());
 
@@ -1139,13 +1175,11 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     let prevNumber = currentNumber - 1;
                     suchfeld.value = prevNumber;
 
-                    // Suche simulieren
                     if (document.querySelector('button[name="suche_nummer"]')) {
                         document.querySelector('button[name="suche_nummer"]').click();
                     }
                 });
 
-                // Optional: Simuliere den Klick auf den "Suchen"-Button bei Enter
                 suchfeld?.addEventListener('keydown', function (e) {
                     if (e.key === 'Enter') {
                         if (document.querySelector('button[name="suche_nummer"]')) {
@@ -1168,10 +1202,8 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
 <?php
 
-
 function ajax()
 {
-    // Sicherheits-Check: Eingeloggt?
     if (!isset($_SESSION['logged_in'])) {
         header('Content-Type: application/json');
         http_response_code(403);
@@ -1180,6 +1212,19 @@ function ajax()
     }
 
     $db = getDB();
+
+    // Namensprüfung via AJAX
+    if (isset($_GET['check_name'])) {
+        $name = trim($_GET['check_name']);
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM loescher WHERE name = :name AND active = 1");
+        $stmt->bindValue(':name', $name);
+        $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+        
+        header('Content-Type: application/json');
+        echo json_encode(['exists' => ($res['count'] > 0)]);
+        exit;
+    }
+
     $nummer = $_GET['nummer'] ?? null;
 
     if (!$nummer) {
@@ -1190,7 +1235,6 @@ function ajax()
 
     $nummerSafe = (int) $nummer;
 
-    // Daten abrufen
     $result = $db->query("
         SELECT * FROM loescher 
         WHERE CAST(nummer AS INTEGER) = $nummerSafe
@@ -1202,7 +1246,6 @@ function ajax()
     header('Cache-Control: no-cache');
 
     if ($entry) {
-        // Gib alle Daten als JSON zurück
         echo json_encode($entry);
     } else {
         echo json_encode(["error" => "nicht gefunden"]);

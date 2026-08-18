@@ -84,8 +84,11 @@ function drawBulletPoint($pdf, $title, $text) {
     $pdf->Ln(3);
 }
 
-// Dynamischer Text für Annahme & Bezahlung
-$annahmeText = "Um einen zügigen und reibungslosen Ablauf bei der Annahme und Abholung zu gewährleisten, werden die Prüfungskosten direkt bei der Annahme Ihres Feuerlöschers kassiert.\n\nFür Rückfragen notieren wir Ihre Telefonnummer.\n\nSie erhalten hierbei einen Abholschein als Beleg für Ihre Abgabe. Diesen bitte bei der Abholung mitbringen (Löschernummer).";
+$preisText = defined('PREIS_STANDARD') && PREIS_STANDARD 
+    ? ' (' . number_format(PREIS_STANDARD, 2, ',', '') . ' € je Feuerlöscher)' 
+    : '';
+
+$annahmeText = "Um einen zügigen und reibungslosen Ablauf bei der Annahme und Abholung zu gewährleisten, werden die <strong>Prüfungskosten{$preisText} direkt bei der Annahme kassiert</strong>.\n\nFür Rückfragen notieren wir Ihre Telefonnummer.\n\nSie erhalten einen Abholschein als Beleg für Ihre Abgabe.\n<strong>Den Abholschein bitte bei der Abholung mitbringen</strong> (Löschernummer).";
 
 // SumUp / Kartenzahlung prüfen
 $sumUpAvailable = defined('SumUp_AVALIABLE') && (strtoupper((string)SumUp_AVALIABLE) === 'TRUE' || SumUp_AVALIABLE === true);
@@ -96,12 +99,13 @@ if ($sumUpAvailable) {
     // Formatierung (z.B. "2%" statt "2.00%")
     $prozentText = ($prozentVal == intval($prozentVal)) ? intval($prozentVal) . '%' : number_format($prozentVal, 2, ',', '') . '%';
     
-    $annahmeText .= "\n\nDie Prüfungskosten können auch bequem per Kartenzahlung bezahlt werden.\nHierfür werden jedoch " . $prozentText . ' Transaktionsgebühr verrechnet (externer Betreiber).';
+    $annahmeText .= "\n\nDie Prüfungskosten können auch bequem per Kartenzahlung bezahlt werden.\n<strong>Hierfür werden jedoch " . $prozentText . ' Transaktionsgebühr verrechnet (externer Betreiber).</strong>';
 }
 
 // 1. Annahme
 drawSectionHeader($pdf, '1. Annahme & Bezahlung der Prüfung');
-$pdf->MultiCell(180, 5.2, $annahmeText, 0, 'L');
+// Statt MultiCell:
+$pdf->writeHTMLCell(180, 0, '', '', nl2br($annahmeText), 0, 1);
 $pdf->Ln(5);
 
 // 2. Überprüfung
@@ -172,7 +176,7 @@ $pdf->SetY($boxEndY + 6);
 
 // Vorteile
 drawSectionHeader($pdf, 'Ihre Vorteile auf einen Blick');
-drawBulletPoint($pdf, 'Höchste Sicherheit', 'durch geprüfte Qualität für Ihr Zuhause oder Ihren Betrieb.');
-drawBulletPoint($pdf, 'Komfortable Entsorgung', '– Möglichkeit der unkomplizierten Entsorgung direkt vor Ort.');
+drawBulletPoint($pdf, 'Sicherheit', 'durch geprüfte Qualität für Ihr Zuhause oder Ihren Betrieb.');
+drawBulletPoint($pdf, 'Komfortable Entsorgung', 'Möglichkeit der unkomplizierten Entsorgung direkt vor Ort.');
 
 $pdf->Output('Flyer_Ablauf_Loescherpruefung.pdf', 'I');

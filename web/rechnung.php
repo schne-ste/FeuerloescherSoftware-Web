@@ -115,24 +115,42 @@ if (isset($_GET['action']) && $_GET['action'] === 'reload_data' && isset($_GET['
 }
 
 // =====================
-// AJAX: Anzahl der BEZAHLTEN Löscher zum Namen ermitteln
+// AJAX: Anzahl ALLER Löscher zum Namen ermitteln (samt Preisstufen)
 // =====================
 if (isset($_GET['action']) && $_GET['action'] === 'get_loescher_count' && !empty($_GET['name'])) {
     $searchName = mb_strtolower(trim($_GET['name']));
     
-    // Zählt bezahlte Löscher unabhängig von Groß-/Kleinschreibung
+    // Zählt alle Löscher (aktiv = 1), unabhängig vom Bezahlstatus
     $stmt = $db->prepare("
         SELECT COUNT(*) AS anzahl 
         FROM loescher 
         WHERE LOWER(TRIM(name)) = :name 
-          AND (active = 1 OR active = '1') 
-          AND (bezahlt = 1 OR bezahlt = '1')
+          AND (active = 1 OR active = '1')
     ");
     $stmt->bindValue(':name', $searchName, SQLITE3_TEXT);
     $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
+    // Zählt alle Löscher gruppiert nach typ/preisstufe unabhängig vom Bezahlstatus
+    $stmtTypen = $db->prepare("
+        SELECT typ, COUNT(*) AS anzahl 
+        FROM loescher 
+        WHERE LOWER(TRIM(name)) = :name 
+          AND (active = 1 OR active = '1')
+        GROUP BY typ
+    ");
+    $stmtTypen->bindValue(':name', $searchName, SQLITE3_TEXT);
+    $resTypen = $stmtTypen->execute();
+    
+    $typen = [];
+    while ($rowT = $resTypen->fetchArray(SQLITE3_ASSOC)) {
+        $typen[$rowT['typ']] = (int)$rowT['anzahl'];
+    }
+
     header('Content-Type: application/json');
-    echo json_encode(['anzahl' => $res ? (int)$res['anzahl'] : 0]);
+    echo json_encode([
+        'anzahl' => $res ? (int)$res['anzahl'] : 0,
+        'typen' => $typen
+    ]);
     exit;
 }
 
@@ -158,7 +176,6 @@ if (isset($_POST['delete_rechnung_form']) && !empty($_POST['edit_id'])) {
             if (file_exists($pdfPath)) {
                 @unlink($pdfPath);
             }
-            // Nach dem Löschen leiten wir zurück zur Rechnungsübersicht mit einer Erfolgsmeldung
             header("Location: rechnungen_anzeigen.php");
             exit;
         }
@@ -175,7 +192,6 @@ if (isset($_POST['reprint_rechnung']) && !empty($_POST['edit_id'])) {
     $stmt->execute();
     $successMessage = "&#128424; Rechnung wird erneut gedruckt (BON)!";
 
-    // Eintrag für Bearbeitung neu laden
     $editEntry = $db->query("SELECT * FROM rechnungen WHERE id = $id")->fetchArray(SQLITE3_ASSOC);
 }
 
@@ -194,13 +210,11 @@ if (isset($_POST['suche'])) {
     $input = trim($_POST['suchfeld'] ?? '');
 
     if ($input !== '') {
-        // Falls der User einen Vorschlag gewählt hat (Format: "R2024-0001 - Name")
-        // nehmen wir nur den Teil vor dem ersten Bindestrich
         if (strpos($input, ' - ') !== false) {
             $parts = explode(' - ', $input);
-            $searchVal = trim($parts[0]); // Das ist die Rechnungsnummer
+            $searchVal = trim($parts[0]);
         } else {
-            $searchVal = $input; // Manuelle Eingabe (nur Name oder nur Nummer)
+            $searchVal = $input;
         }
 
         $safe = $db->escapeString($searchVal);
@@ -243,7 +257,6 @@ if (isset($_POST['save_rechnung'])) {
     $typ = $_POST['typ'] ?? '';
     $preis = $preise[$typ] ?? 0;
 
-    // Automatische Rechnungsnummer
     if (empty($_POST['edit_id'])) {
         $rechnungsnummer = $nextRechnungsnummer;
     } else {
@@ -251,13 +264,9 @@ if (isset($_POST['save_rechnung'])) {
     }
 
     if (!empty($_POST['edit_id'])) {
-        // UPDATE
         $lastId = (int) $_POST['edit_id'];
-
-        // 1. Holen wir uns den aktuellen Stand aus der DB zum Vergleich
         $currentData = $db->query("SELECT * FROM rechnungen WHERE id = $lastId")->fetchArray(SQLITE3_ASSOC);
 
-        // 2. Definieren, was eine kritische Änderung ist
         $typ = $_POST['typ'] ?? '';
         $neuerPreis = $preise[$typ] ?? 0;
 
@@ -267,14 +276,29 @@ if (isset($_POST['save_rechnung'])) {
             $_POST['rechnungsnummer'] !== $currentData['rechnungsnummer']
         );
 
-        // 3. Status nur zurücksetzen, wenn kritisch geändert ODER wenn wir manuell "Nachdrucken" gedrückt haben
         $resetDruck = $hatKritischeAenderung ? 0 : $currentData['rechnung_gedruckt'];
         $resetZeit = $hatKritischeAenderung ? NULL : $currentData['zeitstempel_gedruckt'];
 
-        // Altes PDF löschen, falls sich der Name oder die Rechnungsnummer geändert hat
         $oldFilename = __DIR__ . '/_Rechnungen/' . pathinfo(DB_FILE, PATHINFO_FILENAME) . '/Rechnung_' . cleanWindowsFilename($currentData['rechnungsnummer'], $currentData['name']) . '.pdf';
         if (file_exists($oldFilename)) {
             @unlink($oldFilename);
+        }
+
+        // Namensänderung auch bei den zugehörigen Löschern aktualisieren (nutzt die ID als sicheren Anker)
+        $alterName = trim($currentData['name']);
+        $neuerName = trim($_POST['name']);
+
+        if (strcasecmp($alterName, $neuerName) !== 0) {
+            $updateLoescherStmt = $db->prepare("
+                UPDATE loescher 
+                SET name = :neuerName 
+                WHERE LOWER(TRIM(name)) = :alterName 
+                   OR name = :alterNameExact
+            ");
+            $updateLoescherStmt->bindValue(':neuerName', $neuerName, SQLITE3_TEXT);
+            $updateLoescherStmt->bindValue(':alterName', mb_strtolower($alterName), SQLITE3_TEXT);
+            $updateLoescherStmt->bindValue(':alterNameExact', $alterName, SQLITE3_TEXT);
+            $updateLoescherStmt->execute();
         }
 
         $stmt = $db->prepare("
@@ -304,7 +328,6 @@ if (isset($_POST['save_rechnung'])) {
             $successMessage = "&#9989; Rechnung aktualisiert (Druckstatus beibehalten).";
         }
     } else {
-        // INSERT
         $stmt = $db->prepare("
             INSERT INTO rechnungen (
                 anrede, name, adresse, plz, ort,
@@ -331,8 +354,24 @@ if (isset($_POST['save_rechnung'])) {
     $stmt->bindValue(':bezahlt', isset($_POST['bezahlt']) ? 1 : 0);
     $stmt->execute();
 
+    // --- Löscher-Bezahlstatus synchron zur Rechnung aktualisieren ---
+    $kundeName = trim($_POST['name']);
+    if (!empty($kundeName)) {
+        $istBezahlt = (isset($_POST['bezahlt']) && $_POST['bezahlt'] == '1') ? 1 : 0;
+        
+        $updateLoescherBezahltStmt = $db->prepare("
+            UPDATE loescher 
+            SET bezahlt = :bezahltval 
+            WHERE LOWER(TRIM(name)) = :name 
+              AND (active = 1 OR active = '1')
+        ");
+        $updateLoescherBezahltStmt->bindValue(':bezahltval', $istBezahlt, SQLITE3_INTEGER);
+        $updateLoescherBezahltStmt->bindValue(':name', mb_strtolower($kundeName), SQLITE3_TEXT);
+        $updateLoescherBezahltStmt->execute();
+    }
+
     if (empty($_POST['edit_id'])) {
-        $lastId = $db->lastInsertRowID(); // die neue ID holen
+        $lastId = $db->lastInsertRowID();
     }
 
     // =====================
@@ -371,7 +410,6 @@ if (isset($_POST['save_rechnung'])) {
     $pdf->SetAutoPageBreak(TRUE, 25);
     $pdf->AddPage();
 
-    // --- LOGO & ABSENDERZEILE ---
     $logoPath = __DIR__ . '/images/Logo.png';
     if (file_exists($logoPath)) {
         $pdf->Image($logoPath, 145, 15, 50);
@@ -381,7 +419,6 @@ if (isset($_POST['save_rechnung'])) {
     $pdf->SetXY(15, 42);
     $pdf->Cell(0, 5, FIRMA_NAME . " • " . FIRMA_ADRESSE . " • " . FIRMA_PLZORT, 0, 1, 'L');
 
-    // --- EMPFÄNGER ---
     $pdf->SetFont('helvetica', '', 11);
     $leftX = 15;
     $leftWidth = 100;
@@ -404,7 +441,6 @@ if (isset($_POST['save_rechnung'])) {
     $pdf->SetX($leftX);
     $pdf->MultiCell($leftWidth, 6, $_POST['plz'] . ' ' . $_POST['ort'], 0, 'L');
 
-    // --- RECHTSBLOCK ---
     $rightX = 130;
     $pdf->SetXY($rightX, 50);
 
@@ -416,18 +452,26 @@ if (isset($_POST['save_rechnung'])) {
     $pdf->Cell(30, 6, $rechnungsnummer, 0, 1, 'L');
 
     $pdf->Ln(15);
-
-    // --- TITEL ---
-    $pdf->Ln(15);
     $pdf->SetFont('helvetica', 'B', 18);
     $pdf->Cell(0, 10, "Rechnung", 0, 1, 'L');
     $pdf->SetFont('helvetica', '', 11);
     $pdf->Ln(10);
 
-    // --- LEISTUNGSTABELLE ---
-    $anzahl = (int) $_POST['anzahl'];
-    $einzelpreis = floatval($preis);
-    $gesamtpreis = $anzahl * $einzelpreis;
+    $searchNameDb = mb_strtolower(trim($_POST['name']));
+    $stmtLoescher = $db->prepare("
+        SELECT typ, COUNT(*) AS anzahl 
+        FROM loescher 
+        WHERE LOWER(TRIM(name)) = :name 
+          AND (active = 1 OR active = '1') 
+        GROUP BY typ
+    ");
+    $stmtLoescher->bindValue(':name', $searchNameDb, SQLITE3_TEXT);
+    $resLoescher = $stmtLoescher->execute();
+
+    $dbLoescherTypen = [];
+    while ($rowL = $resLoescher->fetchArray(SQLITE3_ASSOC)) {
+        $dbLoescherTypen[$rowL['typ']] = (int)$rowL['anzahl'];
+    }
 
     $w_bez = "55%";
     $w_menge = "15%";
@@ -444,29 +488,53 @@ if (isset($_POST['save_rechnung'])) {
                 <th width="' . $w_gesamt . '" align="right" style="border-bottom: 1px solid #333;">Gesamt</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody>';
+
+    $gesamtsumme = 0;
+
+    if (!empty($dbLoescherTypen)) {
+        foreach ($preise as $pTyp => $pPreis) {
+            $mengeStk = $dbLoescherTypen[$pTyp] ?? 0;
+            if ($mengeStk > 0) {
+                $zeilenGesamt = $mengeStk * $pPreis;
+                $gesamtsumme += $zeilenGesamt;
+                $tbl .= '
+            <tr>
+                <td width="' . $w_bez . '" style="border-bottom: 0.5px solid #ccc;">Fachmännische Überprüfung von tragbaren Feuerlöschern gemäß ÖNORM F 1053 (' . htmlspecialchars($pTyp) . ')</td>
+                <td width="' . $w_menge . '" align="center" style="border-bottom: 0.5px solid #ccc;">' . $mengeStk . ' Stk.</td>
+                <td width="' . $w_einzel . '" align="right" style="border-bottom: 0.5px solid #ccc;">' . number_format($pPreis, 2, ',', '.') . ' €</td>
+                <td width="' . $w_gesamt . '" align="right" style="border-bottom: 0.5px solid #ccc;">' . number_format($zeilenGesamt, 2, ',', '.') . ' €</td>
+            </tr>';
+            }
+        }
+    } else {
+        $anzahl = (int) $_POST['anzahl'];
+        $einzelpreis = floatval($preis);
+        $gesamtsumme = $anzahl * $einzelpreis;
+        $tbl .= '
             <tr>
                 <td width="' . $w_bez . '" style="border-bottom: 0.5px solid #ccc;">Fachmännische Überprüfung von tragbaren Feuerlöschern gemäß ÖNORM F 1053</td>
                 <td width="' . $w_menge . '" align="center" style="border-bottom: 0.5px solid #ccc;">' . $anzahl . ' Stk.</td>
                 <td width="' . $w_einzel . '" align="right" style="border-bottom: 0.5px solid #ccc;">' . number_format($einzelpreis, 2, ',', '.') . ' €</td>
-                <td width="' . $w_gesamt . '" align="right" style="border-bottom: 0.5px solid #ccc;">' . number_format($gesamtpreis, 2, ',', '.') . ' €</td>
-            </tr>
+                <td width="' . $w_gesamt . '" align="right" style="border-bottom: 0.5px solid #ccc;">' . number_format($gesamtsumme, 2, ',', '.') . ' €</td>
+            </tr>';
+    }
+
+    $tbl .= '
             <tr style="font-size: 12pt; font-weight:bold;">
                 <td colspan="3" align="right">Gesamtsumme:</td>
-                <td align="right">' . number_format($gesamtpreis, 2, ',', '.') . ' €</td>
+                <td align="right">' . number_format($gesamtsumme, 2, ',', '.') . ' €</td>
             </tr>
         </tbody>
     </table>';
 
     $pdf->writeHTML($tbl, true, false, true, false, '');
 
-    // --- MWST-HINWEIS ---
     $pdf->Ln(10);
     $pdf->SetFont('helvetica', 'I', 9);
     $hinweis = "Hinweis: Als Körperschaft öffentlichen Rechts ist die Freiwillige Feuerwehr gemäß § 2 Abs. 5 UStG nicht umsatzsteuerpflichtig. Der ausgewiesene Betrag entspricht dem Bruttobetrag (0% MwSt).";
     $pdf->MultiCell(0, 5, $hinweis, 0, 'L');
 
-    // --- ZAHLUNGSINFORMATIONEN ---
     $pdf->Ln(5);
     $zahlungsart = $_POST['zahlungsart'] ?? 'Barzahlung';
     $pdf->SetFont('helvetica', 'B', 10);
@@ -483,7 +551,6 @@ if (isset($_POST['save_rechnung'])) {
         $pdf->MultiCell(0, 5, $text, 0, 'L');
     }
 
-    // --- DATEI SPEICHERN ---
     $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
     $folder = __DIR__ . '/_Rechnungen/' . $dbNameOnly;
 
@@ -498,9 +565,6 @@ if (isset($_POST['save_rechnung'])) {
     exit;
 }
 
-// =====================
-// PREIS-TYP ERMITTELN
-// =====================
 $currentTyp = '';
 if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
     foreach ($preise as $k => $v) {
@@ -525,6 +589,16 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
             top: 100px !important;
             right: 20px !important;
             z-index: 10000000 !important;
+        }
+
+        #preisAnzahlLabel {
+            display: inline-block;
+            margin-top: 32px; /* Schiebt den Text exakt auf die Höhe des Eingabefelds links */
+            line-height: 1.5;
+        }
+
+        #nameInfo {
+            display: none;
         }
     </style>
     <meta charset="UTF-8">
@@ -611,6 +685,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
             <div class="mb-3">
                 <label class="form-label">&#128100; Name</label>
+                <div id="nameInfo" class="form-text text-muted mb-2" style="font-style: italic display: none;">Name kann nach dem Erstellen geändert werden - Löschernamen werden mit aktualisiert!</div>
                 <input list="namenListe" name="name" class="form-control highlight" autocomplete="off"
                     value="<?= htmlspecialchars($editEntry['name'] ?? '') ?>" required>
                 <datalist id="namenListe">
@@ -639,26 +714,33 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row align-items-center">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">&#128293; Anzahl Löscher</label>
-                    <input type="number" name="anzahl" class="form-control highlight"
+                    <label class="form-label mb-0">&#128293; Anzahl Löscher</label>
+                    <input type="number" name="anzahl" class="form-control highlight mt-1"
                         value="<?= $editEntry['anzahl_loescher'] ?? 1 ?>">
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">&#128176; Preis je Löscher</label>
-                    <select name="typ" id="typSelect" class="form-select">
-                        <?php foreach ($preise as $k => $v): ?>
-                            <option value="<?= $k ?>" <?= ($currentTyp == $k) ? 'selected' : '' ?>><?= $k ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <input type="text" id="preisField" class="form-control mt-1" disabled>
+                    <!-- Label und gefundener Text wandern nun in dieselbe Zeile -->
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <label class="form-label mb-0" id="preisAnzahlLabel">&#128176; Preis je Löscher</label>
+                    </div>
+                    <!-- Container für das Standard-Dropdown + Preisfeld (wird bei Treffern ausgeblendet) -->
+                    <div id="standardPreisContainer">
+                        <select name="typ" id="typSelect" class="form-select">
+                            <?php foreach ($preise as $k => $v): ?>
+                                <option value="<?= $k ?>" <?= ($currentTyp == $k) ? 'selected' : '' ?>><?= $k ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <input type="text" id="preisField" class="form-control mt-1" disabled>
+                    </div>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">&#128179; Zahlungsart</label>
+                <div id="zahlungsartInfo" class="form-text text-muted mb-2" style="font-style: italic; display: none;"></div>
                 <select name="zahlungsart" id="zahlungsartSelect" class="form-select highlight">
                     <?php
                     $selectedZahlungsart = isset($editEntry['zahlungsart']) ? $editEntry['zahlungsart'] : 'Barzahlung';
@@ -669,8 +751,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                         Kartenzahlung</option>
 
                     <?php if (defined('SumUp_AVALIABLE') && SumUp_AVALIABLE === 'TRUE'): ?>
-                        <option value="SumUp" <?= ($selectedZahlungsart == 'SumUp') ? 'selected' : '' ?>>SumUp (Button erscheint
-                            nach dem Speichern - "Bezahlt" setzt sich autom. nach erfolgreicher Zahlung!)</option>
+                        <option value="SumUp" <?= ($selectedZahlungsart == 'SumUp') ? 'selected' : '' ?>>SumUp</option>
                     <?php endif; ?>
 
                     <option value="Überweisung" <?= ($selectedZahlungsart == 'Überweisung') ? 'selected' : '' ?>>Überweisung
@@ -684,7 +765,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                 <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
             </div>
 
-            <!-- Wechselgeld-Modal ausgelassen für Übersichtlichkeit -->
             <div class="modal fade" id="changeCalculatorModal" data-bs-backdrop="static" tabindex="-1"
                 aria-labelledby="changeCalculatorModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
@@ -858,18 +938,64 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
             });
 
             const zahlungsartSelect = document.getElementById('zahlungsartSelect');
-            if (zahlungsartSelect) {
-                zahlungsartSelect.addEventListener('change', function () {
-                    const sumupBtn = document.getElementById('sumupBtn');
-                    if (this.value === 'SumUp') {
-                        if (sumupBtn) sumupBtn.style.display = 'block';
-                    } else {
-                        if (sumupBtn) sumupBtn.style.display = 'none';
+            const zahlungsartInfo = document.getElementById('zahlungsartInfo');
+            const editIdField = document.getElementById('edit_id_field');
+
+            // Funktion zum Aktualisieren des Infotextes und der Checkbox (mit Parameter isInitialLoad)
+            function updateZahlungsartInfo(isInitialLoad = false) {
+                if (!zahlungsartSelect || !zahlungsartInfo) return;
+                
+                const val = zahlungsartSelect.value;
+                const sumupBtn = document.getElementById('sumupBtn');
+
+                // SumUp Button Logik beibehalten
+                if (val === 'SumUp') {
+                    if (sumupBtn) sumupBtn.style.display = 'block';
+                } else {
+                    if (sumupBtn) sumupBtn.style.display = 'none';
+                }
+
+                // Dynamischer Text je nach Zahlungsart
+                let infoText = '';
+                if (val === 'SumUp') {
+                    infoText = 'ℹ️ Hinweis: Der Button "SumUp Zahlung starten" erscheint nach dem Speichern unten. Der Status "Bezahlt" setzt sich nach erfolgreicher Zahlung automatisch.';
+                } else if (val === 'Barzahlung') {
+                    infoText = 'ℹ️ Hinweis: Bei aktivierter Option "Bezahlt" öffnet sich beim Speichern automatisch der Wechselgeldrechner.';
+                } else if (val === 'Überweisung') {
+                    infoText = 'ℹ️ Hinweis: Bankdaten werden auf der A4-Rechnung angezeigt. KEINE automatische Kontrolle der Zahlung!';
+                } else if (val === 'Kartenzahlung') {
+                    infoText = 'ℹ️ Hinweis: Es wird vermerkt, dass der Betrag dankend per Karte erhalten wurde.';
+                }
+
+                if (infoText !== '') {
+                    zahlungsartInfo.innerHTML = infoText;
+                    zahlungsartInfo.style.display = 'block';
+                } else {
+                    zahlungsartInfo.style.display = 'none';
+                }
+
+                // Standard-Verhalten für die "Bezahlt"-Checkbox 
+                // (Wird bei neuen Rechnungen oder aktuellem Wechsel im Dropdown gesteuert, schont aber Bestandsrechnungen beim Laden)
+                if (bezahltCheck && (!editIdField.value || !isInitialLoad)) {
+                    if (val === 'Barzahlung' || val === 'Kartenzahlung') {
+                        bezahltCheck.checked = true;
+                    } else if (val === 'SumUp' || val === 'Überweisung') {
+                        bezahltCheck.checked = false;
                     }
-                });
+                }
             }
 
-            document.getElementById('typSelect').addEventListener('change', updatePreis);
+            if (zahlungsartSelect) {
+                // Bei manuellem Wechsel übergeben wir false (damit die Checkbox umschaltet)
+                zahlungsartSelect.addEventListener('change', () => updateZahlungsartInfo(false));
+                // Beim ersten Laden der Seite übergeben wir true (damit eine bereits gespeicherte Checkbox bei Edit erhalten bleibt)
+                updateZahlungsartInfo(true);
+            }
+
+            const typSelectEl = document.getElementById('typSelect');
+            if (typSelectEl) {
+                typSelectEl.addEventListener('change', updatePreis);
+            }
             const anzahlInput = document.querySelector('[name="anzahl"]');
             if (anzahlInput) anzahlInput.addEventListener('input', updatePreis);
             updatePreis();
@@ -963,38 +1089,100 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
             const nameInput = document.querySelector('input[name="name"]');
             const anzahlInputBill = document.querySelector('input[name="anzahl"]');
+            const preisAnzahlLabel = document.getElementById('preisAnzahlLabel');
+            const standardPreisContainer = document.getElementById('standardPreisContainer');
 
             if (nameInput && anzahlInputBill) {
-                function fetchPaidCount() {
-                    const val = nameInput.value.trim();
-                    if (!val) return;
+                if (nameInput && anzahlInputBill) {
+                const nameInfoBox = document.getElementById('nameInfo'); // Element referenzieren
+                    function fetchPaidCount() {
+                        const val = nameInput.value.trim();
+                        if (!val) {
+                            if (standardPreisContainer) standardPreisContainer.style.display = 'block';
+                            if (preisAnzahlLabel) preisAnzahlLabel.innerHTML = '&#128176; Preis je Löscher';
+                            anzahlInputBill.readOnly = false;
+                            if (nameInfoBox) nameInfoBox.style.display = 'none'; // Verstecken, wenn leer
+                            return;
+                        }
 
-                    // Nutzt den relativen Pfad zur aktuellen Datei
-                    fetch(`rechnung.php?action=get_loescher_count&name=${encodeURIComponent(val)}`)
-                        .then(res => {
-                            if (!res.ok) throw new Error(`HTTP-Fehler! Status: ${res.status}`);
-                            return res.json();
-                        })
-                        .then(data => {
-                            console.log("AJAX Antwort für Löscher-Anzahl:", data);
-                            if (data && typeof data.anzahl !== 'undefined') {
-                                // Setzt die Zahl ein (auch wenn sie 0 ist, um Klarheit zu schaffen)
-                                if (data.anzahl > 0) {
+                        fetch(`rechnung.php?action=get_loescher_count&name=${encodeURIComponent(val)}`)
+                            .then(res => {
+                                if (!res.ok) throw new Error(`HTTP-Fehler! Status: ${res.status}`);
+                                return res.json();
+                            })
+                            .then(data => {
+                                if (data && typeof data.anzahl !== 'undefined' && data.anzahl > 0) {
                                     anzahlInputBill.value = data.anzahl;
                                     if (typeof updatePreis === 'function') {
                                         updatePreis();
                                     }
                                 }
-                            }
-                        })
-                        .catch(err => console.error('Fehler beim Abrufen der Löscher-Anzahl:', err));
+                                if (data && data.typen && Object.keys(data.typen).length > 0) {
+                                    let labelParts = [];
+                                    for (const [typ, count] of Object.entries(data.typen)) {
+                                        const pVal = preisMap[typ] !== undefined ? preisMap[typ] : 0;
+                                        const pFormatiert = pVal.toFixed(2).replace('.', ',') + '€';
+                                        labelParts.push(`${count}x ${typ} (${pFormatiert})`);
+                                    }
+                                    if (preisAnzahlLabel) {
+                                        preisAnzahlLabel.innerHTML = '&#128176; ' + labelParts.join(' | ');
+                                    }
+                                    if (standardPreisContainer) {
+                                        standardPreisContainer.style.display = 'none';
+                                    }
+                                    anzahlInputBill.readOnly = true;
+
+                                    // TREFFER GEFUNDEN -> Hinweis einblenden
+                                    if (nameInfoBox) nameInfoBox.style.display = 'block';
+
+                                } else {
+                                    if (preisAnzahlLabel) {
+                                        preisAnzahlLabel.innerHTML = '&#128176; Preis je Löscher';
+                                    }
+                                    if (standardPreisContainer) {
+                                        standardPreisContainer.style.display = 'block';
+                                    }
+                                    anzahlInputBill.readOnly = false;
+
+                                    // KEINE LÖSCHER GEFUNDEN -> Hinweis verstecken[cite: 6]
+                                    if (nameInfoBox) nameInfoBox.style.display = 'none';
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Fehler beim Abrufen der Löscher-Anzahl:', err);
+                                if (standardPreisContainer) standardPreisContainer.style.display = 'block';
+                                if (nameInfoBox) nameInfoBox.style.display = 'none';
+                            });
+                    }
+
+                if (nameInput.value.trim() !== '') {
+                    fetchPaidCount();
                 }
 
-                // Feuert beim Auswählen aus der Datalist sowie beim Verlassen des Eingabefeldes
                 nameInput.addEventListener('change', fetchPaidCount);
                 nameInput.addEventListener('blur', fetchPaidCount);
 
-                // Prüft zusätzlich bei der Eingabe, ob der Text exakt mit einem Listeneintrag übereinstimmt
+                nameInput.addEventListener('input', function () {
+                    const datalist = document.getElementById('namenListe');
+                    if (!datalist) return;
+
+                    const options = Array.from(datalist.options).map(opt => opt.value.trim());
+                    if (options.includes(this.value.trim())) {
+                        fetchPaidCount();
+                    } else {
+                        // Wenn manuell etwas eingetippt wird, das nicht in der Liste ist -> Hinweis ausblenden
+                        if (nameInfoBox) nameInfoBox.style.display = 'none';
+                    }
+                });
+            }
+
+                if (nameInput.value.trim() !== '') {
+                    fetchPaidCount();
+                }
+
+                nameInput.addEventListener('change', fetchPaidCount);
+                nameInput.addEventListener('blur', fetchPaidCount);
+
                 nameInput.addEventListener('input', function () {
                     const datalist = document.getElementById('namenListe');
                     if (!datalist) return;

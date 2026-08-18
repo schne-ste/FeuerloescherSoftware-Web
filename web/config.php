@@ -6,7 +6,7 @@ define('PASSWORD', '123'); // ändern!
 define('RESET_PASSWORD', '123'); // ändern!
 define('API_TOKEN', '123'); // ändern!
 
-define('RECHNUNGS_PREFIX', 'FLU' . date('y') . '-'); // Prefix für Rechnungsnummern (z.B. FLU26-001)
+define('RECHNUNGS_PREFIX', 'FLU' . date('y') . '-'); // Präfix für Rechnungsnummern (z.B. FLU26-001)
 
 define('FIRMA_NAME', 'Freiwillige Feuerwehr Wallern');
 define('FIRMA_ADRESSE', 'Kienzlstraße 10');
@@ -20,7 +20,7 @@ define('BANK_EMPFAENGER', 'Feuerwehr Wallern');
 define('SumUp_AVALIABLE', 'TRUE'); // TRUE oder FALSE
 define('SumUp_URL', 'http://10.122.122.66:8080/api/transactions.php');
 define('SumUp_API_KEY', 'd0b7062671b7d6c3063701796a7013679f2e332d220f3eea4a203f5110e1ffa2');
-define('SumUp_PRICE_FAKTOR', 1.020);
+define('SumUp_PRICE_FAKTOR', 1.02);
 
 if (!defined('API_MODE')) {
     function getDB() {
