@@ -302,7 +302,6 @@ Public Class Druckservice
 
     Private Async Function CheckRechnungen() As Task
         Dim url As String = apiUrl & "?route=/rechnungen&rechnung_gedruckt=0&token=" & apiToken
-        'Log("API CheckRechnungen: " & url)
 
         Dim json As String = Await New WebClient().DownloadStringTaskAsync(url)
         Dim data = JsonConvert.DeserializeObject(Of List(Of Dictionary(Of String, Object)))(json)
@@ -316,18 +315,42 @@ Public Class Druckservice
 
             Dim name As String = SafeStr(item, "name")
             Dim adresse As String = SafeStr(item, "adresse")
-
             Dim plz As String = SafeStr(item, "plz")
             Dim ort As String = SafeStr(item, "ort")
             Dim plzort As String = (plz & " " & ort).Trim()
 
             Dim anzahl As Integer = SafeInt(item, "anzahl_loescher")
-            Dim preis As Double = SafeDouble(item, "preis_pro_loescher")
-
+            Dim loescherText As String = SafeStr(item, "loescher_text")
             Dim rnr As String = SafeStr(item, "rechnungsnummer")
 
-            Log($"Drucke Rechnung: {rnr} / Kunde: {name} / Anzahl: {anzahl} / Preis: {preis}€")
-            Print_Rechnung("Voller Preis", name, preis, anzahl, rnr, druckername_bon, adresse, plzort)
+            ' Preisdetails auslesen (Liste von Objekten mit anzahl und preis_pro_loescher)
+            Dim preisDetails As New List(Of KeyValuePair(Of Integer, Double))()
+            If item.ContainsKey("preis_pro_loescher") AndAlso item("preis_pro_loescher") IsNot Nothing Then
+                Try
+                    Dim jsonToken = Newtonsoft.Json.Linq.JToken.FromObject(item("preis_pro_loescher"))
+                    If jsonToken.Type = Newtonsoft.Json.Linq.JTokenType.Array Then
+                        For Each detail In jsonToken
+                            Dim dAnzahl As Integer = 0
+                            Dim dPreis As Double = 0.0
+
+                            If detail("anzahl") IsNot Nothing Then Integer.TryParse(detail("anzahl").ToString(), dAnzahl)
+                            If detail("preis_pro_loescher") IsNot Nothing Then Double.TryParse(detail("preis_pro_loescher").ToString().Replace(".", ","), dPreis)
+
+                            preisDetails.Add(New KeyValuePair(Of Integer, Double)(dAnzahl, dPreis))
+                        Next
+                    End If
+                Catch ex As Exception
+                    Log("FEHLER beim Parsen von preis_pro_loescher: " & ex.Message)
+                End Try
+            End If
+
+            ' Fallback falls preisDetails leer ist
+            If preisDetails.Count = 0 Then
+                preisDetails.Add(New KeyValuePair(Of Integer, Double)(anzahl, 0.0))
+            End If
+
+            Log($"Drucke Rechnung: {rnr} / Kunde: {name} / Anzahl: {anzahl}")
+            Print_Rechnung(name, anzahl, loescherText, preisDetails, rnr, druckername_bon, adresse, plzort)
 
             Log($"Markiere Rechnung {rnr} als gedruckt")
             Await SetRechnungGedruckt(rnr)
@@ -488,7 +511,6 @@ Public Class Druckservice
                 .Replace("Ü", "_c3_9c") _
                 .Replace("ß", "_c3_9f")
 
-            ' Wichtig: ^FH hinzugefügt vor dem Namen-Feld (^FD)
             zpl = "^XA^CI28^LT0^PW" & (breite * 8) & "^LL" & (hoehe * 8) & "^LS0" &
               "^FO16,16^GB" & ((breite - 4) * 8) & ",80,80^FS" &
               "^FO16,32^A0N,64,64^FB" & ((breite - 4) * 8) & ",1,0,C^FR^FD" & displayYear & "^FS" &
@@ -513,9 +535,9 @@ Public Class Druckservice
         Log($"Druck Abholschein abgeschlossen: {loescher_id}")
     End Sub
 
-    Public Sub Print_Rechnung(typ As String, name As String, preisjeloescher As Double, anzahl As Integer, rnummer As String, druckername As String, Optional adresse As String = "", Optional plzort As String = "")
+    Public Sub Print_Rechnung(name As String, anzahl As Integer, loescherText As String, preisDetails As List(Of KeyValuePair(Of Integer, Double)), rnummer As String, druckername As String, Optional adresse As String = "", Optional plzort As String = "")
         Log($"Starte Druck Rechnung: {rnummer}")
-        RunPrintMethod(Sub(p) Print_Thermal_Rechnung(p, typ, name, preisjeloescher, anzahl, rnummer, adresse, plzort), druckername)
+        RunPrintMethod(Sub(p) Print_Thermal_Rechnung(p, name, anzahl, loescherText, preisDetails, rnummer, adresse, plzort), druckername)
         Log($"Druck Rechnung abgeschlossen: {rnummer}")
     End Sub
 
@@ -538,16 +560,6 @@ Public Class Druckservice
             Log("FEHLER beim Schreiben der Simulation: " & ex.Message)
         End Try
     End Sub
-
-    ' ===== ESC/POS → Text =====
-    Private Function EscPosBufferToText(printer As EscPosPrinter) As String
-        Try
-            Dim bytes As Byte() = printer.GetCurrentBuffer()
-            Return Encoding.ASCII.GetString(bytes)
-        Catch
-            Return "(Konnte ESC/POS Buffer nicht lesen)"
-        End Try
-    End Function
 
     Private Sub RunPrintMethod(method As Action(Of EscPosPrinter), druckername As String)
         Dim printer As New EscPosPrinter()
@@ -696,8 +708,12 @@ Public Class Druckservice
         End Try
     End Sub
 
-    Private Sub Print_Thermal_Rechnung(p As EscPosPrinter, typ As String, name As String, preisjeloescher As Double, anzahl As Integer, rnummer As String, Optional adresse As String = "", Optional plzort As String = "")
-        Dim PreisGes As Double = anzahl * preisjeloescher
+    Private Sub Print_Thermal_Rechnung(p As EscPosPrinter, name As String, anzahl As Integer, loescherText As String, preisDetails As List(Of KeyValuePair(Of Integer, Double)), rnummer As String, Optional adresse As String = "", Optional plzort As String = "")
+        ' Gesamtsumme dynamisch über alle Preisgruppen berechnen
+        Dim preisGes As Double = 0.0
+        For Each detail In preisDetails
+            preisGes += (detail.Key * detail.Value)
+        Next
 
         Try
             p.SetAlignment(EscPosPrinter.Alignment.Center)
@@ -762,26 +778,26 @@ Public Class Druckservice
             p.WriteLine()
 
             p.SetBold(True)
-            p.Write("Anzahl Löscher: ")
+            p.Write("Anzahl Löscher Gesamt: ")
             p.SetBold(False)
             p.WriteLine(anzahl & " Stück")
+            p.WriteLine()
 
-            If typ = "Rabatt" Or typ = "Gratis" Then
-                p.SetBold(True)
-                p.Write("Preis je Löscher (Rabatt): ")
-                p.SetBold(False)
-                p.WriteLine(preisjeloescher.ToString("###0.00") + "€")
-            Else
-                p.SetBold(True)
-                p.Write("Preis je Löscher: ")
-                p.SetBold(False)
-                p.WriteLine(preisjeloescher.ToString("###0.00") + "€")
+            p.SetBold(True)
+            p.WriteLine("Preisdetails:")
+            p.SetBold(False)
+
+            ' Mehrzeiligen Löscher-Text (inkl. gemischter Preisgruppen) ausgeben
+            If Not String.IsNullOrEmpty(loescherText) Then
+                For Each line As String In loescherText.Split(New Char() {ControlChars.Lf, ControlChars.Cr}, StringSplitOptions.RemoveEmptyEntries)
+                    p.WriteLine("   " & line.Trim())
+                Next
             End If
 
             p.WriteLine()
             p.SetFontSize(1, 0)
             p.Write("Gesamtpreis: ")
-            p.WriteLine(PreisGes.ToString("###0.00") + "€")
+            p.WriteLine(preisGes.ToString("###0.00") + "€")
             p.SetFontSize(0, 0)
 
             p.WriteLine()
