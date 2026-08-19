@@ -65,7 +65,8 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
         </span>
         <div class="d-flex gap-2">
             <a href="rechnung.php" class="btn btn-success btn-sm">+ Neue Rechnung</a>
-            <a href="index.php" class="btn btn-outline-light btn-sm">Start</a>
+            <a href="index.php" class="btn btn-outline-light btn-sm">&#127968; Start</a>
+            <!--<a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>-->
         </div>
     </div>
 </nav>

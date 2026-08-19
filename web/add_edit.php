@@ -269,14 +269,19 @@ if ($mode === 'edit' && isset($_POST['redruck_abholschein'])) {
 if ($mode === 'edit' && isset($_POST['geld_retour']) && isset($_POST['edit_id'])) {
     $nummer = (int) $_POST['nummer'];
     $zeitstempelNow = date('d.m.Y H:i:s');
+    $eintrag = "Geld an Kunde retour gegeben - $zeitstempelNow";
 
     $stmt = $db->prepare("
         UPDATE loescher 
         SET bezahlt = 0, 
-            info = COALESCE(info,'') || :text
+            info = CASE 
+                WHEN info IS NULL OR info = '' THEN :text_first 
+                ELSE info || :text_append 
+            END
         WHERE CAST(nummer AS INTEGER) = :nummer
     ");
-    $stmt->bindValue(':text', "\nGeld an Kunde retour gegeben - $zeitstempelNow");
+    $stmt->bindValue(':text_first', $eintrag);
+    $stmt->bindValue(':text_append', "\n" . $eintrag);
     $stmt->bindValue(':nummer', $nummer);
     $stmt->execute();
 
@@ -285,7 +290,6 @@ if ($mode === 'edit' && isset($_POST['geld_retour']) && isset($_POST['edit_id'])
     header("Location: ?mode=edit&id=" . (int) $_POST['edit_id']);
     exit;
 }
-
 $isActive = ($editEntry['active'] ?? 0) == 1;
 
 ?>
@@ -434,8 +438,14 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
 
                 let infoTextarea = document.querySelector('#infotext textarea');
                 if (infoTextarea) {
-                    infoTextarea.value = data.info || '';
-                    infoTextarea.rows = (data.info.split('\n').length || 1);
+                    // \r entfernen, um Unix/Windows Line-Break-Unterschiede zu vereinheitlichen
+                    let newText = (data.info || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                    
+                    if (infoTextarea.value !== newText) {
+                        infoTextarea.value = newText;
+                        let lineCount = newText ? newText.split('\n').length : 1;
+                        infoTextarea.rows = lineCount;
+                    }
                 }
             } catch (err) {
                 console.error('loadInfo error:', err);
@@ -519,11 +529,11 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
             <div class="d-flex gap-2">
                 <a href="liste.php" class="btn btn-outline-info btn-sm">Löscherübersicht</a>
                 <a href="index.php" class="btn btn-outline-light btn-sm">
-                    Start
+                    &#127968; Start
                 </a>
-                <a href="?logout=1" class="btn btn-danger btn-sm">
+                <!--<a href="?logout=1" class="btn btn-danger btn-sm">
                     Abmelden
-                </a>
+                </a>-->
             </div>
         </div>
     </nav>
@@ -629,7 +639,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">&#128222; Telefonnummer</label>
+                            <label class="form-label">&#128222; Kontakt</label>
                             <input type="tel" name="telefon" class="form-control"
                                 value="<?= htmlspecialchars($editEntry['telefon'] ?? '') ?>" <?= !$isActive ? 'disabled' : '' ?>>
                         </div>
@@ -652,9 +662,9 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                             $rowCount = max(1, substr_count($infoText, "\n") + 1);
                             ?>
                             <textarea name="info" onfocus="pausePolling()" onblur="resumePolling()"
-                                oninput="markDirty(); this.rows = (this.value.split('\n').length || 1);"
-                                class="form-control" style="resize:none; overflow:hidden;" rows="<?= $rowCount ?>"
-                                <?= !$isActive ? 'disabled' : '' ?>><?= htmlspecialchars($infoText) ?></textarea>
+                            oninput="markDirty(); this.rows = (this.value.split('\n').length || 1);"
+                            class="form-control" style="resize:none; overflow:hidden;" rows="<?= $rowCount ?>"
+                            <?= !$isActive ? 'disabled' : '' ?>><?= htmlspecialchars($infoText) ?></textarea>
                         </div>
                     </div>
 
@@ -823,7 +833,7 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">&#128222; Telefonnummer</label>
+                    <label class="form-label">&#128222; Kontakt</label>
                     <input type="tel" name="telefon" class="form-control highlight" onkeydown="enterWeiter(event)">
                 </div>
 

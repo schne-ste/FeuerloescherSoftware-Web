@@ -341,6 +341,15 @@ $dbFiles = glob($dbDir . '/*.db');
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
+                    <h5 class="card-title">&#128179; Rechnungen anzeigen</h5>
+                    <p class="card-text">Alle Rechnungen anzeigen und exportieren</p>
+                    <a href="rechnungen_anzeigen.php" class="btn btn-primary w-100">Öffnen</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
                     <h5 class="card-title">&#128200; Statistik</h5>
                     <p class="card-text">Statistiken</p>
                     <a href="statistik.php" class="btn btn-primary w-100">Öffnen</a>

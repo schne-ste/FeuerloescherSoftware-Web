@@ -155,6 +155,21 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_loescher_count' && !empty
 }
 
 // =====================
+// AJAX: Aktuelle Namenliste für Autocomplete neu laden
+// =====================
+if (isset($_GET['action']) && $_GET['action'] === 'get_namen_list') {
+    $aktuellesNamenArray = [];
+    $resNamen = $db->query("SELECT DISTINCT TRIM(name) as name FROM loescher WHERE name IS NOT NULL AND TRIM(name) != '' ORDER BY nummer DESC");
+    while ($rowN = $resNamen->fetchArray(SQLITE3_ASSOC)) {
+        $aktuellesNamenArray[] = $rowN['name'];
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode($aktuellesNamenArray);
+    exit;
+}
+
+// =====================
 // RECHNUNG AUS MASKE LÖSCHEN (STORNO)
 // =====================
 if (isset($_POST['delete_rechnung_form']) && !empty($_POST['edit_id'])) {
@@ -265,6 +280,8 @@ if (isset($_POST['save_rechnung'])) {
 
     if (!empty($_POST['edit_id'])) {
         $lastId = (int) $_POST['edit_id'];
+        
+        // 1. Aktuelle Daten VOR dem Update aus der DB holen (für alten Namen & Druckstatus-Vergleich)
         $currentData = $db->query("SELECT * FROM rechnungen WHERE id = $lastId")->fetchArray(SQLITE3_ASSOC);
 
         $typ = $_POST['typ'] ?? '';
@@ -279,16 +296,17 @@ if (isset($_POST['save_rechnung'])) {
         $resetDruck = $hatKritischeAenderung ? 0 : $currentData['rechnung_gedruckt'];
         $resetZeit = $hatKritischeAenderung ? NULL : $currentData['zeitstempel_gedruckt'];
 
+        // Alte PDF-Datei löschen
         $oldFilename = __DIR__ . '/_Rechnungen/' . pathinfo(DB_FILE, PATHINFO_FILENAME) . '/Rechnung_' . cleanWindowsFilename($currentData['rechnungsnummer'], $currentData['name']) . '.pdf';
         if (file_exists($oldFilename)) {
             @unlink($oldFilename);
         }
 
-        // Namensänderung auch bei den zugehörigen Löschern aktualisieren (nutzt die ID als sicheren Anker)
+        // 2. Namensänderung synchronisieren: Alter Name kommt garantiert aus $currentData!
         $alterName = trim($currentData['name']);
         $neuerName = trim($_POST['name']);
 
-        if (strcasecmp($alterName, $neuerName) !== 0) {
+        if (!empty($alterName) && !empty($neuerName) && strcasecmp($alterName, $neuerName) !== 0) {
             $updateLoescherStmt = $db->prepare("
                 UPDATE loescher 
                 SET name = :neuerName 
@@ -301,6 +319,7 @@ if (isset($_POST['save_rechnung'])) {
             $updateLoescherStmt->execute();
         }
 
+        // 3. Erst JETZT die Rechnungs-Tabelle aktualisieren
         $stmt = $db->prepare("
             UPDATE rechnungen SET
                 anrede = :anrede,
@@ -620,8 +639,8 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
             <div class="d-flex gap-2">
                 <a href="rechnungen_anzeigen.php" class="btn btn-outline-info btn-sm">Rechnungsübersicht</a>
-                <a href="index.php" class="btn btn-outline-light btn-sm">Start</a>
-                <a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>
+                <a href="index.php" class="btn btn-outline-light btn-sm">&#127968; Start</a>
+                <!--<a href="?logout=1" class="btn btn-danger btn-sm">Abmelden</a>-->
             </div>
         </div>
     </nav>
@@ -685,7 +704,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
             <div class="mb-3">
                 <label class="form-label">&#128100; Name</label>
-                <div id="nameInfo" class="form-text text-muted mb-2" style="font-style: italic display: none;">Name kann nach dem Erstellen geändert werden - Löschernamen werden mit aktualisiert!</div>
+                <div id="nameInfo" class="form-text text-muted mb-2" style="font-style: italic; display: none;">Name kann nach dem Erstellen geändert werden - Löschernamen werden mit aktualisiert!</div>
                 <input list="namenListe" name="name" class="form-control highlight" autocomplete="off"
                     value="<?= htmlspecialchars($editEntry['name'] ?? '') ?>" required>
                 <datalist id="namenListe">
@@ -856,6 +875,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
     <script>
         const preisMap = <?= json_encode($preise) ?>;
         const nextRechnungsnummer = "<?= $nextRechnungsnummer ?>";
+        let currentLoescherTypen = null;
 
         function updatePreis() {
             const typSelect = document.getElementById('typSelect');
@@ -869,6 +889,15 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
         }
 
         function getGesamtBetrag() {
+            if (currentLoescherTypen && Object.keys(currentLoescherTypen).length > 0) {
+                let gesamt = 0;
+                for (const [typ, count] of Object.entries(currentLoescherTypen)) {
+                    const pVal = preisMap[typ] !== undefined ? preisMap[typ] : 0;
+                    gesamt += count * pVal;
+                }
+                return gesamt;
+            }
+
             const anzahlInput = document.querySelector('[name="anzahl"]');
             const anzahl = anzahlInput ? parseInt(anzahlInput.value) || 0 : 0;
             const einzelpreis = updatePreis();
@@ -941,21 +970,18 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
             const zahlungsartInfo = document.getElementById('zahlungsartInfo');
             const editIdField = document.getElementById('edit_id_field');
 
-            // Funktion zum Aktualisieren des Infotextes und der Checkbox (mit Parameter isInitialLoad)
             function updateZahlungsartInfo(isInitialLoad = false) {
                 if (!zahlungsartSelect || !zahlungsartInfo) return;
                 
                 const val = zahlungsartSelect.value;
                 const sumupBtn = document.getElementById('sumupBtn');
 
-                // SumUp Button Logik beibehalten
                 if (val === 'SumUp') {
                     if (sumupBtn) sumupBtn.style.display = 'block';
                 } else {
                     if (sumupBtn) sumupBtn.style.display = 'none';
                 }
 
-                // Dynamischer Text je nach Zahlungsart
                 let infoText = '';
                 if (val === 'SumUp') {
                     infoText = 'ℹ️ Hinweis: Der Button "SumUp Zahlung starten" erscheint nach dem Speichern unten. Der Status "Bezahlt" setzt sich nach erfolgreicher Zahlung automatisch.';
@@ -974,8 +1000,6 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                     zahlungsartInfo.style.display = 'none';
                 }
 
-                // Standard-Verhalten für die "Bezahlt"-Checkbox 
-                // (Wird bei neuen Rechnungen oder aktuellem Wechsel im Dropdown gesteuert, schont aber Bestandsrechnungen beim Laden)
                 if (bezahltCheck && (!editIdField.value || !isInitialLoad)) {
                     if (val === 'Barzahlung' || val === 'Kartenzahlung') {
                         bezahltCheck.checked = true;
@@ -986,9 +1010,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
             }
 
             if (zahlungsartSelect) {
-                // Bei manuellem Wechsel übergeben wir false (damit die Checkbox umschaltet)
                 zahlungsartSelect.addEventListener('change', () => updateZahlungsartInfo(false));
-                // Beim ersten Laden der Seite übergeben wir true (damit eine bereits gespeicherte Checkbox bei Edit erhalten bleibt)
                 updateZahlungsartInfo(true);
             }
 
@@ -1031,11 +1053,25 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                     const left = (window.innerWidth / 2) - (width / 2);
                     const top = (window.innerHeight / 2) - (height / 2);
 
-                    window.open(
+                    // Fenster öffnen
+                    const sumupWindow = window.open(
                         `sumup.php?rechnung_id=${editId}`,
                         'SumUpTerminal',
                         `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no`
                     );
+
+                    // Überwachung: Sobald das SumUp-Fenster geschlossen wird (Egal ob Erfolg, Abbruch oder Fehler)
+                    const checkWindowClosed = setInterval(() => {
+                        if (sumupWindow && sumupWindow.closed) {
+                            clearInterval(checkWindowClosed);
+                            
+                            // Triggere das Neuladen der Rechnungsdaten via AJAX
+                            const reloadBtn = document.getElementById('reloadData');
+                            if (reloadBtn) {
+                                reloadBtn.click();
+                            }
+                        }
+                    }, 800);
                 });
             }
 
@@ -1091,69 +1127,99 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
             const anzahlInputBill = document.querySelector('input[name="anzahl"]');
             const preisAnzahlLabel = document.getElementById('preisAnzahlLabel');
             const standardPreisContainer = document.getElementById('standardPreisContainer');
+            const nameInfoBox = document.getElementById('nameInfo');
+            const datalistNamen = document.getElementById('namenListe');
+
+            // Funktion zum dynamischen Nachladen der Namensliste
+            function updateNamenDatalist() {
+                fetch('?action=get_namen_list')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Netzwerk-Fehler');
+                        return response.json();
+                    })
+                    .then(namen => {
+                        if (Array.isArray(namen) && datalistNamen) {
+                            // Bestehende Optionen leeren
+                            datalistNamen.innerHTML = '';
+                            
+                            // Neue Optionen einfügen
+                            namen.forEach(name => {
+                                const option = document.createElement('option');
+                                option.value = name;
+                                datalistNamen.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(err => console.error('Fehler beim Aktualisieren der Namensliste:', err));
+            }
+
+            if (nameInput) {
+                // Namensliste jedes Mal neu laden, wenn der Benutzer in das Name-Feld klickt/fokussiert
+                nameInput.addEventListener('focus', updateNamenDatalist);
+            }
 
             if (nameInput && anzahlInputBill) {
-                if (nameInput && anzahlInputBill) {
-                const nameInfoBox = document.getElementById('nameInfo'); // Element referenzieren
-                    function fetchPaidCount() {
-                        const val = nameInput.value.trim();
-                        if (!val) {
-                            if (standardPreisContainer) standardPreisContainer.style.display = 'block';
-                            if (preisAnzahlLabel) preisAnzahlLabel.innerHTML = '&#128176; Preis je Löscher';
-                            anzahlInputBill.readOnly = false;
-                            if (nameInfoBox) nameInfoBox.style.display = 'none'; // Verstecken, wenn leer
-                            return;
-                        }
-
-                        fetch(`rechnung.php?action=get_loescher_count&name=${encodeURIComponent(val)}`)
-                            .then(res => {
-                                if (!res.ok) throw new Error(`HTTP-Fehler! Status: ${res.status}`);
-                                return res.json();
-                            })
-                            .then(data => {
-                                if (data && typeof data.anzahl !== 'undefined' && data.anzahl > 0) {
-                                    anzahlInputBill.value = data.anzahl;
-                                    if (typeof updatePreis === 'function') {
-                                        updatePreis();
-                                    }
-                                }
-                                if (data && data.typen && Object.keys(data.typen).length > 0) {
-                                    let labelParts = [];
-                                    for (const [typ, count] of Object.entries(data.typen)) {
-                                        const pVal = preisMap[typ] !== undefined ? preisMap[typ] : 0;
-                                        const pFormatiert = pVal.toFixed(2).replace('.', ',') + '€';
-                                        labelParts.push(`${count}x ${typ} (${pFormatiert})`);
-                                    }
-                                    if (preisAnzahlLabel) {
-                                        preisAnzahlLabel.innerHTML = '&#128176; ' + labelParts.join(' | ');
-                                    }
-                                    if (standardPreisContainer) {
-                                        standardPreisContainer.style.display = 'none';
-                                    }
-                                    anzahlInputBill.readOnly = true;
-
-                                    // TREFFER GEFUNDEN -> Hinweis einblenden
-                                    if (nameInfoBox) nameInfoBox.style.display = 'block';
-
-                                } else {
-                                    if (preisAnzahlLabel) {
-                                        preisAnzahlLabel.innerHTML = '&#128176; Preis je Löscher';
-                                    }
-                                    if (standardPreisContainer) {
-                                        standardPreisContainer.style.display = 'block';
-                                    }
-                                    anzahlInputBill.readOnly = false;
-
-                                    // KEINE LÖSCHER GEFUNDEN -> Hinweis verstecken[cite: 6]
-                                    if (nameInfoBox) nameInfoBox.style.display = 'none';
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Fehler beim Abrufen der Löscher-Anzahl:', err);
-                                if (standardPreisContainer) standardPreisContainer.style.display = 'block';
-                                if (nameInfoBox) nameInfoBox.style.display = 'none';
-                            });
+                function fetchPaidCount() {
+                    const val = nameInput.value.trim();
+                    if (!val) {
+                        currentLoescherTypen = null;
+                        if (standardPreisContainer) standardPreisContainer.style.display = 'block';
+                        if (preisAnzahlLabel) preisAnzahlLabel.innerHTML = '&#128176; Preis je Löscher';
+                        anzahlInputBill.readOnly = false;
+                        if (nameInfoBox) nameInfoBox.style.display = 'none';
+                        return;
                     }
+
+                    fetch(`rechnung.php?action=get_loescher_count&name=${encodeURIComponent(val)}`)
+                        .then(res => {
+                            if (!res.ok) throw new Error(`HTTP-Fehler! Status: ${res.status}`);
+                            return res.json();
+                        })
+                        .then(data => {
+                            if (data && typeof data.anzahl !== 'undefined' && data.anzahl > 0) {
+                                anzahlInputBill.value = data.anzahl;
+                                if (typeof updatePreis === 'function') {
+                                    updatePreis();
+                                }
+                            }
+                            if (data && data.typen && Object.keys(data.typen).length > 0) {
+                                currentLoescherTypen = data.typen;
+                                let labelParts = [];
+                                for (const [typ, count] of Object.entries(data.typen)) {
+                                    const pVal = preisMap[typ] !== undefined ? preisMap[typ] : 0;
+                                    const pFormatiert = pVal.toFixed(2).replace('.', ',') + '€';
+                                    labelParts.push(`${count}x ${typ} (${pFormatiert})`);
+                                }
+                                if (preisAnzahlLabel) {
+                                    preisAnzahlLabel.innerHTML = '&#128176; ' + labelParts.join(' | ');
+                                }
+                                if (standardPreisContainer) {
+                                    standardPreisContainer.style.display = 'none';
+                                }
+                                anzahlInputBill.readOnly = true;
+
+                                if (nameInfoBox) nameInfoBox.style.display = 'block';
+
+                            } else {
+                                currentLoescherTypen = null;
+                                if (preisAnzahlLabel) {
+                                    preisAnzahlLabel.innerHTML = '&#128176; Preis je Löscher';
+                                }
+                                if (standardPreisContainer) {
+                                    standardPreisContainer.style.display = 'block';
+                                }
+                                anzahlInputBill.readOnly = false;
+
+                                if (nameInfoBox) nameInfoBox.style.display = 'none';
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Fehler beim Abrufen der Löscher-Anzahl:', err);
+                            currentLoescherTypen = null;
+                            if (standardPreisContainer) standardPreisContainer.style.display = 'block';
+                            if (nameInfoBox) nameInfoBox.style.display = 'none';
+                        });
+                }
 
                 if (nameInput.value.trim() !== '') {
                     fetchPaidCount();
@@ -1170,26 +1236,8 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                     if (options.includes(this.value.trim())) {
                         fetchPaidCount();
                     } else {
-                        // Wenn manuell etwas eingetippt wird, das nicht in der Liste ist -> Hinweis ausblenden
+                        currentLoescherTypen = null;
                         if (nameInfoBox) nameInfoBox.style.display = 'none';
-                    }
-                });
-            }
-
-                if (nameInput.value.trim() !== '') {
-                    fetchPaidCount();
-                }
-
-                nameInput.addEventListener('change', fetchPaidCount);
-                nameInput.addEventListener('blur', fetchPaidCount);
-
-                nameInput.addEventListener('input', function () {
-                    const datalist = document.getElementById('namenListe');
-                    if (!datalist) return;
-
-                    const options = Array.from(datalist.options).map(opt => opt.value.trim());
-                    if (options.includes(this.value.trim())) {
-                        fetchPaidCount();
                     }
                 });
             }
