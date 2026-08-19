@@ -102,17 +102,14 @@ $gesamtEntsorgungskosten = 0;
 // HELPER
 // =====================
 function getPreis($l) {
-    if (isset($l['preis']) && floatval($l['preis']) > 0) {
-        return floatval($l['preis']);
-    }
-    
+    // Ignoriere die Datenbank-Spalte 'preis' und verwende nur noch die Config-Werte
     switch ($l['typ']) {
-        case 'Standard': return PREIS_STANDARD;
-        case 'Rabatt':   return PREIS_RABATT;
-        default:        return 0.0;
+        case 'Standard': return PREIS_STANDARD; // Nutzt den Wert aus config.php
+        case 'Rabatt':   return PREIS_RABATT;   // Nutzt den Wert aus config.php
+        case 'Gratis':   return 0.0;
+        default:         return 0.0;
     }
 }
-
 $rows = [];
 
 while ($l = $result->fetchArray(SQLITE3_ASSOC)) {

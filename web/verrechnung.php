@@ -43,8 +43,9 @@ $gesamtVollerPreis = 0;
 function getPreis($typ) {
     switch ($typ) {
         case 'Standard': return PREIS_RABATT;
-        case 'Rabatt': return PREIS_RABATT;
-        default: return 0;
+        case 'Rabatt':   return PREIS_RABATT;
+        case 'Gratis':   return 0.0;
+        default:         return 0.0;
     }
 }
 

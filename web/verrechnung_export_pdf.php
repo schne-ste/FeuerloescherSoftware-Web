@@ -83,8 +83,9 @@ $gesamtVollerPreis = 0;
 function getPreis($typ) {
     switch ($typ) {
         case 'Standard': return PREIS_RABATT;
-        case 'Rabatt': return PREIS_RABATT;
-        default: return 0;
+        case 'Rabatt':   return PREIS_RABATT;
+        case 'Gratis':   return 0.0;
+        default:         return 0.0;
     }
 }
 
@@ -169,9 +170,9 @@ if (!$hideList) {
     $pdf->SetFont('helvetica', 'B', 10);
     $pdf->SetFillColor(200, 200, 200);
 
-    $pdf->Cell(20, 8, 'Nr', 1, 0, 'C', true);
-    $pdf->Cell(80, 8, 'Preis', 1, 0, 'C', true);
-    $pdf->Cell(80, 8, 'Status', 1, 1, 'C', true);
+    $pdf->Cell(30, 9, 'Nr', 1, 0, 'C', true);
+    $pdf->Cell(80, 9, 'Preis', 1, 0, 'C', true);
+    $pdf->Cell(70, 9, 'Status', 1, 1, 'C', true);
 
     // Daten
     $pdf->SetFont('helvetica', '', 10);
@@ -182,9 +183,9 @@ if (!$hideList) {
         $color = $fill ? 245 : 255;
         $pdf->SetFillColor($color, $color, $color);
 
-        $pdf->Cell(20, 7, $r['nummer'], 1, 0, 'C', true);
-        $pdf->Cell(80, 7, $r['preis'], 1, 0, 'R', true);
-        $pdf->Cell(80, 7, $r['status'], 1, 1, 'C', true);
+        $pdf->Cell(30, 8, $r['nummer'], 1, 0, 'C', true);
+        $pdf->Cell(80, 8, $r['preis'], 1, 0, 'C', true);
+        $pdf->Cell(70, 8, $r['status'], 1, 1, 'C', true);
 
         $fill = !$fill;
     }

@@ -33,7 +33,7 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>&#128196; Rechnungsübersicht</title>
+    <title>&#128293; Feuerlöscher Software</title>
     <link rel="icon" href="./images/Feuerlöscher.ico" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -61,7 +61,7 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
     <div class="container-fluid">
         <span class="navbar-brand">
             <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
-            &#128293; Feuerlöscher Software - Übersicht
+            &#128293; Feuerlöscher Software - &#128196; Rechnungsübersicht
         </span>
         <div class="d-flex gap-2">
             <a href="rechnung.php" class="btn btn-success btn-sm">+ Neue Rechnung</a>

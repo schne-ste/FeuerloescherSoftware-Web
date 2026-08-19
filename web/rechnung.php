@@ -634,7 +634,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
         <div class="container-fluid">
             <span class="navbar-brand">
                 <img src="./images/Feuerlöscher.ico" alt="Feuerlöscher" width="24" height="24" class="me-2">
-                &#128293; Feuerlöscher Software - &#128179; Rechnungen
+                &#128293; Feuerlöscher Software - &#128179; Rechnung
             </span>
 
             <div class="d-flex gap-2">
