@@ -326,6 +326,8 @@ Public Class Druckservice
             Dim loescherText As String = SafeStr(item, "loescher_text")
             Dim rnr As String = SafeStr(item, "rechnungsnummer")
 
+            Dim zahlungsart As String = SafeStr(item, "zahlungsart")
+
             ' Preisdetails auslesen (Liste von Objekten mit anzahl und preis_pro_loescher)
             Dim preisDetails As New List(Of KeyValuePair(Of Integer, Double))()
             If item.ContainsKey("preis_pro_loescher") AndAlso item("preis_pro_loescher") IsNot Nothing Then
@@ -352,8 +354,8 @@ Public Class Druckservice
                 preisDetails.Add(New KeyValuePair(Of Integer, Double)(anzahl, 0.0))
             End If
 
-            Log($"Drucke Rechnung: {rnr} / Kunde: {name} / Anzahl: {anzahl}")
-            Print_Rechnung(name, anzahl, loescherText, preisDetails, rnr, druckername_bon, adresse, plzort)
+            Log($"Drucke Rechnung und Beleg: {rnr} / Kunde: {name} / Anzahl: {anzahl}")
+            Print_Rechnung(name, anzahl, loescherText, preisDetails, rnr, druckername_bon, adresse, plzort, zahlungsart)
 
             Log($"Markiere Rechnung {rnr} als gedruckt")
             Await SetRechnungGedruckt(rnr)
@@ -538,9 +540,10 @@ Public Class Druckservice
         Log($"Druck Abholschein abgeschlossen: {loescher_id}")
     End Sub
 
-    Public Sub Print_Rechnung(name As String, anzahl As Integer, loescherText As String, preisDetails As List(Of KeyValuePair(Of Integer, Double)), rnummer As String, druckername As String, Optional adresse As String = "", Optional plzort As String = "")
+    Public Sub Print_Rechnung(name As String, anzahl As Integer, loescherText As String, preisDetails As List(Of KeyValuePair(Of Integer, Double)), rnummer As String, druckername As String, Optional adresse As String = "", Optional plzort As String = "", Optional zahlungsart As String = "")
         Log($"Starte Druck Rechnung: {rnummer}")
-        RunPrintMethod(Sub(p) Print_Thermal_Rechnung(p, name, anzahl, loescherText, preisDetails, rnummer, adresse, plzort), druckername)
+        RunPrintMethod(Sub(p) Print_Thermal_Rechnung(p, name, anzahl, loescherText, preisDetails, rnummer, adresse, plzort, zahlungsart), druckername)
+        RunPrintMethod(Sub(p) Print_Thermal_RechnungsBeleg(p, name, anzahl, loescherText, preisDetails, rnummer, adresse, plzort, zahlungsart), druckername)
         Log($"Druck Rechnung abgeschlossen: {rnummer}")
     End Sub
 
@@ -603,7 +606,7 @@ Public Class Druckservice
     ' ===== ESC/POS Methoden =====
     Private Sub Print_Thermal_Abholschein(p As EscPosPrinter, name As String, loescher_id As String, typ As String, preis As String, bezahlt As Boolean, defekt As Boolean, zeitstempel As String)
         Dim info As String = ""
-        If typ = "Voller Preis" Then info = ">>> BEZAHLT <<<"
+        If typ = "Standard" Then info = ">>> BEZAHLT <<<"
         If typ = "Gratis" Then info = ">>> GRATIS <<<"
         If defekt = True Then info = ">>> DEFEKT <<<"
         If typ = "Rabatt" Then info = ">>> RABATT <<<"
@@ -680,10 +683,10 @@ Public Class Druckservice
             p.WriteLine(zeitstempel)
 
             p.SetAlignment(EscPosPrinter.Alignment.Center)
-            p.WriteLine("-".PadRight(42, "-"))
-            p.WriteLine()
 
             If info <> "" Then
+                p.WriteLine("-".PadRight(42, "-"))
+                p.WriteLine()
                 p.SetFontSize(1, 1)
                 p.WriteLine(info)
                 p.SetFontSize(0, 0)
@@ -711,7 +714,7 @@ Public Class Druckservice
         End Try
     End Sub
 
-    Private Sub Print_Thermal_Rechnung(p As EscPosPrinter, name As String, anzahl As Integer, loescherText As String, preisDetails As List(Of KeyValuePair(Of Integer, Double)), rnummer As String, Optional adresse As String = "", Optional plzort As String = "")
+    Private Sub Print_Thermal_Rechnung(p As EscPosPrinter, name As String, anzahl As Integer, loescherText As String, preisDetails As List(Of KeyValuePair(Of Integer, Double)), rnummer As String, Optional adresse As String = "", Optional plzort As String = "", Optional zahlungsart As String = "")
         ' Gesamtsumme dynamisch über alle Preisgruppen berechnen
         Dim preisGes As Double = 0.0
         For Each detail In preisDetails
@@ -755,27 +758,27 @@ Public Class Druckservice
 
             p.SetAlignment(EscPosPrinter.Alignment.Left)
             p.SetBold(True)
-            p.Write("   Rechnungsnummer: ")
+            p.Write("Rechnungsnummer: ")
             p.SetBold(False)
             p.WriteLine(CStr(rnummer))
-
+            p.WriteLine()
             p.SetBold(True)
-            p.Write("   Kunde: ")
+            p.Write("Kunde: ")
             p.SetBold(False)
             p.WriteLine(name)
 
             If adresse <> "" Then
                 p.SetBold(True)
-                p.Write("   Adresse: ")
+                p.Write("Adresse: ")
                 p.SetBold(False)
                 p.WriteLine(adresse)
                 p.SetBold(True)
-                p.Write("   Ort: ")
+                p.Write("Ort: ")
                 p.SetBold(False)
                 p.WriteLine(plzort)
             End If
 
-            p.SetAlignment(EscPosPrinter.Alignment.Center)
+            'p.SetAlignment(EscPosPrinter.Alignment.Center)
             p.WriteLine()
             p.WriteLine("-".PadRight(42, "-"))
             p.WriteLine()
@@ -793,7 +796,7 @@ Public Class Druckservice
             ' Mehrzeiligen Löscher-Text (inkl. gemischter Preisgruppen) ausgeben
             If Not String.IsNullOrEmpty(loescherText) Then
                 For Each line As String In loescherText.Split(New Char() {ControlChars.Lf, ControlChars.Cr}, StringSplitOptions.RemoveEmptyEntries)
-                    p.WriteLine("   " & line.Trim())
+                    p.WriteLine("- " & line.Trim())
                 Next
             End If
 
@@ -802,11 +805,36 @@ Public Class Druckservice
             p.Write("Gesamtpreis: ")
             p.WriteLine(preisGes.ToString("###0.00") + "€")
             p.SetFontSize(0, 0)
-
+            p.SetAlignment(EscPosPrinter.Alignment.Center)
             p.WriteLine()
             p.WriteLine("=".PadRight(42, "="))
             p.WriteLine()
-            p.WriteLine("Betrag dankend erhalten!")
+            p.WriteLine()
+
+            If zahlungsart.ToLower() = "barzahlung" Or zahlungsart.ToLower() = "sumup" Or zahlungsart.ToLower() = "kartenzahlung" Then
+                p.SetAlignment(EscPosPrinter.Alignment.Center)
+                p.Write("Zahlungsart: ")
+                p.WriteLine(zahlungsart)
+                p.WriteLine()
+                p.WriteLine("Betrag dankend erhalten!")
+            End If
+            If zahlungsart.ToLower() = "überweisung" Then
+                Dim faelligDatum As String = DateTime.Now.AddDays(14).ToString("dd.MM.yyyy")
+                p.SetAlignment(EscPosPrinter.Alignment.Left)
+                p.Write("Zahlungsart: ")
+                p.WriteLine(zahlungsart)
+                p.WriteLine()
+                p.SetBold(True)
+                p.WriteLine("Überweisung auf folgendes Konto:")
+                p.SetBold(False)
+                p.WriteLine(bank_name)
+                p.WriteLine("IBAN: " & bank_iban)
+                p.WriteLine("Empfänger: " & bank_empfaenger)
+                p.WriteLine("Verwendungszweck: " & rnummer)
+                p.WriteLine("Zahlbar bis: " & faelligDatum)
+                p.SetAlignment(EscPosPrinter.Alignment.Center)
+            End If
+
             'p.WriteLine("Gedruckt: " + gedruckt)
             p.WriteLine()
             p.WriteLine("Danke für Ihren Besuch!")
@@ -814,6 +842,122 @@ Public Class Druckservice
         Catch ex As Exception
             MessageBox.Show(ex.Message, "Fehler...", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Log("FEHLER beim Drucken Rechnung: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub Print_Thermal_RechnungsBeleg(p As EscPosPrinter, name As String, anzahl As Integer, loescherText As String, preisDetails As List(Of KeyValuePair(Of Integer, Double)), rnummer As String, Optional adresse As String = "", Optional plzort As String = "", Optional zahlungsart As String = "")
+        ' Gesamtsumme dynamisch über alle Preisgruppen berechnen
+        Dim preisGes As Double = 0.0
+        For Each detail In preisDetails
+            preisGes += (detail.Key * detail.Value)
+        Next
+
+        Try
+            p.SetAlignment(EscPosPrinter.Alignment.Center)
+            p.WriteLine()
+            p.SetFontSize(1, 1)
+            p.SetUnderline(True, True)
+            p.WriteLine("RECHNUNGSBELEG")
+            p.WriteLine()
+            p.SetUnderline(False, False)
+            p.SetFontSize(0, 0)
+
+            If Ini.ReadValue("Drucker", "LogoAufRechnung", "", Application.StartupPath & "\config.ini") = True Then
+                If Ini.ReadValue("Drucker", "LogoName", "", Application.StartupPath & "\config.ini") <> "" Then
+                    Try
+                        p.WriteLine()
+                        Dim image As Image = Image.FromFile(Application.StartupPath & "\Images\" & Ini.ReadValue("Drucker", "LogoName", "", Application.StartupPath & "\config.ini"))
+                        Dim bitmap As New Bitmap(image)
+                        Dim newbitmap As Bitmap = ScaleImage(bitmap, 180, 500)
+                        p.PrintImage(newbitmap)
+                        p.WriteLine()
+                    Catch
+                    End Try
+                End If
+            End If
+
+            p.WriteLine(event_name)
+            p.WriteLine()
+            p.WriteLine(firma_name)
+            p.WriteLine(firma_adresse)
+            p.WriteLine(firma_plzort)
+            p.WriteLine(firma_web)
+
+            p.WriteLine()
+            p.WriteLine("-".PadRight(42, "-"))
+            p.WriteLine()
+
+            p.SetAlignment(EscPosPrinter.Alignment.Left)
+            p.SetBold(True)
+            p.Write("Rechnungsnummer: ")
+            p.SetBold(False)
+            p.WriteLine(CStr(rnummer))
+            p.WriteLine()
+            p.SetBold(True)
+            p.Write("Kunde: ")
+            p.SetBold(False)
+            p.WriteLine(name)
+
+            If adresse <> "" Then
+                p.SetBold(True)
+                p.Write("Adresse: ")
+                p.SetBold(False)
+                p.WriteLine(adresse)
+                p.SetBold(True)
+                p.Write("Ort: ")
+                p.SetBold(False)
+                p.WriteLine(plzort)
+            End If
+
+            'p.SetAlignment(EscPosPrinter.Alignment.Center)
+            p.WriteLine()
+            p.WriteLine("-".PadRight(42, "-"))
+            p.WriteLine()
+
+            p.SetBold(True)
+            p.Write("Anzahl Löscher Gesamt: ")
+            p.SetBold(False)
+            p.WriteLine(anzahl & " Stück")
+            p.WriteLine()
+
+            p.SetBold(True)
+            p.WriteLine("Preisdetails:")
+            p.SetBold(False)
+
+            ' Mehrzeiligen Löscher-Text (inkl. gemischter Preisgruppen) ausgeben
+            If Not String.IsNullOrEmpty(loescherText) Then
+                For Each line As String In loescherText.Split(New Char() {ControlChars.Lf, ControlChars.Cr}, StringSplitOptions.RemoveEmptyEntries)
+                    p.WriteLine("- " & line.Trim())
+                Next
+            End If
+
+            p.WriteLine()
+            p.SetFontSize(1, 0)
+            p.Write("Gesamtpreis: ")
+            p.WriteLine(preisGes.ToString("###0.00") + "€")
+            p.SetFontSize(0, 0)
+            p.WriteLine()
+            p.Write("Zahlungsart: ")
+            p.WriteLine(zahlungsart)
+
+            p.SetAlignment(EscPosPrinter.Alignment.Center)
+            p.WriteLine()
+            p.WriteLine("=".PadRight(42, "="))
+            p.WriteLine()
+
+            ' --- UNTERSCHRIFTENFELD ---
+            p.WriteLine()
+            p.WriteLine()
+            p.WriteLine()
+            p.WriteLine() ' Platz für die handschriftliche Unterschrift
+            p.WriteLine("-".PadRight(30, "-"))
+            p.WriteLine("Unterschrift")
+            p.WriteLine()
+            p.WriteLine()
+            p.WriteLine()
+        Catch ex As Exception
+            MessageBox.Show(ex.Message, "Fehler...", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Log("FEHLER beim Drucken Lieferbon: " & ex.Message)
         End Try
     End Sub
 

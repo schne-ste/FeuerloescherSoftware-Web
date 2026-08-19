@@ -692,6 +692,13 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
             <input type="hidden" name="edit_id" id="edit_id_field" value="<?= $editEntry['id'] ?? '' ?>">
 
             <div class="mb-3">
+                <label class="form-label">&#128196; Rechnungsnummer</label>
+                <input type="text" name="rechnungsnummer" class="form-control"
+                    value="<?= htmlspecialchars($editEntry['rechnungsnummer'] ?? $nextRechnungsnummer) ?>" readonly>
+                <hr> 
+            </div>
+                           
+            <div class="mb-3">
                 <label class="form-label">&#128100; Anrede</label>
                 <select name="anrede" class="form-select">
                     <option <?= ($editEntry['anrede'] ?? '') == '' ? 'selected' : '' ?>>-</option>
@@ -820,16 +827,12 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
 
             <hr>
 
-            <div class="mb-3">
-                <label class="form-label">&#128196; Rechnungsnummer</label>
-                <input type="text" name="rechnungsnummer" class="form-control"
-                    value="<?= htmlspecialchars($editEntry['rechnungsnummer'] ?? $nextRechnungsnummer) ?>" readonly>
-            </div>
+            
 
             <?php if (!is_null($editEntry) && $editEntry) { ?>
 
                 <p>
-                    &#128424; Gedruckt: <span
+                    &#128424; Bon Gedruckt: <span
                         id="druckStatusAnzeige"><?= ($editEntry['rechnung_gedruckt'] ?? 0) ? '&#9989;' : '&#10060;' ?></span>
                 </p>
 
@@ -839,12 +842,11 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                     $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
                     $safePdfName = cleanWindowsFilename($editEntry['rechnungsnummer'], $editEntry['name']);
                     ?>
+                    <button type="submit" name="reprint_rechnung" class="btn btn-warning">Bon nachdrucken (Rechnung und Beleg)</button>
                     <a id="openPdf" href="_Rechnungen/<?= $dbNameOnly ?>/Rechnung_<?= $safePdfName ?>.pdf" target="_blank"
                         class="btn btn-info">
                         &#128196; PDF Rechnung öffnen
                     </a>
-
-                    <button type="submit" name="reprint_rechnung" class="btn btn-warning">Bon Nachdrucken</button>
                     <button type="button" id="reloadData" class="btn btn-secondary">&#128260; Daten neu laden</button>
 
                     <button type="submit" name="delete_rechnung_form" class="btn btn-danger"
@@ -988,7 +990,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                 } else if (val === 'Barzahlung') {
                     infoText = 'ℹ️ Hinweis: Bei aktivierter Option "Bezahlt" öffnet sich beim Speichern automatisch der Wechselgeldrechner.';
                 } else if (val === 'Überweisung') {
-                    infoText = 'ℹ️ Hinweis: Bankdaten werden auf der A4-Rechnung angezeigt. KEINE automatische Kontrolle der Zahlung!';
+                    infoText = 'ℹ️ Hinweis: Bankdaten werden auf der Rechnung angezeigt. KEINE automatische Kontrolle der Zahlung!';
                 } else if (val === 'Kartenzahlung') {
                     infoText = 'ℹ️ Hinweis: Es wird vermerkt, dass der Betrag dankend per Karte erhalten wurde.';
                 }
@@ -1241,6 +1243,39 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                     }
                 });
             }
+
+            // ==========================================
+            // AUTOMATISCHER POLLING-INTERVALL (ALLE 2 SEKUNDEN)
+            // ==========================================
+            setInterval(() => {
+                // Prüfen, ob eine edit_id vorhanden ist (d.h. eine Rechnung geladen ist)
+                const editIdInput = document.querySelector('[name="edit_id"]');
+                if (editIdInput && editIdInput.value) {
+                    const editId = editIdInput.value;
+
+                    fetch(`?action=reload_data&id=${editId}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Netzwerk-Fehler');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data) {
+                                // 1. Druckstatus (Grünes Häkchen / Rotes X) aktualisieren
+                                const statusSpan = document.getElementById('druckStatusAnzeige');
+                                if (statusSpan && statusSpan.innerHTML !== data.status_html) {
+                                    statusSpan.innerHTML = data.status_html;
+                                }
+
+                                // 2. PDF-Link dynamisch mitaktualisieren
+                                const pdfLink = document.getElementById('openPdf');
+                                if (pdfLink && data.pdf_url) {
+                                    pdfLink.href = data.pdf_url;
+                                }
+                            }
+                        })
+                        .catch(err => console.error("Fehler beim automatischen Polling:", err));
+                }
+            }, 2000); // 2000 ms = 2 Sekunden
         });
     </script>
 </body>

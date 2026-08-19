@@ -27,14 +27,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Druckservice.vb [Design]",
+              "Title": "Druckservice.vb [Entwurf]",
               "DocumentMoniker": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb",
               "RelativeDocumentMoniker": "Druckservice\\Druckservice.vb",
-              "ToolTip": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb [Design]",
-              "RelativeToolTip": "Druckservice\\Druckservice.vb [Design]",
+              "ToolTip": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb [Entwurf]",
+              "RelativeToolTip": "Druckservice\\Druckservice.vb [Entwurf]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
               "WhenOpened": "2026-04-23T10:47:08.15Z",
-              "EditorCaption": " [Design]"
+              "EditorCaption": " [Entwurf]"
             },
             {
               "$type": "Document",
@@ -56,7 +56,7 @@
               "RelativeDocumentMoniker": "Druckservice\\Druckservice.vb",
               "ToolTip": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb",
               "RelativeToolTip": "Druckservice\\Druckservice.vb",
-              "ViewState": "AgIAAA0DAAAAAAAAAAAMwCkDAAANAAAAAAAAAA==",
+              "ViewState": "AgIAAEsCAAAAAAAAAIAwwGQCAABqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
               "WhenOpened": "2026-04-04T08:56:03.217Z",
               "EditorCaption": ""

@@ -381,7 +381,7 @@ $dbFiles = glob($dbDir . '/*.db');
         <div class="card shadow-sm">
             <div class="card-body text-center">
                 <button class="btn btn-secondary w-100" data-bs-toggle="collapse" data-bs-target="#settingsAll">
-                    &#9881; Einstellungen &amp; Datenbanken
+                    &#9881; Druckvorlagen, Datenbanken &amp; Einstellungen
                 </button>
             </div>
 
@@ -401,7 +401,7 @@ $dbFiles = glob($dbDir . '/*.db');
                                         </a>
                                         <hr class="my-1">
                                         <form action="schilder.php" method="GET" target="_blank">
-                                            <p class="small mb-1 text-muted">ID Bereich (z.B. 1-30)</p>
+                                            <p class="small mb-1 text-muted">ID Bereich (z.B. 1-30, bis 50)</p>
                                             <div class="input-group">
                                                 <input type="text" name="id" class="form-control form-control-sm" placeholder="Bereich..." required>
                                                 <button type="submit" class="btn btn-sm btn-outline-success">Erstellen</button>
@@ -411,7 +411,7 @@ $dbFiles = glob($dbDir . '/*.db');
                                         <a href="oenormf1053.php" target="_blank" class="btn btn-outline-danger w-100">
                                             ÖNORM F 1053 Flyer generieren
                                         </a>
-                                        <a href="ablauf_flyer.php" target="_blank" class="btn btn-outline-danger w-100">
+                                        <a href="flyer.php" target="_blank" class="btn btn-outline-danger w-100">
                                             Kunden-Flyer generieren
                                         </a>
                                     </div>
