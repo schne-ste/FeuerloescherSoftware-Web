@@ -111,9 +111,14 @@ function getStats($db) {
     $stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt']);
     $stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt']);
     $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt']);
+
+    // Durchschnittliche Anzahl an Löschern pro Name berechnen
+    $stats['avg_pro_name'] = $db->querySingle("SELECT ROUND(AVG(anzahl), 2) FROM (SELECT COUNT(*) as anzahl FROM loescher WHERE active = 1 GROUP BY name ) ") ?: 0;
     
     return $stats;
 }
+
+
 
 // =====================
 // AJAX UPDATES
@@ -299,7 +304,17 @@ $stats = getStats($db);
             </div>
         </div>
     </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-center bg-light mb-2">
+            <div class="card-body p-2">
+                <h6 class="mb-1"><strong>Ø Löscher / Kunde</strong></h6>
+                <h5 class="mb-0" id="stat-avg"><?= $stats['avg_pro_name'] ?></h5>
+            </div>
+        </div>
+    </div>
 </div>
+
+
 
 <div class="mb-4">
     <label>Bezahlt (<span id="label-p-bezahlt"><?= $stats['p_bezahlt'] ?></span>%)</label>
@@ -413,6 +428,10 @@ function updateStatsDOM(stats){
 
     document.getElementById('bar-defekt').style.width = stats.p_defekt+'%';
     document.getElementById('label-p-defekt').innerText = stats.p_defekt;
+
+    if (document.getElementById('stat-avg')) {
+        document.getElementById('stat-avg').innerText = stats.avg_pro_name;
+    }
 }
 
 function ajaxUpdate(id, field, value){

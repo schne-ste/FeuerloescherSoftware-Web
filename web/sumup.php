@@ -41,10 +41,47 @@ if ($action) {
         $baseAmount = 0.00;
 
         if ($rechnung_id > 0) {
-            $row = $db->query("SELECT rechnungsnummer, anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
+            $row = $db->query("SELECT rechnungsnummer, name, anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
             if ($row) {
                 $title = $row['rechnungsnummer'];
-                $baseAmount = (float)($row['anzahl_loescher'] * $row['preis_pro_loescher']);
+                
+                // Preise aus der Config definieren
+                $preise = [
+                    'Standard' => PREIS_STANDARD,
+                    'Rabatt'   => PREIS_RABATT,
+                    'Gratis'   => PREIS_GRATIS
+                ];
+
+                // Löscher des Kunden aus der Datenbank abfragen
+                $searchNameDb = mb_strtolower(trim($row['name']));
+                $stmtLoescher = $db->prepare("
+                    SELECT typ, COUNT(*) AS anzahl 
+                    FROM loescher 
+                    WHERE LOWER(TRIM(name)) = :name 
+                    AND (active = 1 OR active = '1') 
+                    GROUP BY typ
+                ");
+                $stmtLoescher->bindValue(':name', $searchNameDb, SQLITE3_TEXT);
+                $resLoescher = $stmtLoescher->execute();
+
+                $dbLoescherTypen = [];
+                while ($rowL = $resLoescher->fetchArray(SQLITE3_ASSOC)) {
+                    $dbLoescherTypen[$rowL['typ']] = (int)$rowL['anzahl'];
+                }
+
+                // Summe basierend auf gefundenen Löschern berechnen
+                if (!empty($dbLoescherTypen)) {
+                    $baseAmount = 0.00;
+                    foreach ($preise as $pTyp => $pPreis) {
+                        $mengeStk = $dbLoescherTypen[$pTyp] ?? 0;
+                        if ($mengeStk > 0) {
+                            $baseAmount += $mengeStk * $pPreis;
+                        }
+                    }
+                } else {
+                    // Fallback auf die einfache Berechnung, falls keine Löscher-Einträge existieren
+                    $baseAmount = (float)($row['anzahl_loescher'] * $row['preis_pro_loescher']);
+                }
             } else {
                 echo json_encode(["error" => "Rechnung nicht gefunden"]);
                 exit;
@@ -123,10 +160,46 @@ if ($action) {
     }
 }
 
-// FRONTEND-BERECHHNUNG
+// FRONTEND-BERECHNUNG
 if ($rechnung_id > 0) {
-    $row = $db->query("SELECT anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
-    $baseAmount = $row ? ($row['anzahl_loescher'] * $row['preis_pro_loescher']) : 0.00;
+    $row = $db->query("SELECT name, anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
+    if ($row) {
+        $preise = [
+            'Standard' => PREIS_STANDARD,
+            'Rabatt'   => PREIS_RABATT,
+            'Gratis'   => PREIS_GRATIS
+        ];
+
+        $searchNameDb = mb_strtolower(trim($row['name']));
+        $stmtLoescher = $db->prepare("
+            SELECT typ, COUNT(*) AS anzahl 
+            FROM loescher 
+            WHERE LOWER(TRIM(name)) = :name 
+              AND (active = 1 OR active = '1') 
+            GROUP BY typ
+        ");
+        $stmtLoescher->bindValue(':name', $searchNameDb, SQLITE3_TEXT);
+        $resLoescher = $stmtLoescher->execute();
+
+        $dbLoescherTypen = [];
+        while ($rowL = $resLoescher->fetchArray(SQLITE3_ASSOC)) {
+            $dbLoescherTypen[$rowL['typ']] = (int)$rowL['anzahl'];
+        }
+
+        if (!empty($dbLoescherTypen)) {
+            $baseAmount = 0.00;
+            foreach ($preise as $pTyp => $pPreis) {
+                $mengeStk = $dbLoescherTypen[$pTyp] ?? 0;
+                if ($mengeStk > 0) {
+                    $baseAmount += $mengeStk * $pPreis;
+                }
+            }
+        } else {
+            $baseAmount = (float)($row['anzahl_loescher'] * $row['preis_pro_loescher']);
+        }
+    } else {
+        $baseAmount = 0.00;
+    }
 } else {
     $baseAmount = (float)($_GET['amount'] ?? 0.00);
 }
