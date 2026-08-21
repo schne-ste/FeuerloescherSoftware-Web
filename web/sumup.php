@@ -208,13 +208,17 @@ if ($faktor > 1) {
                         clearInterval(interval);
                         document.getElementById('status').innerHTML = "<span style='color:green; font-weight:bold;'>✅ Zahlung erfolgreich!</span>";
                         document.getElementById('loader').style.display = "none";
-                        if(window.opener) window.opener.location.reload();
+                        if(window.opener) {
+                            // Triggere im Hauptfenster nur den AJAX-Reload-Button, anstatt die ganze Seite neu zu laden
+                            const reloadBtn = window.opener.document.getElementById('reloadData');
+                            if (reloadBtn) reloadBtn.click();
+                        }
                         setTimeout(() => window.close(), 2000);
                     } 
                     else if (data.status === 'failed') {
                         clearInterval(interval);
                         showError(data.error || "Zahlung fehlgeschlagen oder storniert.");
-                        if(window.opener) window.opener.location.reload();
+                        // Kein reload(), damit die Daten im Formular unverändert erhalten bleiben
                         setTimeout(() => window.close(), 2500);
                     }
                 } catch (e) {
@@ -235,7 +239,7 @@ if ($faktor > 1) {
                 await fetch(`sumup.php?action=cancel&rechnung_id=${rid}`);
                 document.getElementById('loader').style.display = "none";
                 document.getElementById('status').innerHTML = '<span style="color:#e74c3c; font-weight:bold;">❌ Zahlung wurde abgebrochen.</span>';
-                if(window.opener) window.opener.location.reload();
+                // Kein reload(), Formular bleibt exakt so wie es war
                 setTimeout(() => window.close(), 2500);
             } catch (e) {
                 showError("Fehler beim Abbrechen der Zahlung.");

@@ -691,12 +691,46 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
         <form method="post" id="rechnungsForm" class="card p-4">
             <input type="hidden" name="edit_id" id="edit_id_field" value="<?= $editEntry['id'] ?? '' ?>">
 
+            <!-- Toast rechts oben-->
+            <?php if (empty($successMessage)): ?>
+                <?php if (!empty($editEntry['id'])): ?>
+                    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
+                        <span class="fs-5 me-2">&#9998;</span>
+                        <div>
+                            <strong>Rechnung wird bearbeitet</strong> (Rechnungs-Nr: <strong><?= htmlspecialchars($editEntry['rechnungsnummer']) ?></strong>)
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                        <span class="fs-5 me-2">&#10010;</span>
+                        <div>
+                            <strong>Neue Rechnung erstellen</strong>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+
             <div class="mb-3">
-                <label class="form-label">&#128196; Rechnungsnummer</label>
-                <input type="text" name="rechnungsnummer" class="form-control"
-                    value="<?= htmlspecialchars($editEntry['rechnungsnummer'] ?? $nextRechnungsnummer) ?>" readonly>
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <label class="form-label text-muted small m-0">&#128196; Rechnungsnummer</label>
+                    
+                    <!-- Exaktes Badge rechts oben wie vorher -->
+                    <?php if (!empty($editEntry['id'])): ?>
+                        <span class="badge bg-warning text-dark fs-6 py-2 px-3">&#9998; Rechnung wird bearbeitet</span>
+                    <?php else: ?>
+                        <span class="badge bg-success fs-6 py-2 px-3">Rechnung wird neu erstellt</span>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Rechnungsnummer: Grau bei Neuerstellung, Schwarz bei Bearbeiten -->
+                <div class="fw-bold fs-4 m-1 <?= !empty($editEntry['id']) ? 'text-dark' : 'text-muted' ?>">
+                    <?= htmlspecialchars($editEntry['rechnungsnummer'] ?? $nextRechnungsnummer) ?>
+                </div>
+                
+                <input type="hidden" name="rechnungsnummer" value="<?= htmlspecialchars($editEntry['rechnungsnummer'] ?? $nextRechnungsnummer) ?>">
                 <hr> 
             </div>
+
                            
             <div class="mb-3">
                 <label class="form-label">&#128100; Anrede</label>
@@ -842,7 +876,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                     $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
                     $safePdfName = cleanWindowsFilename($editEntry['rechnungsnummer'], $editEntry['name']);
                     ?>
-                    <button type="submit" name="reprint_rechnung" class="btn btn-warning">Bon nachdrucken (Rechnung und Beleg)</button>
+                    <button type="submit" name="reprint_rechnung" class="btn btn-outline-secondary">Bon nachdrucken (Rechnung und Beleg)</button>
                     <a id="openPdf" href="_Rechnungen/<?= $dbNameOnly ?>/Rechnung_<?= $safePdfName ?>.pdf" target="_blank"
                         class="btn btn-info">
                         &#128196; PDF Rechnung öffnen
@@ -1096,6 +1130,22 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                                 const pdfLink = document.getElementById('openPdf');
                                 if (pdfLink) pdfLink.href = data.pdf_url;
 
+                                // Bezahlt-Häkchen synchronisieren
+                                const bezahltCheck = document.getElementById('bezahltCheck');
+                                if (bezahltCheck) {
+                                    bezahltCheck.checked = (parseInt(data.bezahlt) === 1);
+                                }
+
+                                // SumUp-Button ausblenden, wenn bezahlt
+                                const sumupBtn = document.getElementById('sumupBtn');
+                                if (sumupBtn) {
+                                    if (parseInt(data.bezahlt) === 1) {
+                                        sumupBtn.style.display = 'none';
+                                    } else {
+                                        sumupBtn.style.display = 'block';
+                                    }
+                                }
+
                                 console.log("Daten erfolgreich via AJAX aktualisiert.");
                             }
                         })
@@ -1115,15 +1165,15 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                 window.history.replaceState({}, document.title, cleanUrl);
             }
 
-            const alertBox = document.querySelector('.alert');
-            if (alertBox) {
+            const alertBoxes = document.querySelectorAll('.alert');
+            alertBoxes.forEach(alertBox => {
                 setTimeout(() => {
                     alertBox.style.transition = "opacity 0.6s ease, transform 0.6s ease";
                     alertBox.style.opacity = "0";
                     alertBox.style.transform = "translateY(-20px)";
                     setTimeout(() => alertBox.remove(), 600);
                 }, 2000);
-            }
+            });
 
             const nameInput = document.querySelector('input[name="name"]');
             const anzahlInputBill = document.querySelector('input[name="anzahl"]');
@@ -1227,21 +1277,40 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                     fetchPaidCount();
                 }
 
-                nameInput.addEventListener('change', fetchPaidCount);
-                nameInput.addEventListener('blur', fetchPaidCount);
+                // Event-Listener NUR registrieren, wenn wir eine NEUE Rechnung erstellen!
+                const editIdVal = document.getElementById('edit_id_field') ? document.getElementById('edit_id_field').value : '';
+                
+                if (!editIdVal) {
+                    // Wird nur beim Auswählen/Abschließen eines Namens bei neuen Rechnungen ausgelöst
+                    nameInput.addEventListener('change', fetchPaidCount);
+                }
+
+                //Nur einkommentieren, wenn Name immer neu geldaden werden soll - sonst auskommentiert lassen!
+                /*nameInput.addEventListener('change', fetchPaidCount);
+                nameInput.addEventListener('blur', fetchPaidCount);  // beim Verlassen des feldes
 
                 nameInput.addEventListener('input', function () {
-                    const datalist = document.getElementById('namenListe');
-                    if (!datalist) return;
+                    const val = this.value.trim();
 
-                    const options = Array.from(datalist.options).map(opt => opt.value.trim());
-                    if (options.includes(this.value.trim())) {
-                        fetchPaidCount();
-                    } else {
+                    // Nur zurücksetzen, wenn der Name VOLLSTÄNDIG gelöscht wurde
+                    if (val === '') {
                         currentLoescherTypen = null;
+                        if (standardPreisContainer) standardPreisContainer.style.display = 'block';
+                        if (preisAnzahlLabel) preisAnzahlLabel.innerHTML = '&#128176; Preis je Löscher';
+                        anzahlInputBill.readOnly = false;
                         if (nameInfoBox) nameInfoBox.style.display = 'none';
+                        return;
                     }
-                });
+
+                    // Wenn der getippte Name exakt einer Datalist-Option entspricht, direkt neu laden
+                    const datalist = document.getElementById('namenListe');
+                    if (datalist) {
+                        const options = Array.from(datalist.options).map(opt => opt.value.trim());
+                        if (options.includes(val)) {
+                            fetchPaidCount();
+                        }
+                    }
+                });*/
             }
 
             // ==========================================
@@ -1270,6 +1339,17 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                                 const pdfLink = document.getElementById('openPdf');
                                 if (pdfLink && data.pdf_url) {
                                     pdfLink.href = data.pdf_url;
+                                }
+
+                                // Bezahlt-Status & SumUp Button via Polling aktualisieren
+                                const bezahltCheck = document.getElementById('bezahltCheck');
+                                if (bezahltCheck && parseInt(data.bezahlt) === 1) {
+                                    bezahltCheck.checked = true;
+                                }
+
+                                const sumupBtn = document.getElementById('sumupBtn');
+                                if (sumupBtn && parseInt(data.bezahlt) === 1) {
+                                    sumupBtn.style.display = 'none';
                                 }
                             }
                         })

@@ -275,94 +275,14 @@ if (isset($_POST['setDefekt']) && $nummer) {
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container-fluid px-4 mt-4">
 
         <div class="row">
-            <!-- LINKE SPALTE -->
-            <div class="col-md-3">
-
-                <form method="post" id="mainForm" class="card shadow p-3 mb-4">
-
-                    <div class="mb-2">
-                        <label class="form-label small">Station</label>
-                        <select name="modus" class="form-select form-select-sm" onchange="submitForm()">
-                            <option value="abholen" <?= $modus === 'abholen' ? 'selected' : '' ?>>
-                                &#128230; Abholstation
-                            </option>
-                            <option value="pruefen" <?= $modus === 'pruefen' ? 'selected' : '' ?>>
-                                &#129514; Prüfstation
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="form-label small">Modus</label>
-                        <select name="bedienmodus" id="bedienmodus" class="form-select form-select-sm"
-                            onchange="submitForm()">
-                            <option value="scanner" <?= $bedienmodus === 'scanner' ? 'selected' : '' ?>>
-                                &#9889; Scanner
-                            </option>
-                            <option value="manuell" <?= $bedienmodus === 'manuell' ? 'selected' : '' ?>>
-                                &#9000; Manuell
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="mb-2">
-                        <label class="form-label small">&#128269; Nummer</label>
-                        <input type="text" name="nummer" id="nummerInput" class="form-control form-control-sm"
-                            inputmode="numeric" value="<?= htmlspecialchars($nummer ?? '') ?>">
-                    </div>
-
-                    <div class="d-grid gap-2 mt-2">
-                        <button type="button" id="loadDataBtn" class="btn btn-primary btn-sm">
-                            &#128260; Datensatz laden
-                        </button>
-
-                        <button type="button" id="clearBtn" class="btn btn-outline-secondary btn-sm">
-                            &#128465; Formular leeren
-                        </button>
-                        <!-- Bedienerhilfe -->
-                        <?php if ($bedienmodus === "manuell" || $modus === "pruefen"): ?>
-                            <div class="mt-3 p-2 bg-light border rounded">
-                                <div class="fw-bold small text-secondary mb-1">
-                                    &#9000; Tastatur-Kürzel:
-                                </div>
-                                <div class="small text-muted d-flex flex-column gap-1">
-                                    <?php if ($bedienmodus === "manuell"): ?>
-                                        <div>
-                                            <span class="badge bg-dark">SPACE</span> 
-                                            <?= $modus === "pruefen" ? "Prüfstatus ändern" : "Abholstatus ändern" ?>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <?php if ($modus === "pruefen"): ?>
-                                        <div>
-                                            <span class="badge bg-dark">D</span> Status DEFEKT ändern
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-
-                </form>
-
-                <?php if ($message): ?>
-                    <div
-                        class="alert alert-<?= $statusType === 'error' ? 'danger' : ($statusType === 'success' ? 'success' : 'warning') ?> p-2 small">
-                        <?= $message ?>
-                    </div>
-                <?php endif; ?>
-
-            </div>
-
-
-            <!-- RECHTE SPALTE (groß) -->
-            <div class="col-md-9">
+            <!-- LINKE SPALTE (DETAILS - groß) -->
+            <div class="col-lg-8 col-md-7 mb-3">
 
                 <?php if ($eintrag && $modus): ?>
-                    <div class="card p-4">
+                    <div class="card p-4 shadow">
 
                         <h3 class="mb-3">
                             Details - <strong><?= htmlspecialchars($eintrag['nummer']) ?></strong>
@@ -454,28 +374,33 @@ if (isset($_POST['setDefekt']) && $nummer) {
                             <!-- BUTTONS -->
                             <?php if ($modus === "pruefen"): ?>
                                 <div class="mt-3">
-                                    <!-- Obere Reihe: Schaummittel & Umbau nebeneinander -->
-                                    <div class="row g-2 mb-2">
-                                        <div class="col-6">
+                                    <div class="row g-2 mb-3">
+                                        <!-- Kachel 1: Schaummittel -->
+                                        <div class="col-12 col-md-6">
                                             <form method="post" class="h-100">
                                                 <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
                                                 <input type="hidden" name="modus" value="<?= $modus ?>">
                                                 <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
-                                                <button type="submit" name="setInfo" class="btn btn-primary w-100 h-100 fw-bold py-2">
-                                                    &#9888; Schaummittel tauschen
+                                                <button type="submit" name="setInfo" class="btn btn-outline-warning text-dark bg-warning bg-opacity-10 border-2 shadow-sm w-100 h-100 p-3 d-flex flex-column align-items-center justify-content-center text-center">
+                                                    <span class="fs-1 mb-1">&#129514;</span>
+                                                    <strong class="d-block fs-5 lh-sm mb-1">Schaummittel tauschen</strong>
+                                                    <small class="text-muted fs-6">Hinweis für Tausch setzen</small>
                                                 </button>
                                             </form>
                                         </div>
 
-                                        <div class="col-6">
+                                        <!-- Kachel 2: Umbau nötig -->
+                                        <div class="col-12 col-md-6">
                                             <form method="post" class="h-100">
                                                 <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
                                                 <input type="hidden" name="modus" value="<?= $modus ?>">
                                                 <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
-                                                <button type="submit" name="setUmbau" class="btn btn-primary w-100 h-100 fw-bold py-2">
-                                                    &#128295; Umbau nötig &#128295;
+                                                <button type="submit" name="setUmbau" class="btn btn-outline-info text-dark bg-info bg-opacity-10 border-2 shadow-sm w-100 h-100 p-3 d-flex flex-column align-items-center justify-content-center text-center">
+                                                    <span class="fs-1 mb-1">&#128295;</span>
+                                                    <strong class="d-block fs-5 lh-sm mb-1">Umbau nötig</strong>
+                                                    <small class="text-muted fs-6">Kundenentscheidung anfordern</small>
                                                 </button>
                                             </form>
                                         </div>
@@ -492,7 +417,7 @@ if (isset($_POST['setDefekt']) && $nummer) {
                                                     <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
 
                                                     <button id="defektBtn" type="submit" name="setDefekt"
-                                                        class="btn btn-lg w-100 fw-bold py-3 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
+                                                        class="btn btn-lg w-100 fw-bold py-3 fs-4 <?= $eintrag['defekt'] ? 'btn-secondary' : 'btn-danger' ?>">
                                                         <?= $eintrag['defekt']
                                                             ? '&#128295; Defekt zurücksetzen'
                                                             : '&#9940; Löscher defekt' ?>
@@ -512,7 +437,7 @@ if (isset($_POST['setDefekt']) && $nummer) {
                                     <input type="hidden" name="bedienmodus" value="manuell">
 
                                     <button id="actionBtn" type="submit" name="aktion" value="1"
-                                        class="btn btn-success btn-lg w-100" style="font-size: 1.5rem; padding: 1rem;"
+                                        class="btn btn-success btn-lg w-100 py-3" style="font-size: 1.5rem;"
                                         <?= (!$eintrag['active'] || ($modus === "abholen" && !$eintrag['bezahlt'] && !$eintrag['defekt'])) ? 'disabled' : '' ?>>
 
                                         <div>
@@ -524,7 +449,7 @@ if (isset($_POST['setDefekt']) && $nummer) {
                                             </strong>
                                         </div>
 
-                                        <div style="font-size: 0.9rem; opacity: 0.85;">
+                                        <div style="font-size: 1rem; opacity: 0.85;">
                                             (oder Leertaste drücken)
                                         </div>
                                     </button>
@@ -537,6 +462,111 @@ if (isset($_POST['setDefekt']) && $nummer) {
 
             </div>
 
+            <!-- RECHTE SPALTE (FORMULAR & EINGABE - kompakter) -->
+            <div class="col-lg-4 col-md-5 mb-3">
+
+                <form method="post" id="mainForm" class="card shadow p-3 mb-3">
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small mb-1">&#127970; Station</label>
+                        <select name="modus" class="form-select form-select-sm py-2" onchange="submitForm()">
+                            <option value="abholen" <?= $modus === 'abholen' ? 'selected' : '' ?>>
+                                &#128230; Abholstation
+                            </option>
+                            <option value="pruefen" <?= $modus === 'pruefen' ? 'selected' : '' ?>>
+                                &#129514; Prüfstation
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small mb-1">&#128070; Eingabe-Modus</label>
+                        <select name="bedienmodus" id="bedienmodus" class="form-select form-select-sm py-2"
+                            onchange="submitForm()">
+                            <option value="scanner" <?= $bedienmodus === 'scanner' ? 'selected' : '' ?>>
+                                &#9889; Scanner
+                            </option>
+                            <option value="manuell" <?= $bedienmodus === 'manuell' ? 'selected' : '' ?>>
+                                &#9000; Manuell
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold fs-6 mb-1">&#128269; Löscher-ID</label>
+                        <input type="text" name="nummer" id="nummerInput" class="form-control py-2 fs-5 text-center fw-bold"
+                            inputmode="numeric" value="<?= htmlspecialchars($nummer ?? '') ?>">
+
+                        <!-- TOUCH NUMPAD (Nur im manuellen Modus) -->
+                        <?php if ($bedienmodus === "manuell"): ?>
+                            <div class="mt-2">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('7')">7</button></div>
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('8')">8</button></div>
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('9')">9</button></div>
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('4')">4</button></div>
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('5')">5</button></div>
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('6')">6</button></div>
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('1')">1</button></div>
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('2')">2</button></div>
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('3')">3</button></div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-4"><button type="button" class="btn btn-outline-dark w-100 py-3 fw-bold fs-4" onclick="appendDigit('0')">0</button></div>
+                                    <div class="col-8"><button type="button" class="btn btn-outline-danger w-100 py-3 fw-bold fs-4 " onclick="deleteLastDigit()">&#9003;</button></div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-1">
+                        <button type="button" id="loadDataBtn" class="btn btn-primary py-3 fs-6 fw-bold">
+                            &#128260; Datensatz laden
+                        </button>
+
+                        <button type="button" id="clearBtn" class="btn btn-outline-secondary py-3 fs-6">
+                            &#128465; Formular leeren
+                        </button>
+                        
+                        <!-- Bedienerhilfe -->
+                        <?php if ($bedienmodus === "manuell" || $modus === "pruefen"): ?>
+                            <div class="mt-2 p-2 bg-light border rounded small">
+                                <div class="fw-bold text-secondary mb-1">
+                                    &#9000; Tastatur-Kürzel:
+                                </div>
+                                <div class="text-muted d-flex flex-column gap-1">
+                                    <?php if ($bedienmodus === "manuell"): ?>
+                                        <div>
+                                            <span class="badge bg-dark px-1 py-1">SPACE</span> 
+                                            <?= $modus === "pruefen" ? "Prüfstatus ändern" : "Abholstatus ändern" ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if ($modus === "pruefen"): ?>
+                                        <div>
+                                            <span class="badge bg-dark px-1 py-1">D</span> Status DEFEKT ändern
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                </form>
+
+                <?php if ($message): ?>
+                    <div
+                        class="alert alert-<?= $statusType === 'error' ? 'danger' : ($statusType === 'success' ? 'success' : 'warning') ?> p-2 fs-6 fw-bold shadow-sm">
+                        <?= $message ?>
+                    </div>
+                <?php endif; ?>
+
+            </div>
+
         </div>
 
 
@@ -545,6 +575,14 @@ if (isset($_POST['setDefekt']) && $nummer) {
             const form = document.getElementById("mainForm");
             const bedienmodus = document.getElementById("bedienmodus");
             const clearBtn = document.getElementById("clearBtn");
+
+            function appendDigit(digit) {
+                input.value += digit;
+            }
+
+            function deleteLastDigit() {
+                input.value = input.value.slice(0, -1);
+            }
 
             if (clearBtn) {
                 clearBtn.addEventListener("click", function () {
@@ -808,11 +846,11 @@ if (isset($_POST['setDefekt']) && $nummer) {
                     if (data.defekt == 1) {
                         defektBtn.classList.remove("btn-danger");
                         defektBtn.classList.add("btn-secondary");
-                        defektBtn.innerHTML = "<strong>&#128295; Defekt zurücksetzen</strong>";
+                        defektBtn.innerHTML = "&#128295; Defekt zurücksetzen";
                     } else {
                         defektBtn.classList.remove("btn-secondary");
                         defektBtn.classList.add("btn-danger");
-                        defektBtn.innerHTML = "<strong>&#9940; Löscher defekt</strong>";
+                        defektBtn.innerHTML = "&#9940; Löscher defekt";
                     }
                 }
                 if (defektBtn) {
