@@ -99,8 +99,8 @@ function getStats($db) {
     $stats['abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 1 AND active = 1");
     $stats['nicht_abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 0 AND active = 1");
 
-    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1");
-    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1");
+    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1 AND defekt=0");
+    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1 AND defekt=0");
 
     $stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 0 AND active = 1");
     $stats['defekt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 1 AND active = 1");
@@ -110,7 +110,7 @@ function getStats($db) {
     $stats['p_defekt'] = percent($stats['defekt'], $stats['gesamt']);
     $stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt']);
     $stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt']);
-    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt']);
+    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt_ok']);
 
     // Durchschnittliche Anzahl an Löschern pro Name berechnen
     $stats['avg_pro_name'] = $db->querySingle("SELECT ROUND(AVG(anzahl), 2) FROM (SELECT COUNT(*) as anzahl FROM loescher WHERE active = 1 GROUP BY name ) ") ?: 0;

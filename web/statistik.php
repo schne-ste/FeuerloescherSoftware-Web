@@ -118,7 +118,7 @@ foreach ($allLoscher as $l) {
     }
 
     // Entsorgungskosten erfassen (Defekt UND Bezahlt)
-    if ($l['defekt'] && $l['bezahlt'] && !$l["abgeholt"]) {
+    if ($l['defekt'] && $l['bezahlt'] && $l['typ'] !== 'Gratis') {
         $anzahlEntsorgung++;
         $gesamtEntsorgungskosten += $dbPreis;
     }

@@ -81,6 +81,9 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
         <a href="rechnungen_download_zip.php" class="btn btn-primary btn-sm">
             &#128229; Alle Rechnungen als ZIP herunterladen
         </a>
+        <a href="rechnungen_download_zip.php?unbezahlt=1" class="btn btn-warning btn-sm">
+            &#9203; Nur unbezahlte als ZIP herunterladen
+        </a>
     </div>
 
     <div class="search-container mb-4">

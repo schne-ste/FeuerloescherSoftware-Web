@@ -119,23 +119,28 @@ if (isset($_GET['action']) && $_GET['action'] === 'reload_data' && isset($_GET['
 // =====================
 if (isset($_GET['action']) && $_GET['action'] === 'get_loescher_count' && !empty($_GET['name'])) {
     $searchName = mb_strtolower(trim($_GET['name']));
-    
-    // Zählt alle Löscher (aktiv = 1), unabhängig vom Bezahlstatus
+    $inklDefekt = isset($_GET['inkl_defekt']) && $_GET['inkl_defekt'] === '1';
+
+    $defektCondition = $inklDefekt ? "" : "AND (defekt = 0 OR defekt = '0')";
+
+    // Zählt Löscher (aktiv = 1)
     $stmt = $db->prepare("
         SELECT COUNT(*) AS anzahl 
         FROM loescher 
         WHERE LOWER(TRIM(name)) = :name 
           AND (active = 1 OR active = '1')
+          $defektCondition
     ");
     $stmt->bindValue(':name', $searchName, SQLITE3_TEXT);
     $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
-    // Zählt alle Löscher gruppiert nach typ/preisstufe unabhängig vom Bezahlstatus
+    // Zählt Löscher gruppiert nach Typ
     $stmtTypen = $db->prepare("
         SELECT typ, COUNT(*) AS anzahl 
         FROM loescher 
         WHERE LOWER(TRIM(name)) = :name 
           AND (active = 1 OR active = '1')
+          $defektCondition
         GROUP BY typ
     ");
     $stmtTypen->bindValue(':name', $searchName, SQLITE3_TEXT);
@@ -333,7 +338,8 @@ if (isset($_POST['save_rechnung'])) {
                 zahlungsart = :zahlungsart,
                 bezahlt = :bezahlt,
                 rechnung_gedruckt = :gedruckt,
-                zeitstempel_gedruckt = :z_gedruckt
+                zeitstempel_gedruckt = :z_gedruckt,
+                verrechnen_defekt = :verrechnen_defekt
             WHERE id = :id
         ");
 
@@ -351,10 +357,10 @@ if (isset($_POST['save_rechnung'])) {
             INSERT INTO rechnungen (
                 anrede, name, adresse, plz, ort,
                 anzahl_loescher, preis_pro_loescher,
-                zeitstempel_erstellung, rechnungsnummer, zahlungsart, bezahlt
+                zeitstempel_erstellung, rechnungsnummer, zahlungsart, bezahlt, verrechnen_defekt
             ) VALUES (
                 :anrede, :name, :adresse, :plz, :ort,
-                :anzahl, :preis, :zeit, :rnr, :zahlungsart, :bezahlt
+                :anzahl, :preis, :zeit, :rnr, :zahlungsart, :bezahlt, :verrechnen_defekt
             )
         ");
         $stmt->bindValue(':zeit', date('Y-m-d H:i:s'));
@@ -371,6 +377,7 @@ if (isset($_POST['save_rechnung'])) {
     $stmt->bindValue(':rnr', $rechnungsnummer);
     $stmt->bindValue(':zahlungsart', $_POST['zahlungsart'] ?? 'Barzahlung');
     $stmt->bindValue(':bezahlt', isset($_POST['bezahlt']) ? 1 : 0);
+    $stmt->bindValue(':verrechnen_defekt', isset($_POST['inkl_defekt']) ? 1 : 0, SQLITE3_INTEGER);
     $stmt->execute();
 
     // --- Löscher-Bezahlstatus synchron zur Rechnung aktualisieren ---
@@ -477,11 +484,15 @@ if (isset($_POST['save_rechnung'])) {
     $pdf->Ln(10);
 
     $searchNameDb = mb_strtolower(trim($_POST['name']));
+    $inklDefekt = isset($_POST['inkl_defekt']) ? true : false;
+    $defektCondition = $inklDefekt ? "" : "AND (defekt = 0 OR defekt = '0')";
+
     $stmtLoescher = $db->prepare("
         SELECT typ, COUNT(*) AS anzahl 
         FROM loescher 
         WHERE LOWER(TRIM(name)) = :name 
           AND (active = 1 OR active = '1') 
+          $defektCondition
         GROUP BY typ
     ");
     $stmtLoescher->bindValue(':name', $searchNameDb, SQLITE3_TEXT);
@@ -823,6 +834,13 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                 <input type="checkbox" name="bezahlt" value="1" class="form-check-input" id="bezahltCheck"
                     <?= ($editEntry['bezahlt'] ?? 0) ? 'checked' : '' ?>>
                 <label class="form-check-label" for="bezahltCheck">&#128176; Bezahlt</label>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="inkl_defekt" id="inklDefektCheck" value="1" class="form-check-input"
+                    <?= (!empty($editEntry['verrechnen_defekt']) || isset($_POST['inkl_defekt']) || isset($_GET['inkl_defekt'])) ? 'checked' : '' ?>>
+                <label class="form-check-label" for="inklDefektCheck">
+                    &#9888;&#65039; Defekte Löscher auf der Rechnung mitverrechnen
+                </label>
             </div>
 
             <div class="modal fade" id="changeCalculatorModal" data-bs-backdrop="static" tabindex="-1"
@@ -1181,6 +1199,7 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
             const standardPreisContainer = document.getElementById('standardPreisContainer');
             const nameInfoBox = document.getElementById('nameInfo');
             const datalistNamen = document.getElementById('namenListe');
+            const inklDefektCheck = document.getElementById('inklDefektCheck');
 
             // Funktion zum dynamischen Nachladen der Namensliste
             function updateNamenDatalist() {
@@ -1222,7 +1241,9 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                         return;
                     }
 
-                    fetch(`rechnung.php?action=get_loescher_count&name=${encodeURIComponent(val)}`)
+                    const inklDefektVal = (inklDefektCheck && inklDefektCheck.checked) ? '1' : '0';
+
+                    fetch(`?action=get_loescher_count&name=${encodeURIComponent(val)}&inkl_defekt=${inklDefektVal}`)
                         .then(res => {
                             if (!res.ok) throw new Error(`HTTP-Fehler! Status: ${res.status}`);
                             return res.json();
@@ -1283,6 +1304,10 @@ if ($editEntry && isset($editEntry['preis_pro_loescher'])) {
                 if (!editIdVal) {
                     // Wird nur beim Auswählen/Abschließen eines Namens bei neuen Rechnungen ausgelöst
                     nameInput.addEventListener('change', fetchPaidCount);
+                }
+
+                if (inklDefektCheck) {
+                    inklDefektCheck.addEventListener('change', fetchPaidCount);
                 }
 
                 //Nur einkommentieren, wenn Name immer neu geldaden werden soll - sonst auskommentiert lassen!

@@ -22,7 +22,17 @@ function cleanWindowsFilename($rnr, $kundenname)
 }
 
 $db = getDB();
-$res = $db->query("SELECT rechnungsnummer, name FROM rechnungen");
+
+// Prüfen, ob nur unbezahlte Rechnungen exportiert werden sollen
+$nurUnbezahlt = isset($_GET['unbezahlt']) && $_GET['unbezahlt'] == '1';
+
+if ($nurUnbezahlt) {
+    $res = $db->query("SELECT rechnungsnummer, name FROM rechnungen WHERE bezahlt = 0 OR bezahlt IS NULL OR bezahlt = ''");
+    $prefix = 'Unbezahlte_Rechnungen_';
+} else {
+    $res = $db->query("SELECT rechnungsnummer, name FROM rechnungen");
+    $prefix = 'Rechnungen_';
+}
 
 // 2. Zielordner ermitteln (inklusive DB-Unterordner)
 $dbNameOnly = pathinfo(DB_FILE, PATHINFO_FILENAME);
@@ -38,7 +48,7 @@ if (!class_exists('ZipArchive')) {
 }
 
 $zip = new ZipArchive();
-$zipFileName = sys_get_temp_dir() . '/Rechnungen_' . $dbNameOnly . '_' . date('Y-m-d_H-i-s') . '.zip';
+$zipFileName = sys_get_temp_dir() . '/' . $prefix . $dbNameOnly . '_' . date('Y-m-d_H-i-s') . '.zip';
 
 if ($zip->open($zipFileName, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
     die("Fehler: ZIP-Datei konnte nicht erstellt werden.");
@@ -67,8 +77,10 @@ if (ob_get_level()) {
     ob_end_clean();
 }
 
+$downloadName = $prefix . $dbNameOnly . '_' . date('Y-m-d') . '.zip';
+
 header('Content-Type: application/zip');
-header('Content-Disposition: attachment; filename="Rechnungen_' . $dbNameOnly . '_' . date('Y-m-d') . '.zip"');
+header('Content-Disposition: attachment; filename="' . $downloadName . '"');
 header('Content-Length: ' . filesize($zipFileName));
 header('Pragma: no-cache');
 header('Expires: 0');

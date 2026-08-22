@@ -41,9 +41,10 @@ if ($action) {
         $baseAmount = 0.00;
 
         if ($rechnung_id > 0) {
-            $row = $db->query("SELECT rechnungsnummer, name, anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
+            $row = $db->query("SELECT rechnungsnummer, name, anzahl_loescher, preis_pro_loescher, verrechnen_defekt FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
             if ($row) {
                 $title = $row['rechnungsnummer'];
+                $verrechnenDefekt = !empty($row['verrechnen_defekt']);
                 
                 // Preise aus der Config definieren
                 $preise = [
@@ -52,13 +53,16 @@ if ($action) {
                     'Gratis'   => PREIS_GRATIS
                 ];
 
-                // Löscher des Kunden aus der Datenbank abfragen
+                // Dynamischer SQL-Filter je nach Checkbox-Status
+                $defektSql = $verrechnenDefekt ? "" : " AND (defekt = 0 OR defekt = '0')";
+
                 $searchNameDb = mb_strtolower(trim($row['name']));
                 $stmtLoescher = $db->prepare("
                     SELECT typ, COUNT(*) AS anzahl 
                     FROM loescher 
                     WHERE LOWER(TRIM(name)) = :name 
                     AND (active = 1 OR active = '1') 
+                    {$defektSql}
                     GROUP BY typ
                 ");
                 $stmtLoescher->bindValue(':name', $searchNameDb, SQLITE3_TEXT);
@@ -69,7 +73,6 @@ if ($action) {
                     $dbLoescherTypen[$rowL['typ']] = (int)$rowL['anzahl'];
                 }
 
-                // Summe basierend auf gefundenen Löschern berechnen
                 if (!empty($dbLoescherTypen)) {
                     $baseAmount = 0.00;
                     foreach ($preise as $pTyp => $pPreis) {
@@ -79,7 +82,6 @@ if ($action) {
                         }
                     }
                 } else {
-                    // Fallback auf die einfache Berechnung, falls keine Löscher-Einträge existieren
                     $baseAmount = (float)($row['anzahl_loescher'] * $row['preis_pro_loescher']);
                 }
             } else {
@@ -87,11 +89,9 @@ if ($action) {
                 exit;
             }
         } else {
-            // Falls direkt ein Betrag übergeben wurde (ohne Rechnungs-ID)
             $baseAmount = (float)($_GET['amount'] ?? 0.00);
         }
 
-        // API erwartet Betrag (inkl. Faktor)
         $amount = $baseAmount * (defined('SumUp_PRICE_FAKTOR') ? (float)SumUp_PRICE_FAKTOR : 1.0);
         
         $res = apiRequest("POST", "", [
@@ -123,7 +123,6 @@ if ($action) {
             }
             $tx_id = $row['sumup_transaction_id'];
         } else {
-            // Ohne DB-ID kann der Status hier direkt übergeben oder separat gehalten werden
             echo json_encode(["status" => "pending"]);
             exit;
         }
@@ -162,20 +161,25 @@ if ($action) {
 
 // FRONTEND-BERECHNUNG
 if ($rechnung_id > 0) {
-    $row = $db->query("SELECT name, anzahl_loescher, preis_pro_loescher FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
+    $row = $db->query("SELECT name, anzahl_loescher, preis_pro_loescher, verrechnen_defekt FROM rechnungen WHERE id = $rechnung_id")->fetchArray(SQLITE3_ASSOC);
     if ($row) {
+        $verrechnenDefekt = !empty($row['verrechnen_defekt']);
+        
         $preise = [
             'Standard' => PREIS_STANDARD,
             'Rabatt'   => PREIS_RABATT,
             'Gratis'   => PREIS_GRATIS
         ];
 
+        $defektSql = $verrechnenDefekt ? "" : " AND (defekt = 0 OR defekt = '0')";
+
         $searchNameDb = mb_strtolower(trim($row['name']));
         $stmtLoescher = $db->prepare("
             SELECT typ, COUNT(*) AS anzahl 
             FROM loescher 
             WHERE LOWER(TRIM(name)) = :name 
-              AND (active = 1 OR active = '1') 
+              AND (active = 1 OR active = '1')
+              {$defektSql}
             GROUP BY typ
         ");
         $stmtLoescher->bindValue(':name', $searchNameDb, SQLITE3_TEXT);
@@ -208,7 +212,6 @@ $faktor = defined('SumUp_PRICE_FAKTOR') ? (float)SumUp_PRICE_FAKTOR : 1.0;
 $finalAmount = $baseAmount * $faktor;
 $displayAmount = number_format($finalAmount, 2, ',', '.');
 
-// Prozentwert für die Anzeige berechnen (z.B. 1.02 -> 2%)
 $gebuehrProzent = 0;
 if ($faktor > 1) {
     $gebuehrProzent = round(($faktor - 1) * 100, 2);
@@ -282,7 +285,6 @@ if ($faktor > 1) {
                         document.getElementById('status').innerHTML = "<span style='color:green; font-weight:bold;'>✅ Zahlung erfolgreich!</span>";
                         document.getElementById('loader').style.display = "none";
                         if(window.opener) {
-                            // Triggere im Hauptfenster nur den AJAX-Reload-Button, anstatt die ganze Seite neu zu laden
                             const reloadBtn = window.opener.document.getElementById('reloadData');
                             if (reloadBtn) reloadBtn.click();
                         }
@@ -291,7 +293,6 @@ if ($faktor > 1) {
                     else if (data.status === 'failed') {
                         clearInterval(interval);
                         showError(data.error || "Zahlung fehlgeschlagen oder storniert.");
-                        // Kein reload(), damit die Daten im Formular unverändert erhalten bleiben
                         setTimeout(() => window.close(), 2500);
                     }
                 } catch (e) {
@@ -312,7 +313,6 @@ if ($faktor > 1) {
                 await fetch(`sumup.php?action=cancel&rechnung_id=${rid}`);
                 document.getElementById('loader').style.display = "none";
                 document.getElementById('status').innerHTML = '<span style="color:#e74c3c; font-weight:bold;">❌ Zahlung wurde abgebrochen.</span>';
-                // Kein reload(), Formular bleibt exakt so wie es war
                 setTimeout(() => window.close(), 2500);
             } catch (e) {
                 showError("Fehler beim Abbrechen der Zahlung.");

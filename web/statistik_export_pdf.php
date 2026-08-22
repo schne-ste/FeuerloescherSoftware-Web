@@ -154,7 +154,7 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
     }
 
     // Entsorgungskosten erfassen (Defekt UND Bezahlt)
-    if ($l['defekt'] && $l['bezahlt'] && !$l["abgeholt"]) {
+    if ($l['defekt'] && $l['bezahlt'] && $l['typ'] !== 'Gratis') {
         $anzahlEntsorgung++;
         $gesamtEntsorgungskosten += $dbPreis;
     }

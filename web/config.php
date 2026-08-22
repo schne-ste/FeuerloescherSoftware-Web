@@ -28,6 +28,8 @@ if (!defined('API_MODE')) {
     function getDB() {
         $dbPath = __DIR__ . '/' . DB_FILE; 
         $db = new SQLite3($dbPath);
+        // Wartet bis zu 5000ms (5 Sekunden) auf Freigabe der DB, bevor ein Error geworfen wird
+        $db->busyTimeout(5000);
         $db->enableExceptions(true);
 
         // 1. Tabelle: loescher
@@ -69,7 +71,8 @@ if (!defined('API_MODE')) {
             zeitstempel_gedruckt TEXT,
             zeitstempel_erstellung TEXT,
             sumup_transaction_id TEXT,
-            sumup_status TEXT
+            sumup_status TEXT,
+            verrechnen_defekt INTEGER DEFAULT 0
         );");
 
         // 3. Tabelle: einstellungen (für DB-spezifische Preise)

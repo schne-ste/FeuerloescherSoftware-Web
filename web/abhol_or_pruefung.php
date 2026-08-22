@@ -48,40 +48,40 @@ if (isset($_POST['aktion']) && $nummer) {
         $soundType = "error";
     } else {
 
-        if ($modus === "abholen") {
-            $check = $db->query("
-                SELECT bezahlt, defekt, active FROM loescher 
+    if ($modus === "abholen") {
+        $check = $db->query("
+            SELECT bezahlt, defekt, active FROM loescher 
+            WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
+        ");
+        $row = $check->fetchArray();
+
+        if (!$row) {
+            $message = "&#10060; Nummer nicht gefunden!";
+            $statusType = "error";
+            $soundType = "error";
+        } else {
+            // Status umschalten (unabhängig von Bezahlt-/Defekt-Status)
+            $db->exec("
+                UPDATE loescher 
+                SET abgeholt = CASE WHEN abgeholt = 1 THEN 0 ELSE 1 END
                 WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
             ");
-            $row = $check->fetchArray();
 
-            if (!$row) {
-                $message = "&#10060; Nummer nicht gefunden!";
-                $statusType = "error";
-                $soundType = "error";
-            } elseif ($row['active'] && !$row['bezahlt'] && !$row['defekt']) {
-                $message = "&#128176; Nicht bezahlt – zuerst kassieren!";
-                $statusType = "error";
+            if (!$row['bezahlt'] && !$row['defekt']) {
+                $message = "&#9888; Abgeholt (Achtung: Noch nicht bezahlt!)";
+                $statusType = "warning";
+                $soundType = "warning";
+            } elseif ($row['defekt']) {
+                $message = "&#9888; Löscher defekt – Status geändert!";
+                $statusType = "warning";
                 $soundType = "warning";
             } else {
-                // Status umschalten, egal ob defekt
-                $db->exec("
-                    UPDATE loescher 
-                    SET abgeholt = CASE WHEN abgeholt = 1 THEN 0 ELSE 1 END
-                    WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
-                ");
-
-                if ($row['defekt']) {
-                    $message = "&#9888; Löscher defekt – Status trotzdem geändert!";
-                    $statusType = "warning";
-                    $soundType = "warning";
-                } else {
-                    $message = "&#9989; Abholung erfolgreich!";
-                    $statusType = "success";
-                    $soundType = "success";
-                }
+                $message = "&#9989; Abholung erfolgreich!";
+                $statusType = "success";
+                $soundType = "success";
             }
         }
+    }
 
         if ($modus === "pruefen") {
             $db->exec("
@@ -149,6 +149,39 @@ if (isset($_POST['setInfo']) && $nummer) {
 }
 
 // =====================
+// INFO ENTFERNEN (Schaummittel)
+// =====================
+if (isset($_POST['removeSchaumInfo']) && $nummer) {
+    $nummerSafe = (int) $nummer;
+    $removeText = "Schaummittel muss getauscht werden - Kundenentscheidung erforderlich";
+
+    // Text aus der Spalte "info" entfernen (inkl. evtl. Zeilenumbrüche)
+    $stmt = $db->prepare("
+        UPDATE loescher 
+        SET info = TRIM(
+            REPLACE(
+                REPLACE(info, :text, ''),
+                CHAR(10), ''
+            )
+        )
+        WHERE CAST(nummer AS INTEGER) = :nummer
+    ");
+    $stmt->bindValue(':text', $removeText);
+    $stmt->bindValue(':nummer', $nummerSafe);
+    $stmt->execute();
+
+    $result = $db->query("
+        SELECT * FROM loescher 
+        WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
+    ");
+    $eintrag = $result->fetchArray();
+
+    $message = "&#9989; Schaummittel-Hinweis entfernt!";
+    $statusType = "success";
+    $soundType = "success";
+}
+
+// =====================
 // INFO SETZEN (Umbau nötig)
 // =====================
 if (isset($_POST['setUmbau']) && $nummer) {
@@ -179,6 +212,38 @@ if (isset($_POST['setUmbau']) && $nummer) {
     $message = "&#9888; Hinweis gesetzt (Umbau nötig)!";
     $statusType = "warning";
     $soundType = "warning";
+}
+
+// =====================
+// INFO ENTFERNEN (Umbau)
+// =====================
+if (isset($_POST['removeUmbauInfo']) && $nummer) {
+    $nummerSafe = (int) $nummer;
+    $removeText = "Umbau des Löschers ist nötig - Kundenentscheidung erforderlich";
+
+    $stmt = $db->prepare("
+        UPDATE loescher 
+        SET info = TRIM(
+            REPLACE(
+                REPLACE(info, :text, ''),
+                CHAR(10), ''
+            )
+        )
+        WHERE CAST(nummer AS INTEGER) = :nummer
+    ");
+    $stmt->bindValue(':text', $removeText);
+    $stmt->bindValue(':nummer', $nummerSafe);
+    $stmt->execute();
+
+    $result = $db->query("
+        SELECT * FROM loescher 
+        WHERE CAST(TRIM(nummer) AS INTEGER) = $nummerSafe
+    ");
+    $eintrag = $result->fetchArray();
+
+    $message = "&#9989; Umbau-Hinweis entfernt!";
+    $statusType = "success";
+    $soundType = "success";
 }
 
 // =====================
@@ -320,6 +385,32 @@ if (isset($_POST['setDefekt']) && $nummer) {
                         </div>
                         <br>
                         <?php if ($eintrag['active']): ?>
+                            <!-- Bezahlstatus mit Preis -->
+                            <h4 class="d-flex mb-2">
+                                <span class="me-2" style="width:160px;">Bezahlstatus:</span>
+
+                                <span id="bezahlStatusBox">
+                                    <?php if ($eintrag['bezahlt']): ?>
+                                        <?php if (!empty($eintrag['defekt'])): ?>
+                                            <span class="badge border border-success text-success bg-transparent">
+                                                Bezahlt (<?= number_format((float)($eintrag['preis'] ?? $eintrag['betrag'] ?? 0), 2, ',', '.') ?> €)
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="badge bg-success">
+                                                Bezahlt (<?= number_format((float)($eintrag['preis'] ?? $eintrag['betrag'] ?? 0), 2, ',', '.') ?> €)
+                                            </span>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <?php if (!empty($eintrag['defekt'])): ?>
+                                            <span class="badge border border-danger text-danger bg-transparent">Nicht bezahlt</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-danger">Nicht bezahlt</span>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </span>
+                            </h4>
+
+                            <!-- Prüfstatus -->
                             <h4 class="d-flex mb-2">
                                 <span class="me-2" style="width:160px;">Prüfstatus:</span>
 
@@ -349,6 +440,7 @@ if (isset($_POST['setDefekt']) && $nummer) {
                             </h4>
                             <span id="loescherStatusBox" style="display:none;"></span>
                             <br>
+                            
 
                             <h4 class="d-flex mb-2">
                                 <span class="me-2" style="width:160px;">Abholstatus:</span>
@@ -359,6 +451,8 @@ if (isset($_POST['setDefekt']) && $nummer) {
                                         : '<span class="badge bg-warning text-dark">Nicht abgeholt</span>' ?>
                                 </span>
                             </h4>
+
+                            
 
                             <hr>
                             <div id="infoBox">
@@ -374,6 +468,45 @@ if (isset($_POST['setDefekt']) && $nummer) {
                             <!-- BUTTONS -->
                             <?php if ($modus === "pruefen"): ?>
                                 <div class="mt-3">
+                                    <?php 
+                                    $hasSchaum = !empty($eintrag['info']) && str_contains($eintrag['info'], 'Schaummittel muss getauscht werden');
+                                    $hasUmbau  = !empty($eintrag['info']) && str_contains($eintrag['info'], 'Umbau des Löschers ist nötig');
+                                    ?>
+
+                                    <?php if ($hasSchaum || $hasUmbau): ?>
+                                        <div class="row g-2 mb-3">
+                                            <!-- Button Schaummittel-Hinweis entfernen -->
+                                            <?php if ($hasSchaum): ?>
+                                                <div class="<?= ($hasSchaum && $hasUmbau) ? 'col-6' : 'col-12' ?>">
+                                                    <form method="post" class="h-100">
+                                                        <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                                                        <input type="hidden" name="modus" value="<?= $modus ?>">
+                                                        <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+
+                                                        <button type="submit" name="removeSchaumInfo" class="btn btn-outline-secondary w-100 py-2 fw-bold h-100">
+                                                            &#9989; Schaum-Hinweis löschen
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            <?php endif; ?>
+
+                                            <!-- Button Umbau-Hinweis entfernen -->
+                                            <?php if ($hasUmbau): ?>
+                                                <div class="<?= ($hasSchaum && $hasUmbau) ? 'col-6' : 'col-12' ?>">
+                                                    <form method="post" class="h-100">
+                                                        <input type="hidden" name="nummer" value="<?= $eintrag['nummer'] ?>">
+                                                        <input type="hidden" name="modus" value="<?= $modus ?>">
+                                                        <input type="hidden" name="bedienmodus" value="<?= $bedienmodus ?>">
+
+                                                        <button type="submit" name="removeUmbauInfo" class="btn btn-outline-secondary w-100 py-2 fw-bold h-100">
+                                                            &#9989; Umbau-Hinweis löschen
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+
                                     <div class="row g-2 mb-3">
                                         <!-- Kachel 1: Schaummittel -->
                                         <div class="col-12 col-md-6">
@@ -438,7 +571,7 @@ if (isset($_POST['setDefekt']) && $nummer) {
 
                                     <button id="actionBtn" type="submit" name="aktion" value="1"
                                         class="btn btn-success btn-lg w-100 py-3" style="font-size: 1.5rem;"
-                                        <?= (!$eintrag['active'] || ($modus === "abholen" && !$eintrag['bezahlt'] && !$eintrag['defekt'])) ? 'disabled' : '' ?>>
+                                        <?= (!$eintrag['active']) ? 'disabled' : '' ?>>
 
                                         <div>
                                             <strong>
@@ -577,11 +710,23 @@ if (isset($_POST['setDefekt']) && $nummer) {
             const clearBtn = document.getElementById("clearBtn");
 
             function appendDigit(digit) {
-                input.value += digit;
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+
+                // Wenn der gesamte oder ein Teil des Textes markiert ist, ersetze die Markierung
+                if (start !== null && end !== null && start !== end) {
+                    input.value = input.value.substring(0, start) + digit + input.value.substring(end);
+                    input.setSelectionRange(start + 1, start + 1);
+                } else {
+                    // Ansonsten wie bisher hinten anhängen
+                    input.value += digit;
+                }
             }
 
             function deleteLastDigit() {
                 input.value = input.value.slice(0, -1);
+                //input.value = ""; // Löscht den gesamten Text
+                //input.focus();
             }
 
             if (clearBtn) {
@@ -873,9 +1018,10 @@ if (isset($_POST['setDefekt']) && $nummer) {
                         disable = true;
                     }
 
-                    if (data.active == 1 && data.bezahlt == 0 && data.defekt == 0 && "<?= $modus ?>" === "abholen") {
+                    //Nur Abholen wird erlaubt wenn die Rechnung bezahlt wurde
+                    /*if (data.active == 1 && data.bezahlt == 0 && data.defekt == 0 && "<?= $modus ?>" === "abholen") {
                         disable = true;
-                    }
+                    }*/
 
                     actionBtn.disabled = disable;
                 }
@@ -895,6 +1041,29 @@ if (isset($_POST['setDefekt']) && $nummer) {
                     }, 3000);
                 });
             });
+
+            // =====================
+            // BEZAHLSTATUS
+            // =====================
+            const bezahlStatusBox = document.getElementById("bezahlStatusBox");
+            if (bezahlStatusBox) {
+                let preisVal = data.preis ?? data.betrag ?? 0;
+                let preisFormatiert = parseFloat(preisVal).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                if (data.bezahlt == 1) {
+                    if (data.defekt == 1) {
+                        bezahlStatusBox.innerHTML = '<span class="badge border border-success text-success bg-transparent">Bezahlt (' + preisFormatiert + ' €)</span>';
+                    } else {
+                        bezahlStatusBox.innerHTML = '<span class="badge bg-success">Bezahlt (' + preisFormatiert + ' €)</span>';
+                    }
+                } else {
+                    if (data.defekt == 1) {
+                        bezahlStatusBox.innerHTML = '<span class="badge border border-danger text-danger bg-transparent">Nicht bezahlt</span>';
+                    } else {
+                        bezahlStatusBox.innerHTML = '<span class="badge bg-danger">Nicht bezahlt</span>';
+                    }
+                }
+            }
         </script>
 
 </body>

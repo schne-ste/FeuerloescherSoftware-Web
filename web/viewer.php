@@ -23,15 +23,14 @@ function getStats($db) {
 
     $stats['gesamt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE active = 1");
 
-
     $stats['geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 1 AND active = 1");
     $stats['nicht_geprueft'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE geprueft = 0 AND active = 1");
 
     $stats['abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 1 AND active = 1");
     $stats['nicht_abgeholt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE abgeholt = 0 AND active = 1");
 
-    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1");
-    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1");
+    $stats['bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 1 AND active = 1 AND defekt=0");
+    $stats['nicht_bezahlt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE bezahlt = 0 AND active = 1 AND defekt=0");
 
     $stats['ok'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 0 AND active = 1");
     $stats['defekt'] = $db->querySingle("SELECT COUNT(*) FROM loescher WHERE defekt = 1 AND active = 1");
@@ -41,7 +40,7 @@ function getStats($db) {
     $stats['p_defekt'] = percent($stats['defekt'], $stats['gesamt']);
     $stats['p_geprueft'] = percent($stats['geprueft'], $stats['gesamt']);
     $stats['p_abgeholt'] = percent($stats['abgeholt'], $stats['gesamt']);
-    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt']);
+    $stats['p_bezahlt'] = percent($stats['bezahlt'], $stats['gesamt_ok']);
 
     return $stats;
 }
@@ -65,53 +64,74 @@ $stats = getStats($db);
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body {
+html, body {
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     background-color: #f5f5f5;
     color: #000;
     font-family: Arial, sans-serif;
 }
 
+.container-fluid {
+    height: 100vh;
+    max-width: 98vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5vh 2vw !important;
+}
+
 h1 {
     text-align: center;
-    font-size: 4rem;
-    margin-bottom: 3rem;
+    font-size: min(4vh, 3.5vw);
+    margin: 0 0 1vh 0;
+    font-weight: bold;
 }
 
-.container {
-    max-width: 95%;
-}
-
-/* Gleich hohe Karten */
-.row.equal-height > [class*='col'] {
+.card-grid {
     display: flex;
+    gap: 1vw;
+    margin-bottom: 1.5vh;
+}
+
+.card-item {
+    flex: 1;
 }
 
 .card {
-    flex: 1;
+    height: 110%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 180px;
+    padding: 1vh !important;
     border-radius: 12px;
     border: 2px solid #ccc;
     background: #fff;
 }
 
 .card h6 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+    font-size: min(2.2vh, 1.8vw);
+    margin-bottom: 0.5vh;
+    white-space: nowrap;
 }
 
 .big-number {
-    font-size: 3.5rem;
+    font-size: min(5vh, 4vw);
     font-weight: bold;
+    line-height: 1;
 }
 
 .split {
     display: flex;
-    justify-content: space-between;
-    font-size: 2.5rem;
+    justify-content: center;
+    gap: 1.5vw;
+    font-size: min(3.8vh, 3vw);
     font-weight: bold;
+    line-height: 1;
 }
 
 .ok {
@@ -122,68 +142,78 @@ h1 {
     color: red;
 }
 
-/* Progress */
+.progress-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex-grow: 1;
+    max-height: 55vh;
+}
+
+.progress-group {
+    display: flex;
+    flex-direction: column;
+}
+
 label {
-    font-size: 3rem;
+    font-size: min(2.5vh, 2vw);
     font-weight: bold;
+    margin-bottom: 0.3vh;
 }
 
 label span {
-    font-size: 3.2rem;
+    font-size: min(2.7vh, 2.2vw);
 }
 
 .progress {
-    height: 4rem;
+    height: min(8vh, 150px);
     background-color: #ddd;
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
 .progress-bar {
-    font-size: 2.5rem;
+    font-size: min(2.5vh, 1.8vw);
     font-weight: bold;
-}
-
-.split {
     display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 40px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container mt-5">
+<div class="container-fluid">
 
 <h1>🔥 Feuerlöscher Übersicht</h1>
 
-<div class="row row-cols-2 row-cols-md-5 mb-5 equal-height">
+<div class="card-grid">
 
-    <div class="col">
-        <div class="card text-center p-3">
+    <div class="card-item">
+        <div class="card text-center">
             <div>
-                <h6>Gesamt</h6>
+                <h5>Gesamt</h5>
                 <div id="stat-gesamt" class="big-number"><?= $stats['gesamt'] ?></div>
             </div>
         </div>
     </div>
 
-    <div class="col">
-        <div class="card text-center p-3">
+    <!--<div class="card-item">
+        <div class="card text-center">
             <div>
-                <h6>Bezahlt</h6>
+                <h5>Bezahlt</h5>
                 <div id="stat-bezahlt" class="split">
                     <span class="ok">✅ <?= $stats['bezahlt'] ?></span>
                     <span class="nok">❌ <?= $stats['nicht_bezahlt'] ?></span>
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
 
-    <div class="col">
-        <div class="card text-center p-3">
+    <div class="card-item">
+        <div class="card text-center">
             <div>
-                <h6>Geprüft</h6>
+                <h5>Geprüft</h5>
                 <div id="stat-geprueft" class="split">
                     <span class="ok">✅ <?= $stats['geprueft'] ?></span>
                     <span class="nok">❌ <?= $stats['nicht_geprueft'] ?></span>
@@ -192,22 +222,22 @@ label span {
         </div>
     </div>
 
-    <div class="col">
-        <div class="card text-center p-3">
+    <!--<div class="card-item">
+        <div class="card text-center">
             <div>
-                <h6>OK | DEFEKT</h6>
+                <h5>OK | DEFEKT</h5>
                 <div id="stat-ok" class="split">
                     <span class="ok">✅ <?= $stats['ok'] ?></span>
                     <span class="nok">❌ <?= $stats['defekt'] ?></span>
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
 
-    <div class="col">
-        <div class="card text-center p-3">
+    <div class="card-item">
+        <div class="card text-center">
             <div>
-                <h6>Abgeholt</h6>
+                <h5>Abgeholt</h5>
                 <div id="stat-abgeholt" class="split">
                     <span class="ok">✅ <?= $stats['abgeholt'] ?></span>
                     <span class="nok">❌ <?= $stats['nicht_abgeholt'] ?></span>
@@ -218,32 +248,41 @@ label span {
 
 </div>
 
-<!-- Progressbars -->
-<label>Bezahlt<!-- (<span id="label-p-bezahlt"><?= $stats['p_bezahlt'] ?></span>%)--></label>
-<div class="progress mb-4">
-    <div class="progress-bar bg-success" id="bar-bezahlt" style="width: <?= $stats['p_bezahlt'] ?>%">
-        <?= $stats['p_bezahlt'] ?>%
-    </div>
-</div>
+<div class="progress-section">
+    <!--<div class="progress-group">
+        <label>Bezahlt</label>
+        <div class="progress">
+            <div class="progress-bar bg-success" id="bar-bezahlt" style="width: <?= $stats['p_bezahlt'] ?>%">
+                <?= $stats['p_bezahlt'] ?>%
+            </div>
+        </div>
+    </div>-->
 
-<label>Geprüft<!-- (<span id="label-p-geprueft"><?= $stats['p_geprueft'] ?></span>%)--></label>
-<div class="progress mb-4">
-    <div class="progress-bar" id="bar-geprueft" style="width: <?= $stats['p_geprueft'] ?>%">
-        <?= $stats['p_geprueft'] ?>%
+    <div class="progress-group">
+        <label>Geprüft</label>
+        <div class="progress">
+            <div class="progress-bar" id="bar-geprueft" style="width: <?= $stats['p_geprueft'] ?>%">
+                <?= $stats['p_geprueft'] ?>%
+            </div>
+        </div>
     </div>
-</div>
 
-<label>Defekt<!-- (<span id="label-p-defekt"><?= $stats['p_defekt'] ?></span>%)--></label>
-<div class="progress mb-4">
-    <div class="progress-bar bg-danger" id="bar-defekt" style="width: <?= $stats['p_defekt'] ?>%">
-        <?= $stats['p_defekt'] ?>%
+    <div class="progress-group">
+        <label>Defekt</label>
+        <div class="progress">
+            <div class="progress-bar bg-danger" id="bar-defekt" style="width: <?= $stats['p_defekt'] ?>%">
+                <?= $stats['p_defekt'] ?>%
+            </div>
+        </div>
     </div>
-</div>
-
-<label>Abgeholt<!-- (<span id="label-p-abgeholt"><?= $stats['p_abgeholt'] ?></span>%)--></label>
-<div class="progress mb-4">
-    <div class="progress-bar" id="bar-abgeholt" style="width: <?= $stats['p_abgeholt'] ?>%">
-        <?= $stats['p_abgeholt'] ?>%
+    <hr>
+    <div class="progress-group">
+        <label>Abgeholt</label>
+        <div class="progress">
+            <div class="progress-bar" id="bar-abgeholt" style="width: <?= $stats['p_abgeholt'] ?>%">
+                <?= $stats['p_abgeholt'] ?>%
+            </div>
+        </div>
     </div>
 </div>
 
