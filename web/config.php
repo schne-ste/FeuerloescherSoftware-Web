@@ -14,7 +14,7 @@ define('FIRMA_PLZORT', '4702 Wallern / Trattnach');
 define('FIRMA_WEB', 'https://www.feuerwehr-wallern.at');
 
 define('BANK_NAME', 'Raiffeisenbank Wallern');
-define('BANK_IBAN', 'AT1234567890123456');
+define('BANK_IBAN', 'AT 4634736 0000 1410893');
 define('BANK_EMPFAENGER', 'Feuerwehr Wallern');
 
 define('SumUp_AVALIABLE', 'TRUE'); // TRUE oder FALSE
@@ -25,6 +25,7 @@ define('SumUp_PRICE_FAKTOR', 1.02);
 define('EVENT_NAME', 'Feuerlöscherüberprüfung 2026');
 
 if (!defined('API_MODE')) {
+
     function getDB() {
         $dbPath = __DIR__ . '/' . DB_FILE; 
         $db = new SQLite3($dbPath);

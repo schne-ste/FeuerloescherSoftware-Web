@@ -109,13 +109,18 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                 </thead>
                 <tbody>
                     <?php foreach ($rechnungen as $r): 
+                        // Defekt-Einstellung der Rechnung berücksichtigen
+                        $inklDefekt = !empty($r['verrechnen_defekt']);
+                        $defektCondition = $inklDefekt ? "" : "AND (defekt = 0 OR defekt = '0')";
+
                         // Live-Berechnung der Summe pro Typ aus der Löscher-DB
                         $kName = trim($r['name']);
                         $stmtT = $db->prepare("
                             SELECT typ, COUNT(*) as anzahl 
                             FROM loescher 
                             WHERE LOWER(TRIM(name)) = LOWER(:name) 
-                              AND (active = 1 OR active = '1') 
+                            AND (active = 1 OR active = '1') 
+                            $defektCondition
                             GROUP BY typ
                         ");
                         $stmtT->bindValue(':name', $kName, SQLITE3_TEXT);
