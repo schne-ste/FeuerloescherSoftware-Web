@@ -182,7 +182,7 @@ if ($mode === 'edit' && isset($_POST['refresh_entry'])) {
 }
 
 // =====================
-// NEUE LÖSCHER HINZUFÜGEN (nur im add mode)
+// NEUE LÖSCHER HINZUFÜGEN (Fallback, falls ohne JS gesendet)
 // =====================
 if ($mode === 'add' && isset($_POST['add_loscher'])) {
     $typ = $_POST['typ'] ?? '';
@@ -1010,31 +1010,50 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                     }
                 }
 
-                // Weiterleitung zum Wechselgeld-Dialog oder direkte Übermittlung
-                function proceedToSaveOrWechselgeld() {
-                    if (addBezahltCheck && addBezahltCheck.checked && wechselgeldModal) {
-                        let einzelpreis = preisMap[addTypSelect.value] ?? 0;
-                        if (typeof einzelpreis === "string") einzelpreis = parseFloat(einzelpreis);
-                        let anzahl = parseInt(addAnzahlField.value) || 1;
-                        if (anzahl < 1) anzahl = 1;
+                // Erst Daten in die DB schreiben, danach Wechselgeldrechner öffnen oder Seite neu laden
+                async function proceedToSaveOrWechselgeld() {
+                    const formData = new FormData(addForm);
+                    formData.append('add_ajax', '1');
 
-                        currentGesamtpreis = einzelpreis * anzahl;
+                    try {
+                        let response = await fetch('./add_edit.php?ajax=1', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        let result = await response.json();
 
-                        modalGesamtpreisField.value = currentGesamtpreis.toLocaleString(navigator.language, {
-                            minimumFractionDigits: 2, maximumFractionDigits: 2
-                        }) + " €";
-                        modalGegebenField.value = '';
-                        modalWechselgeldField.value = "0,00 €";
-                        modalWechselgeldField.className = "form-control bg-light fw-bold text-dark fs-3";
+                        if (!result.success) {
+                            alert('Fehler beim Speichern des Datensatzes.');
+                            return;
+                        }
 
-                        wechselgeldModal.show();
+                        if (addBezahltCheck && addBezahltCheck.checked && wechselgeldModal) {
+                            let einzelpreis = preisMap[addTypSelect.value] ?? 0;
+                            if (typeof einzelpreis === "string") einzelpreis = parseFloat(einzelpreis);
+                            let anzahl = parseInt(addAnzahlField.value) || 1;
+                            if (anzahl < 1) anzahl = 1;
 
-                        wechselgeldModalEl.addEventListener('shown.bs.modal', () => {
-                            modalGegebenField.focus();
-                        }, { once: true });
+                            currentGesamtpreis = einzelpreis * anzahl;
 
-                    } else {
-                        addForm.submit();
+                            modalGesamtpreisField.value = currentGesamtpreis.toLocaleString(navigator.language, {
+                                minimumFractionDigits: 2, maximumFractionDigits: 2
+                            }) + " €";
+                            modalGegebenField.value = '';
+                            modalWechselgeldField.value = "0,00 €";
+                            modalWechselgeldField.className = "form-control bg-light fw-bold text-dark fs-3";
+
+                            wechselgeldModal.show();
+
+                            wechselgeldModalEl.addEventListener('shown.bs.modal', () => {
+                                modalGegebenField.focus();
+                            }, { once: true });
+
+                        } else {
+                            window.location.href = "?mode=add";
+                        }
+                    } catch (err) {
+                        console.error("Fehler beim Speichern:", err);
+                        alert('Fehler beim Speichern.');
                     }
                 }
 
@@ -1115,10 +1134,10 @@ $isActive = ($editEntry['active'] ?? 0) == 1;
                 });
 
                 confirmKassierenBtn?.addEventListener('click', () => {
-                    addForm.submit();
+                    window.location.href = "?mode=add";
                 });
 
-                const focusBack = () => { submitAddBtn?.focus(); };
+                const focusBack = () => { window.location.href = "?mode=add"; };
                 closeModalBtn?.addEventListener('click', focusBack);
                 closeModalCrossBtn?.addEventListener('click', focusBack);
             });
@@ -1232,6 +1251,57 @@ function ajax()
         
         header('Content-Type: application/json');
         echo json_encode(['exists' => ($res['count'] > 0)]);
+        exit;
+    }
+
+    // AJAX Speichern beim Neuanlegen
+    if (isset($_POST['add_ajax'])) {
+        $preise = [
+            'Standard' => PREIS_STANDARD,
+            'Rabatt' => PREIS_RABATT,
+            'Gratis' => PREIS_GRATIS
+        ];
+        $zeitstempel = date('Y-m-d H:i:s');
+        $typ = $_POST['typ'] ?? '';
+        $preis = $preise[$typ] ?? 0;
+        $anzahl = max(1, (int) ($_POST['anzahl'] ?? 1));
+        $nummern = [];
+
+        for ($i = 0; $i < $anzahl; $i++) {
+            $nummer = generateNummer($db);
+            $nummern[] = $nummer;
+            $stmt = $db->prepare("
+                INSERT INTO loescher (
+                    nummer, name, telefon, typ, preis, loeschertyp,
+                    menge, einheit, etikett_gedruckt,
+                    abholschein_gedruckt, bezahlt, geprueft, abgeholt, defekt, active, info, zeitstempel
+                ) VALUES (
+                    :nummer, :name, :telefon, :typ, :preis, :loeschertyp,
+                    :menge, :einheit, 0, 0, :bezahlt, 0, 0, 0, 1, :info, :zeitstempel
+                )
+            ");
+
+            $stmt->bindValue(':nummer', $nummer);
+            $stmt->bindValue(':name', $_POST['name']);
+            $stmt->bindValue(':telefon', $_POST['telefon'] ?? '');
+            $stmt->bindValue(':typ', $typ);
+            $stmt->bindValue(':preis', $preis);
+            $stmt->bindValue(':loeschertyp', $_POST['loeschertyp'] ?? '');
+            $stmt->bindValue(':menge', $_POST['menge'] ?? '');
+            $stmt->bindValue(':einheit', $_POST['einheit'] ?? '');
+            $stmt->bindValue(':bezahlt', isset($_POST['bezahlt']) ? 1 : 0);
+            $stmt->bindValue(':info', $_POST['info'] ?? '');
+            $stmt->bindValue(':zeitstempel', $zeitstempel);
+
+            $stmt->execute();
+        }
+
+        $_SESSION['success_msg'] = "&#9989; $anzahl Löscher erfolgreich hinzugefügt! [" . implode(", ", $nummern) . "]";
+        $_SESSION['msg_type'] = "success";
+        $_SESSION['focus_suchfeld'] = true;
+
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'nummern' => $nummern]);
         exit;
     }
 

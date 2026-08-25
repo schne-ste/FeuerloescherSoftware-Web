@@ -71,10 +71,9 @@ foreach ($allLoscher as $l) {
     // Filter: nur verrechenbare Löscher
     $istVerrechenbar = (
         !$l['defekt'] &&
-        $l['bezahlt'] &&
         $l['typ'] !== 'Gratis' &&
         $l['geprueft']
-    );
+    ); //$l['bezahlt'] &&
 
     if (!$istVerrechenbar) {
         continue;

@@ -38,6 +38,9 @@ $stats = [
     'verrechenbar' => 0,
     'nicht_verrechenbar' => 0,
     'ok' => 0,
+    'ok_standard' => 0,
+    'ok_rabatt' => 0,
+    'ok_gratis' => 0,
     'defekt' => 0,
     'nicht_geprueft' => 0
 ];
@@ -98,14 +101,14 @@ foreach ($allLoscher as $l) {
     $anteilFF = 0;
 
     // BETRAGS-AUFTEILUNG LOGIK:
-    if ($l['bezahlt'] && $l['typ'] !== 'Gratis') {
+    if ($l['typ'] !== 'Gratis') {
         
-        // 1. Defekt & Bezahlt -> Firma bekommt 0, FF bekommt den gesamten Betrag aus der DB
+        // 1. Defekt -> Firma bekommt 0, FF bekommt den gesamten Betrag aus der DB
         if ($l['defekt']) {
             $anteilFirma = 0;
             $anteilFF = $dbPreis;
         } 
-        // 2. OK & Bezahlt
+        // 2. OK & geprüft
         elseif ($l['geprueft']) {
             if ($l['typ'] === 'Standard') {
                 $anteilFirma = PREIS_RABATT;
@@ -117,17 +120,17 @@ foreach ($allLoscher as $l) {
         }
     }
 
-    // Entsorgungskosten erfassen (Defekt UND Bezahlt)
-    if ($l['defekt'] && $l['bezahlt'] && $l['typ'] !== 'Gratis') {
+    // Entsorgungskosten erfassen (Typ != Gratis, Bezahlt und Defekt)
+    if ($l['typ'] !== 'Gratis' && $l['bezahlt'] && $l['defekt']) {
         $anzahlEntsorgung++;
-        $gesamtEntsorgungskosten += $dbPreis;
+        // Liest den individuell eingetragenen Preis direkt aus der Datenbank-Spalte
+        $gesamtEntsorgungskosten += (float)$l['preis'];
     }
 
-    // Verrechenbarkeits-Prüfung für die Statistik-Zähler (NUR wenn nicht defekt, geprüft, bezahlt und nicht gratis)
+    // Verrechenbarkeits-Prüfung für die Statistik (NUR wenn nicht defekt, geprüft und nicht gratis)
     $istVerrechenbar = (
         !$l['defekt'] && 
         $l['geprueft'] && 
-        $l['bezahlt'] && 
         $l['typ'] !== 'Gratis'
     );
 
@@ -136,9 +139,20 @@ foreach ($allLoscher as $l) {
     // =====================
     $stats['gesamt']++;
 
-    if ($status === 'defekt') $stats['defekt']++;
-    elseif ($status === 'ok') $stats['ok']++;
-    elseif ($status === 'nicht') $stats['nicht_geprueft']++;
+    if ($status === 'defekt') {
+        $stats['defekt']++;
+    } elseif ($status === 'ok') {
+        $stats['ok']++;
+        if ($l['typ'] === 'Standard') {
+            $stats['ok_standard']++;
+        } elseif ($l['typ'] === 'Rabatt') {
+            $stats['ok_rabatt']++;
+        } elseif ($l['typ'] === 'Gratis') {
+            $stats['ok_gratis']++;
+        }
+    } elseif ($status === 'nicht') {
+        $stats['nicht_geprueft']++;
+    }
 
     if ($istVerrechenbar) {
         $stats['verrechenbar']++;
@@ -283,10 +297,16 @@ td {
 
     <table class="table table-bordered w-100">
         <tr><th>Gesamt</th><td><?= $stats['gesamt'] ?> Stück</td></tr>
-        <tr><th>Verrechenbar</th><td><?= $stats['verrechenbar'] ?> Stück</td></tr>
+        <tr><th>Verrechenbar</th><td><?= $stats['verrechenbar'] ?> Stück <small class="text-muted ms-2">(Standard: <?= $stats['ok_standard'] ?> + Rabatt: <?= $stats['ok_rabatt'] ?>)</small></td></tr>
         <tr><th>Nicht verrechenbar</th><td><?= $stats['nicht_verrechenbar'] ?> Stück</td></tr>
         <tr><th>Nicht geprüft</th><td><?= $stats['nicht_geprueft'] ?> Stück</td></tr>
-        <tr><th>OK</th><td><?= $stats['ok'] ?> Stück</td></tr>
+        <tr>
+            <th>OK</th>
+            <td>
+                <?= $stats['ok'] ?> Stück
+                <small class="text-muted ms-2">(Standard: <?= $stats['ok_standard'] ?> | Rabatt: <?= $stats['ok_rabatt'] ?> | Gratis: <?= $stats['ok_gratis'] ?>)</small>
+            </td>
+        </tr>
         <tr><th>Defekt</th><td><?= $stats['defekt'] ?> Stück</td></tr>
         <tr><th>Entsorgung (Defekt & Geld nicht retour)</th><td><?= $anzahlEntsorgung ?> Stück</td></tr>
         <tr><th>Entsorgungskosten gesamt</th><td><?= number_format($gesamtEntsorgungskosten, 2) ?> €</td></tr>

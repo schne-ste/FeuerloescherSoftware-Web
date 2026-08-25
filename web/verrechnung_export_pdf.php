@@ -96,10 +96,9 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
     // Filter nur verrechenbare Löscher
     $istVerrechenbar = (
         !$l['defekt'] &&
-        $l['bezahlt'] &&
         $l['geprueft'] &&
         $l['typ'] !== 'Gratis'
-    );
+    ); //$l['bezahlt'] &&
     if (!$istVerrechenbar) {
         continue;
     }

@@ -87,6 +87,9 @@ $stats = [
     'verrechenbar' => 0,
     'nicht_verrechenbar' => 0,
     'ok' => 0,
+    'ok_standard' => 0,
+    'ok_rabatt' => 0,
+    'ok_gratis' => 0,
     'defekt' => 0,
     'nicht_geprueft' => 0
 ];
@@ -138,7 +141,8 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
     $anteilFirma = 0;
     $anteilFF = 0;
 
-    if ($l['bezahlt'] && $l['typ'] !== 'Gratis') {
+    // BETRAGS-AUFTEILUNG LOGIK (Unabhängig vom Bezahlt-Status):
+    if ($l['typ'] !== 'Gratis') {
         if ($l['defekt']) {
             $anteilFirma = 0;
             $anteilFF = $dbPreis;
@@ -153,17 +157,16 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
         }
     }
 
-    // Entsorgungskosten erfassen (Defekt UND Bezahlt)
+    // Entsorgungskosten erfassen (Defekt, Bezahlt)
     if ($l['defekt'] && $l['bezahlt'] && $l['typ'] !== 'Gratis') {
         $anzahlEntsorgung++;
-        $gesamtEntsorgungskosten += $dbPreis;
+        $gesamtEntsorgungskosten += (float)$l['preis'];
     }
 
-    // Verrechenbarkeits-Prüfung für Statistik (NUR wenn nicht defekt, geprüft, bezahlt und nicht gratis)
+    // Verrechenbarkeits-Prüfung für Statistik (NUR wenn nicht defekt, geprüft und nicht gratis)
     $istVerrechenbar = (
         !$l['defekt'] && 
         $l['geprueft'] && 
-        $l['bezahlt'] && 
         $l['typ'] !== 'Gratis'
     );
 
@@ -177,9 +180,20 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
     }
 
     $stats['gesamt']++;
-    if ($status === 'defekt') $stats['defekt']++;
-    elseif ($status === 'ok') $stats['ok']++;
-    elseif ($status === 'nicht') $stats['nicht_geprueft']++;
+    if ($status === 'defekt') {
+        $stats['defekt']++;
+    } elseif ($status === 'ok') {
+        $stats['ok']++;
+        if ($l['typ'] === 'Standard') {
+            $stats['ok_standard']++;
+        } elseif ($l['typ'] === 'Rabatt') {
+            $stats['ok_rabatt']++;
+        } elseif ($l['typ'] === 'Gratis') {
+            $stats['ok_gratis']++;
+        }
+    } elseif ($status === 'nicht') {
+        $stats['nicht_geprueft']++;
+    }
 
     $rows[] = [
         'nummer' => $l['nummer'],
@@ -223,10 +237,10 @@ $pdf->SetFont('helvetica', '', 11);
 
 $statData = [
     ['Gesamt', $stats['gesamt'] . ' Stück'],
-    ['Verrechenbar', $stats['verrechenbar'] . ' Stück'],
+    ['Verrechenbar', $stats['verrechenbar'] .' Stück (Std: ' . $stats['ok_standard'] . ' + Rab: ' . $stats['ok_rabatt'] . ')'],
     ['Nicht verrechenbar', $stats['nicht_verrechenbar'] . ' Stück'],
     ['Nicht geprüft', $stats['nicht_geprueft'] . ' Stück'],
-    ['OK', $stats['ok'] . ' Stück'],
+    ['OK', $stats['ok'] . ' Stück (Std: ' . $stats['ok_standard'] . ' | Rab: ' . $stats['ok_rabatt'] . ' | Gra: ' . $stats['ok_gratis'] . ')'],
     ['Defekt', $stats['defekt'] . ' Stück'],
     ['Entsorgung (Defekt & Bezahlt)', $anzahlEntsorgung . ' Stück'],
     ['Entsorgungskosten gesamt', number_format($gesamtEntsorgungskosten, 2).' €'],
