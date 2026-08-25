@@ -89,6 +89,14 @@ foreach ($allLoscher as $l) {
         if ($l['abgeholt']) {
             continue;
         }
+    } elseif ($statusFilter === 'nicht_bezahlt') {
+        if ($l['bezahlt']) {
+            continue;
+        }
+    } elseif ($statusFilter === 'nicht_bezahlt_ok') {
+        if ($l['bezahlt'] || $status !== 'ok') {
+            continue;
+        }
     } elseif ($statusFilter !== 'alle' && $statusFilter !== $status) {
         continue;
     }
@@ -252,6 +260,12 @@ td {
             case "nicht":
                 $btncls = "warning";
                 break;
+            case "nicht_bezahlt":
+                $btncls = "warning";
+                break;
+            case "nicht_bezahlt_ok":
+                $btncls = "warning";
+                break;
             case "nicht_abgeholt":
                 $btncls = "info";
                 break;
@@ -276,8 +290,10 @@ td {
         <?= status_link_resolver("alle", "Alle"); ?>
         <?= status_link_resolver("ok", "OK"); ?>
         <?= status_link_resolver("defekt", "Defekt"); ?>
-        <?= status_link_resolver("nicht", "Nicht geprüft"); ?>
         <?= status_link_resolver("nicht_abgeholt", "Nicht abgeholt"); ?>
+        <?= status_link_resolver("nicht", "Nicht geprüft"); ?>
+        <?= status_link_resolver("nicht_bezahlt", "Nicht bezahlt"); ?>
+        <?= status_link_resolver("nicht_bezahlt_ok", "OK & Nicht bezahlt"); ?>
         
         <span class="ms-2 me-1 text-muted">|</span>
         

@@ -132,6 +132,14 @@ while ($l = $result->fetchArray(SQLITE3_ASSOC)) {
         if ($l['abgeholt']) {
             continue;
         }
+    } elseif ($statusFilter === 'nicht_bezahlt') {
+        if ($l['bezahlt']) {
+            continue;
+        }
+    } elseif ($statusFilter === 'nicht_bezahlt_ok') {
+        if ($l['bezahlt'] || $status !== 'ok') {
+            continue;
+        }
     } elseif ($statusFilter !== 'alle' && $statusFilter !== $status) {
         continue;
     }
@@ -223,6 +231,8 @@ if ($statusFilter !== 'alle') {
     if ($statusFilter === 'nicht') $filterLabel = 'Nicht geprüft';
     if ($statusFilter === 'ok') $filterLabel = 'OK';
     if ($statusFilter === 'defekt') $filterLabel = 'Defekt';
+    if ($statusFilter === 'nicht_bezahlt') $filterLabel = 'Nicht bezahlt';
+    if ($statusFilter === 'nicht_bezahlt_ok') $filterLabel = 'Nicht bezahlt aber OK geprüft';
     
     $filterErgaenzung = ' (Filter: ' . $filterLabel . ')';
 }
