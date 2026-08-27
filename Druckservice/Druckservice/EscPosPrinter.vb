@@ -314,31 +314,48 @@ Namespace BonPrinterUtilities
         memstr.Write(buf, 0, buf.Length)
       End If
     End Sub
- 
-    ''' <summary>
-    ''' ESC 'p' m t1 t2:
-    ''' Erzeugt einen Pulse, um eine am Drucker angeschlossene Kassenlade 
-    ''' zu öffnen.
-    ''' </summary>
-    ''' <param name="p5">false, wenn Pin #2 verwendet werden soll (m = 0);
-    ''' true, wenn Pin #5 verwendet werden soll (m = 1)</param>
-    ''' <param name="onTime">On Time: wert * 2 ms</param>
-    ''' <param name="offTime">Off Time: wert * 2 ms</param>
-    Public Sub SendDrawerKickoutPulse(ByVal p5 As Boolean, _
-      ByVal onTime As Byte, ByVal offTime As Byte)
-      Dim buf As Byte() = New Byte() {&H1B, &H70, CByte(If(p5, 1, 0)), _
-        onTime, offTime}
-      memstr.Write(buf, 0, buf.Length)
-    End Sub
- 
-    ''' <summary>
-    ''' GS 'V' m:
-    ''' Schneidet das Papier (nur bei Modellen mit einer Auto-Cut-Funktion).
-    ''' </summary>
-    ''' <param name="fullCut">true, wenn ein voller Schnitt durchgeführt 
-    ''' werden soll; false, wenn ein kleines Stück freigelassen 
-    ''' werden soll</param>
-    Public Sub CutPaper(ByVal fullCut As Boolean)
+
+        Public Enum DrawerPin
+            Pin2 = 0
+            Pin5 = 1
+            Both = 2
+        End Enum
+
+        ''' <summary>
+        ''' ESC 'p' m t1 t2:
+        ''' Erzeugt einen Puls, um die Kassenlade zu öffnen.
+        ''' Standardmäßig sind 50ms OnTime und 500ms OffTime hinterlegt.
+        ''' </summary>
+        ''' <param name="pin">Standardmäßig Pin2 (0), sonst Pin5 (1) oder Both (2)</param>
+        ''' <param name="onTime">Optional: On Time (Wert * 2 ms). Default = 25 (50ms)</param>
+        ''' <param name="offTime">Optional: Off Time (Wert * 2 ms). Default = 250 (500ms)</param>
+        Public Sub SendDrawerKickoutPulse(Optional ByVal pin As DrawerPin = DrawerPin.Pin2,
+                                  Optional ByVal onTime As Byte = 25,
+                                  Optional ByVal offTime As Byte = 250)
+            If pin = DrawerPin.Both Then
+                ' Befehl für Pin 2
+                Dim bufPin2 As Byte() = New Byte() {&H1B, &H70, 0, onTime, offTime}
+                memstr.Write(bufPin2, 0, bufPin2.Length)
+
+                ' Befehl für Pin 5
+                Dim bufPin5 As Byte() = New Byte() {&H1B, &H70, 1, onTime, offTime}
+                memstr.Write(bufPin5, 0, bufPin5.Length)
+            Else
+                ' Befehl für einzelnen Pin (Pin2 = 0, Pin5 = 1)
+                Dim m As Byte = CByte(If(pin = DrawerPin.Pin5, 1, 0))
+                Dim buf As Byte() = New Byte() {&H1B, &H70, m, onTime, offTime}
+                memstr.Write(buf, 0, buf.Length)
+            End If
+        End Sub
+
+        ''' <summary>
+        ''' GS 'V' m:
+        ''' Schneidet das Papier (nur bei Modellen mit einer Auto-Cut-Funktion).
+        ''' </summary>
+        ''' <param name="fullCut">true, wenn ein voller Schnitt durchgeführt 
+        ''' werden soll; false, wenn ein kleines Stück freigelassen 
+        ''' werden soll</param>
+        Public Sub CutPaper(ByVal fullCut As Boolean)
       Dim buf As Byte() = New Byte() {&H1D, &H56, CByte(If(fullCut, 0, 1))}
       memstr.Write(buf, 0, buf.Length)
     End Sub

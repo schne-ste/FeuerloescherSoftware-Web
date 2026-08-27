@@ -542,7 +542,11 @@ Public Class Druckservice
     Public Sub Print_Rechnung(name As String, anzahl As Integer, loescherText As String, preisDetails As List(Of KeyValuePair(Of Integer, Double)), rnummer As String, druckername As String, Optional adresse As String = "", Optional plzort As String = "", Optional zahlungsart As String = "")
         Log($"Starte Druck Rechnung: {rnummer}")
         RunPrintMethod(Sub(p) Print_Thermal_Rechnung(p, name, anzahl, loescherText, preisDetails, rnummer, adresse, plzort, zahlungsart), druckername)
-        RunPrintMethod(Sub(p) Print_Thermal_RechnungsBeleg(p, name, anzahl, loescherText, preisDetails, rnummer, adresse, plzort, zahlungsart), druckername)
+
+        If Ini.ReadValue("Rechnung", "BelegDrucken", "", Application.StartupPath & "\config.ini") = True Then
+            RunPrintMethod(Sub(p) Print_Thermal_RechnungsBeleg(p, name, anzahl, loescherText, preisDetails, rnummer, adresse, plzort, zahlungsart), druckername)
+        End If
+
         Log($"Druck Rechnung abgeschlossen: {rnummer}")
     End Sub
 
@@ -612,6 +616,7 @@ Public Class Druckservice
         If (defekt = False And Not typ = "Gratis" And bezahlt = False) Then info = ">>> NICHT BEZAHLT <<<"
 
         Try
+            p.SendDrawerKickoutPulse(EscPosPrinter.DrawerPin.Both)
             p.SetAlignment(EscPosPrinter.Alignment.Center)
             p.WriteLine()
             p.SetFontSize(1, 1)
@@ -727,6 +732,7 @@ Public Class Druckservice
         Next
 
         Try
+            p.SendDrawerKickoutPulse(EscPosPrinter.DrawerPin.Both)
             p.SetAlignment(EscPosPrinter.Alignment.Center)
             p.WriteLine()
             p.SetFontSize(1, 1)

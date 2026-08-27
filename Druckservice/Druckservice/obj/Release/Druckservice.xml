@@ -158,16 +158,15 @@ Druckservice
  </summary>
  <param name="alignment"></param>
 </member>
-<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SendDrawerKickoutPulse(System.Boolean,System.Byte,System.Byte)">
+<member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.SendDrawerKickoutPulse(Druckservice.BonPrinterUtilities.EscPosPrinter.DrawerPin,System.Byte,System.Byte)">
  <summary>
  ESC 'p' m t1 t2:
- Erzeugt einen Pulse, um eine am Drucker angeschlossene Kassenlade 
- zu öffnen.
+ Erzeugt einen Puls, um die Kassenlade zu öffnen.
+ Standardmäßig sind 50ms OnTime und 500ms OffTime hinterlegt.
  </summary>
- <param name="p5">false, wenn Pin #2 verwendet werden soll (m = 0);
- true, wenn Pin #5 verwendet werden soll (m = 1)</param>
- <param name="onTime">On Time: wert * 2 ms</param>
- <param name="offTime">Off Time: wert * 2 ms</param>
+ <param name="pin">Standardmäßig Pin2 (0), sonst Pin5 (1) oder Both (2)</param>
+ <param name="onTime">Optional: On Time (Wert * 2 ms). Default = 25 (50ms)</param>
+ <param name="offTime">Optional: Off Time (Wert * 2 ms). Default = 250 (500ms)</param>
 </member>
 <member name="M:Druckservice.BonPrinterUtilities.EscPosPrinter.CutPaper(System.Boolean)">
  <summary>

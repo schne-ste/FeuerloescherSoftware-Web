@@ -7,12 +7,16 @@
       "RelativeMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|solutionrelative:druckservice\\druckservice.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\druckservice\\config.ini||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|solutionrelative:druckservice\\config.ini||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\druckservice\\druckservice.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}|Form",
       "RelativeMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|solutionrelative:druckservice\\druckservice.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}|Form"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\druckservice\\config.ini||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|solutionrelative:druckservice\\config.ini||{3B902123-F8A7-4915-9F01-361F908088D0}"
+      "AbsoluteMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|c:\\users\\stefan\\documents\\github\\feuerloeschersoftware-web\\druckservice\\druckservice\\escposprinter.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}",
+      "RelativeMoniker": "D:0:0:{9348D1D4-6F4A-4138-99DA-25DD5B304C70}|Druckservice\\Druckservice.vbproj|solutionrelative:druckservice\\escposprinter.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,31 +26,45 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Druckservice.vb [Entwurf]",
-              "DocumentMoniker": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb",
-              "RelativeDocumentMoniker": "Druckservice\\Druckservice.vb",
-              "ToolTip": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb [Entwurf]",
-              "RelativeToolTip": "Druckservice\\Druckservice.vb [Entwurf]",
+              "DocumentIndex": 3,
+              "Title": "EscPosPrinter.vb",
+              "DocumentMoniker": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\EscPosPrinter.vb",
+              "RelativeDocumentMoniker": "Druckservice\\EscPosPrinter.vb",
+              "ToolTip": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\EscPosPrinter.vb",
+              "RelativeToolTip": "Druckservice\\EscPosPrinter.vb",
+              "ViewState": "AgIAADUBAAAAAAAAAIA4wFwBAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
-              "WhenOpened": "2026-04-23T10:47:08.15Z",
-              "EditorCaption": " [Entwurf]"
+              "WhenOpened": "2026-08-27T11:32:12.725Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "Druckservice.vb [Entwurf - Deutsch (\u00D6sterreich)]",
+              "DocumentMoniker": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb",
+              "RelativeDocumentMoniker": "Druckservice\\Druckservice.vb",
+              "ToolTip": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb [Entwurf - Deutsch (\u00D6sterreich)]",
+              "RelativeToolTip": "Druckservice\\Druckservice.vb [Entwurf - Deutsch (\u00D6sterreich)]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2026-04-23T10:47:08.15Z",
+              "EditorCaption": " [Entwurf - Deutsch (\u00D6sterreich)]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "config.ini",
               "DocumentMoniker": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\config.ini",
               "RelativeDocumentMoniker": "Druckservice\\config.ini",
               "ToolTip": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\config.ini",
               "RelativeToolTip": "Druckservice\\config.ini",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002768|",
-              "WhenOpened": "2026-04-04T10:42:47.068Z"
+              "WhenOpened": "2026-04-04T10:42:47.068Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -56,7 +74,7 @@
               "RelativeDocumentMoniker": "Druckservice\\Druckservice.vb",
               "ToolTip": "C:\\Users\\Stefan\\Documents\\GitHub\\FeuerloescherSoftware-Web\\Druckservice\\Druckservice\\Druckservice.vb",
               "RelativeToolTip": "Druckservice\\Druckservice.vb",
-              "ViewState": "AgIAAKYCAAAAAAAAAAAnwMICAAAvAAAAAAAAAA==",
+              "ViewState": "AgIAAAMCAAAAAAAAAAAmwCACAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
               "WhenOpened": "2026-04-04T08:56:03.217Z",
               "EditorCaption": ""
