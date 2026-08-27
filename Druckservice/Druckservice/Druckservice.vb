@@ -483,43 +483,42 @@ Public Class Druckservice
                 barcodeY = 22 ' Tiefer für 32mm
             End If
 
-            ' ZPL Code
-            ' Erklärung: GB = Schwarzer Balken, FR = Text invertieren (weiß auf schwarz), FB = Zentrieren
-            ' ZPL Code angepasst
-            'zpl = "^XA" &
-            '  "^CI28" &
-            '  "^LT0" &
-            '  "^PW" & mm(breite) &
-            '  "^LL" & mm(hoehe) &
-            '  "^LS0" &
-            '  "^FO" & mm(3) & "," & mm(2) & "^GB" & mm(51) & "," & mm(10) & "," & mm(10) & "^FS" &
-            '  "^FO" & mm(3) & "," & mm(4) & "^A0N," & mm(8) & "," & mm(8) & "^FB" & mm(51) & ",1,0,C^FR^FD" & displayYear & "^FS" &
-            '  "^FO" & mm(3) & "," & mm(14) & "^A0N," & mm(5) & "," & mm(5) & "^FB" & mm(51) & ",1,0,C^FD" & name & "^FS" &
-            '  "^BY3,3" &
-            '  "^FO" & mm(barcodeX) & "," & mm(barcodeY) &
-            '  "^B3N,N," & mm(7) & ",N,N" &' B3N,N,mm(x),N,N -> Das DRITTE N deaktiviert den Text unter dem Barcode
-            '  "^FD" & loescher_id & "^FS" &
-            '  "^XZ"
-
-            ' ZPL dynamisch berechnet (Faktor 8 für 203 dpi)
-            ' Berechnung der Y-Position für den Namen: 
-            ' Wenn Höhe 25, dann etwas höher (104), sonst etwas tiefer (128)
+            ' Dynamische Berechnung der Name-Schriftgröße basierend auf der Länge
+            ' Standard: 40 Dots (ca. 5mm)
+            Dim nameFontSize As Integer = 40
             Dim nameY As Integer = If(hoehe <= 25, 104, 128)
+
+            ' Wenn der Name zu lang ist, Schriftgröße verkleinern
+            ' (Schwellenwerte basierend auf der Etikettenbreite)
+            Dim maxCharsStandard As Integer = If(breite <= 50, 18, 22)
+
+            If name.Length > maxCharsStandard Then
+                ' Stufe 1: Leicht verkleinern (z. B. "Max Mustermann-Schuster")
+                nameFontSize = 30
+                ' Y-Position leicht nach korrigieren, damit die Basishöhe optisch passt
+                nameY += 4
+            ElseIf name.Length > (maxCharsStandard + 6) Then
+                ' Stufe 2: Stark verkleinern für extrem lange Namen
+                nameFontSize = 24
+                nameY += 6
+            End If
 
             ' Text-Umlaute in UTF-8 Hex-Werte für ZPL (^FH) konvertieren
             Dim safeName As String = name _
-                .Replace("ä", "_c3_a4") _
-                .Replace("ö", "_c3_b6") _
-                .Replace("ü", "_c3_bc") _
-                .Replace("Ä", "_c3_84") _
-                .Replace("Ö", "_c3_96") _
-                .Replace("Ü", "_c3_9c") _
-                .Replace("ß", "_c3_9f")
+            .Replace("ä", "_c3_a4") _
+            .Replace("ö", "_c3_b6") _
+            .Replace("ü", "_c3_bc") _
+            .Replace("Ä", "_c3_84") _
+            .Replace("Ö", "_c3_96") _
+            .Replace("Ü", "_c3_9c") _
+            .Replace("ß", "_c3_9f")
+
+            Dim labelWidthDots As Integer = (breite - 4) * 8
 
             zpl = "^XA^CI28^LT0^PW" & (breite * 8) & "^LL" & (hoehe * 8) & "^LS0" &
-              "^FO16,16^GB" & ((breite - 4) * 8) & ",80,80^FS" &
-              "^FO16,32^A0N,64,64^FB" & ((breite - 4) * 8) & ",1,0,C^FR^FD" & displayYear & "^FS" &
-              "^FO16," & nameY & "^A0N,40,40^FB" & ((breite - 4) * 8) & ",1,0,C^FH^FD" & safeName & "^FS" &
+              "^FO16,16^GB" & labelWidthDots & ",80,80^FS" &
+              "^FO16,32^A0N,64,64^FB" & labelWidthDots & ",1,0,C^FR^FD" & displayYear & "^FS" &
+              "^FO16," & nameY & "^A0N," & nameFontSize & "," & nameFontSize & "^FB" & labelWidthDots & ",1,0,C^FH^FD" & safeName & "^FS" &
               "^BY3,3^FO" & (barcodeX * 8) & "," & (barcodeY * 8) & "^B3N,N,56,N,N^FD" & loescher_id & "^FS^XZ"
 
             ' Senden über die RawPrinterHelper Klasse
@@ -653,24 +652,30 @@ Public Class Druckservice
             p.WriteLine()
             p.WriteLine("-".PadRight(42, "-"))
             p.WriteLine()
-
+            p.SetBold(True)
+            p.WriteLine(name)
+            p.SetBold(True)
+            p.WriteLine()
             p.SetFontSize(2, 2)
             p.WriteLine(loescher_id)
             p.SetFontSize(0, 0)
 
             p.SetAlignment(EscPosPrinter.Alignment.Center)
             p.WriteLine()
-            p.SetBarcodeHeight(130)
+            p.SetBarcodeHeight(100)
             p.PrintBarcode(loescher_id)
 
             p.WriteLine()
             p.WriteLine("-".PadRight(42, "-"))
+            p.WriteLine()
 
             p.SetAlignment(EscPosPrinter.Alignment.Left)
-            p.SetBold(True)
-            p.Write("    Kunde: ")
-            p.SetBold(False)
-            p.WriteLine(name)
+            'p.SetBold(True)
+            'p.Write("    Kunde: ")
+            'p.WriteLine("    " & name)
+            'p.WriteLine()
+            'p.SetBold(False)
+            'p.WriteLine(name)
 
             p.SetBold(True)
             p.Write("    Betrag: ")
@@ -684,7 +689,7 @@ Public Class Druckservice
 
             p.SetAlignment(EscPosPrinter.Alignment.Center)
 
-            If info <> "" Then
+            If info <> "" And info <> ">>> BEZAHLT <<<" Then
                 p.WriteLine("-".PadRight(42, "-"))
                 p.WriteLine()
                 p.SetFontSize(1, 1)
@@ -699,7 +704,7 @@ Public Class Druckservice
             p.SetBold(True)
             p.Write("Gedruckt: ")
             p.SetBold(False)
-            p.WriteLine(Format(Now, "dd.MM.yyyy - HH:mm:ss"))
+            p.WriteLine(Format(Now, "yyyy-MM-dd HH:mm:ss"))
 
             p.WriteLine()
             p.SetUnderline(True, True)
