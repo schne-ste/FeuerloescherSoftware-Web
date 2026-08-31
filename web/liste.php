@@ -189,10 +189,10 @@ if (!empty($_GET['suche'])) {
     $suche = SQLite3::escapeString($_GET['suche']);
     $where[] = "(name LIKE '%$suche%' OR nummer LIKE '%$suche%')";
 }
-if (isset($_GET['nicht_geprueft'])) $where[] = "geprueft = 0";
-if (isset($_GET['nicht_abgeholt'])) $where[] = "abgeholt = 0";
-if (isset($_GET['nicht_bezahlt'])) $where[] = "bezahlt = 0";
-if (isset($_GET['defekt'])) $where[] = "defekt = 1";
+if (isset($_GET['nicht_geprueft'])) $where[] = "geprueft = 0 AND active = 1";
+if (isset($_GET['nicht_abgeholt'])) $where[] = "abgeholt = 0 AND active = 1";
+if (isset($_GET['nicht_bezahlt'])) $where[] = "bezahlt = 0 AND active = 1 AND defekt = 0";
+if (isset($_GET['defekt'])) $where[] = "defekt = 1 AND active = 1";
 
 $whereSQL = count($where) ? "WHERE " . implode(" AND ", $where) : "";
 $result = $db->query("SELECT * FROM loescher $whereSQL ORDER BY id DESC");
