@@ -26,5 +26,8 @@ if (!file_exists($dbPath)) {
 
 function getDB() {
     global $dbPath;
-    return new SQLite3($dbPath, SQLITE3_OPEN_READWRITE);
+    $db = new SQLite3($dbPath, SQLITE3_OPEN_READWRITE);
+    $db->busyTimeout(5000);
+    $db->enableExceptions(true);
+    return $db;
 }

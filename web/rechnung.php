@@ -273,12 +273,23 @@ if (isset($_POST['select_entry'])) {
 // SPEICHERN / UPDATE
 // =====================
 if (isset($_POST['save_rechnung'])) {
+    $db->exec('BEGIN IMMEDIATE');
+    $oldFilename = null;
 
+    try {
     $typ = $_POST['typ'] ?? '';
     $preis = $preise[$typ] ?? 0;
 
     if (empty($_POST['edit_id'])) {
-        $rechnungsnummer = $nextRechnungsnummer;
+        $lastNr = $db->querySingle("
+            SELECT rechnungsnummer FROM rechnungen
+            WHERE rechnungsnummer LIKE '" . RECHNUNGS_PREFIX . "%'
+            ORDER BY id DESC LIMIT 1
+        ");
+        $number = $lastNr
+            ? intval(str_replace(RECHNUNGS_PREFIX, '', $lastNr)) + 1
+            : 1;
+        $rechnungsnummer = RECHNUNGS_PREFIX . str_pad($number, 4, '0', STR_PAD_LEFT);
     } else {
         $rechnungsnummer = $_POST['rechnungsnummer'];
     }
@@ -301,11 +312,8 @@ if (isset($_POST['save_rechnung'])) {
         $resetDruck = $hatKritischeAenderung ? 0 : $currentData['rechnung_gedruckt'];
         $resetZeit = $hatKritischeAenderung ? NULL : $currentData['zeitstempel_gedruckt'];
 
-        // Alte PDF-Datei löschen
+        // Alte PDF-Datei nach erfolgreichem Datenbank-Commit ersetzen.
         $oldFilename = __DIR__ . '/_Rechnungen/' . pathinfo(DB_FILE, PATHINFO_FILENAME) . '/Rechnung_' . cleanWindowsFilename($currentData['rechnungsnummer'], $currentData['name']) . '.pdf';
-        if (file_exists($oldFilename)) {
-            @unlink($oldFilename);
-        }
 
         // 2. Namensänderung synchronisieren: Alter Name kommt garantiert aus $currentData!
         $alterName = trim($currentData['name']);
@@ -398,6 +406,15 @@ if (isset($_POST['save_rechnung'])) {
 
     if (empty($_POST['edit_id'])) {
         $lastId = $db->lastInsertRowID();
+    }
+    $db->exec('COMMIT');
+    } catch (Throwable $e) {
+        $db->exec('ROLLBACK');
+        throw $e;
+    }
+
+    if ($oldFilename !== null && file_exists($oldFilename)) {
+        @unlink($oldFilename);
     }
 
     // =====================

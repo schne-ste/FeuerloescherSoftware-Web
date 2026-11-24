@@ -1,0 +1,2 @@
+[2026-04-20 16:31:01] PHP Error [2]: SQLite3::prepare(): Unable to prepare statement: database is locked in /volume1/web/feuerloescher-software/api/models/Loescher.php:26
+[2026-04-20 16:31:01] Unhandled Exception: Call to a member function bindValue() on false in /volume1/web/feuerloescher-software/api/models/Loescher.php:27

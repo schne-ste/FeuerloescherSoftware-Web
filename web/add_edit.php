@@ -189,33 +189,40 @@ if ($mode === 'add' && isset($_POST['add_loscher'])) {
     $preis = $preise[$typ] ?? 0;
     $anzahl = max(1, (int) ($_POST['anzahl'] ?? 1));
     $nummern = [];
-    for ($i = 0; $i < $anzahl; $i++) {
-        $nummer = generateNummer($db);
-        $nummern[] = $nummer;
-        $stmt = $db->prepare("
-            INSERT INTO loescher (
-                nummer, name, telefon, typ, preis, loeschertyp,
-                menge, einheit, etikett_gedruckt,
-                abholschein_gedruckt, bezahlt, geprueft, abgeholt, defekt, active, info, zeitstempel
-            ) VALUES (
-                :nummer, :name, :telefon, :typ, :preis, :loeschertyp,
-                :menge, :einheit, 0, 0, :bezahlt, 0, 0, 0, 1, :info, :zeitstempel
-            )
-        ");
+    $db->exec('BEGIN IMMEDIATE');
+    try {
+        for ($i = 0; $i < $anzahl; $i++) {
+            $nummer = generateNummer($db);
+            $nummern[] = $nummer;
+            $stmt = $db->prepare("
+                INSERT INTO loescher (
+                    nummer, name, telefon, typ, preis, loeschertyp,
+                    menge, einheit, etikett_gedruckt,
+                    abholschein_gedruckt, bezahlt, geprueft, abgeholt, defekt, active, info, zeitstempel
+                ) VALUES (
+                    :nummer, :name, :telefon, :typ, :preis, :loeschertyp,
+                    :menge, :einheit, 0, 0, :bezahlt, 0, 0, 0, 1, :info, :zeitstempel
+                )
+            ");
 
-        $stmt->bindValue(':nummer', $nummer);
-        $stmt->bindValue(':name', $_POST['name']);
-        $stmt->bindValue(':telefon', $_POST['telefon'] ?? '');
-        $stmt->bindValue(':typ', $typ);
-        $stmt->bindValue(':preis', $preis);
-        $stmt->bindValue(':loeschertyp', $_POST['loeschertyp'] ?? '');
-        $stmt->bindValue(':menge', $_POST['menge'] ?? '');
-        $stmt->bindValue(':einheit', $_POST['einheit'] ?? '');
-        $stmt->bindValue(':bezahlt', isset($_POST['bezahlt']) ? 1 : 0);
-        $stmt->bindValue(':info', $_POST['info'] ?? '');
-        $stmt->bindValue(':zeitstempel', $zeitstempel);
+            $stmt->bindValue(':nummer', $nummer);
+            $stmt->bindValue(':name', $_POST['name']);
+            $stmt->bindValue(':telefon', $_POST['telefon'] ?? '');
+            $stmt->bindValue(':typ', $typ);
+            $stmt->bindValue(':preis', $preis);
+            $stmt->bindValue(':loeschertyp', $_POST['loeschertyp'] ?? '');
+            $stmt->bindValue(':menge', $_POST['menge'] ?? '');
+            $stmt->bindValue(':einheit', $_POST['einheit'] ?? '');
+            $stmt->bindValue(':bezahlt', isset($_POST['bezahlt']) ? 1 : 0);
+            $stmt->bindValue(':info', $_POST['info'] ?? '');
+            $stmt->bindValue(':zeitstempel', $zeitstempel);
 
-        $result = $stmt->execute();
+            $result = $stmt->execute();
+        }
+        $db->exec('COMMIT');
+    } catch (Throwable $e) {
+        $db->exec('ROLLBACK');
+        throw $e;
     }
 
     $_SESSION['success_msg'] = "&#9989; $anzahl Löscher erfolgreich hinzugefügt! [" . implode(", ", $nummern) . "]";
@@ -1267,33 +1274,40 @@ function ajax()
         $anzahl = max(1, (int) ($_POST['anzahl'] ?? 1));
         $nummern = [];
 
-        for ($i = 0; $i < $anzahl; $i++) {
-            $nummer = generateNummer($db);
-            $nummern[] = $nummer;
-            $stmt = $db->prepare("
-                INSERT INTO loescher (
-                    nummer, name, telefon, typ, preis, loeschertyp,
-                    menge, einheit, etikett_gedruckt,
-                    abholschein_gedruckt, bezahlt, geprueft, abgeholt, defekt, active, info, zeitstempel
-                ) VALUES (
-                    :nummer, :name, :telefon, :typ, :preis, :loeschertyp,
-                    :menge, :einheit, 0, 0, :bezahlt, 0, 0, 0, 1, :info, :zeitstempel
-                )
-            ");
+        $db->exec('BEGIN IMMEDIATE');
+        try {
+            for ($i = 0; $i < $anzahl; $i++) {
+                $nummer = generateNummer($db);
+                $nummern[] = $nummer;
+                $stmt = $db->prepare("
+                    INSERT INTO loescher (
+                        nummer, name, telefon, typ, preis, loeschertyp,
+                        menge, einheit, etikett_gedruckt,
+                        abholschein_gedruckt, bezahlt, geprueft, abgeholt, defekt, active, info, zeitstempel
+                    ) VALUES (
+                        :nummer, :name, :telefon, :typ, :preis, :loeschertyp,
+                        :menge, :einheit, 0, 0, :bezahlt, 0, 0, 0, 1, :info, :zeitstempel
+                    )
+                ");
 
-            $stmt->bindValue(':nummer', $nummer);
-            $stmt->bindValue(':name', $_POST['name']);
-            $stmt->bindValue(':telefon', $_POST['telefon'] ?? '');
-            $stmt->bindValue(':typ', $typ);
-            $stmt->bindValue(':preis', $preis);
-            $stmt->bindValue(':loeschertyp', $_POST['loeschertyp'] ?? '');
-            $stmt->bindValue(':menge', $_POST['menge'] ?? '');
-            $stmt->bindValue(':einheit', $_POST['einheit'] ?? '');
-            $stmt->bindValue(':bezahlt', isset($_POST['bezahlt']) ? 1 : 0);
-            $stmt->bindValue(':info', $_POST['info'] ?? '');
-            $stmt->bindValue(':zeitstempel', $zeitstempel);
+                $stmt->bindValue(':nummer', $nummer);
+                $stmt->bindValue(':name', $_POST['name']);
+                $stmt->bindValue(':telefon', $_POST['telefon'] ?? '');
+                $stmt->bindValue(':typ', $typ);
+                $stmt->bindValue(':preis', $preis);
+                $stmt->bindValue(':loeschertyp', $_POST['loeschertyp'] ?? '');
+                $stmt->bindValue(':menge', $_POST['menge'] ?? '');
+                $stmt->bindValue(':einheit', $_POST['einheit'] ?? '');
+                $stmt->bindValue(':bezahlt', isset($_POST['bezahlt']) ? 1 : 0);
+                $stmt->bindValue(':info', $_POST['info'] ?? '');
+                $stmt->bindValue(':zeitstempel', $zeitstempel);
 
-            $stmt->execute();
+                $stmt->execute();
+            }
+            $db->exec('COMMIT');
+        } catch (Throwable $e) {
+            $db->exec('ROLLBACK');
+            throw $e;
         }
 
         $_SESSION['success_msg'] = "&#9989; $anzahl Löscher erfolgreich hinzugefügt! [" . implode(", ", $nummern) . "]";

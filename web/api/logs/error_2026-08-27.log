@@ -1,0 +1,2 @@
+[2026-08-27 13:27:31] PHP Error [2]: SQLite3Stmt::execute(): Unable to execute statement: database is locked in /volume1/web/feuerloescher-software/api/models/Loescher.php:29
+[2026-08-27 13:27:31] Unhandled Exception: Call to a member function fetchArray() on false in /volume1/web/feuerloescher-software/api/models/Loescher.php:32

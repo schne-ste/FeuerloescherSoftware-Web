@@ -26,6 +26,25 @@ $rechnungen = [];
 while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
     $rechnungen[] = $row;
 }
+
+$loescherNachName = [];
+if ($rechnungen) {
+    $resultLoescher = $db->query("
+        SELECT LOWER(TRIM(name)) AS kunde_name, typ,
+               SUM(CASE WHEN defekt = 0 OR defekt = '0' THEN 1 ELSE 0 END) AS anzahl_ohne_defekt,
+               COUNT(*) AS anzahl_gesamt
+        FROM loescher
+        WHERE active = 1 OR active = '1'
+        GROUP BY LOWER(TRIM(name)), typ
+    ");
+
+    while ($row = $resultLoescher->fetchArray(SQLITE3_ASSOC)) {
+        $loescherNachName[$row['kunde_name']][$row['typ']] = [
+            'ohne_defekt' => (int)$row['anzahl_ohne_defekt'],
+            'gesamt' => (int)$row['anzahl_gesamt']
+        ];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -111,28 +130,19 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                     <?php foreach ($rechnungen as $r): 
                         // Defekt-Einstellung der Rechnung berücksichtigen
                         $inklDefekt = !empty($r['verrechnen_defekt']);
-                        $defektCondition = $inklDefekt ? "" : "AND (defekt = 0 OR defekt = '0')";
 
                         // Live-Berechnung der Summe pro Typ aus der Löscher-DB
                         $kName = trim($r['name']);
-                        $stmtT = $db->prepare("
-                            SELECT typ, COUNT(*) as anzahl 
-                            FROM loescher 
-                            WHERE LOWER(TRIM(name)) = LOWER(:name) 
-                            AND (active = 1 OR active = '1') 
-                            $defektCondition
-                            GROUP BY typ
-                        ");
-                        $stmtT->bindValue(':name', $kName, SQLITE3_TEXT);
-                        $resT = $stmtT->execute();
-                        
                         $gesamt = 0;
                         $hatLoescher = false;
-                        
-                        while($tRow = $resT->fetchArray(SQLITE3_ASSOC)) {
+
+                        foreach ($loescherNachName[strtolower($kName)] ?? [] as $pTyp => $anzahlen) {
+                            $pMenge = $inklDefekt ? $anzahlen['gesamt'] : $anzahlen['ohne_defekt'];
+                            if ($pMenge === 0) {
+                                continue;
+                            }
+
                             $hatLoescher = true;
-                            $pTyp = $tRow['typ'];
-                            $pMenge = (int)$tRow['anzahl'];
                             $einzelp = $preise[$pTyp] ?? 0;
                             $gesamt += ($pMenge * $einzelp);
                         }
